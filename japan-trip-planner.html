@@ -1323,52 +1323,19 @@
     </div>
 
     <!-- Airport leg -->
-    <div class="leg">
-      <div class="leg-marker"></div>
-      <div class="leg-row">
-        <div class="leg-name"><strong>Airport</strong> → Tokyo (Gotanda)</div>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
-          <div
-            class="toggle"
-            id="airportChoice"
-            data-terminal-toggle="airport"
-          ></div>
-          <div class="toggle" id="airportMode" data-mode-toggle="airport"></div>
-        </div>
-      </div>
-      <details class="route-detail" id="rd-airport"></details>
-    </div>
+    <div class="leg" data-leg="airport"></div>
 
     <!-- TOKYO -->
     <div class="stop" data-stop="tokyo"></div>
 
     <!-- Tokyo -> Hakone leg -->
-    <div class="leg">
-      <div class="leg-marker"></div>
-      <div class="leg-row">
-        <div class="leg-name">Tokyo → <strong>Hakone</strong></div>
-        <div class="toggle" id="thMode" data-mode-toggle="th"></div>
-      </div>
-      <details class="route-detail" id="rd-th"></details>
-    </div>
+    <div class="leg" data-leg="th"></div>
 
     <!-- HAKONE -->
     <div class="stop" data-stop="hakone"></div>
 
     <!-- Hakone -> Kyoto leg -->
-    <div class="leg">
-      <div class="leg-marker"></div>
-      <div class="leg-row">
-        <div class="leg-name">
-          Hakone → <strong>Kyoto</strong>
-          <span class="fixed-leg"
-            >(Shinkansen, both adults, reserved seat: <b>$152</b> fixed)</span
-          >
-        </div>
-        <div class="toggle" id="hkMode" data-mode-toggle="hk"></div>
-      </div>
-      <details class="route-detail" id="rd-hk"></details>
-    </div>
+    <div class="leg" data-leg="hk"></div>
 
     <!-- KYOTO -->
     <div class="stop" data-stop="kyoto"></div>
@@ -1398,16 +1365,7 @@
     </div>
 
     <!-- Final leg to airport -->
-    <div class="leg">
-      <div class="leg-marker"></div>
-      <div class="leg-row">
-        <div class="leg-name" id="finalLegName">
-          <strong>Kyoto</strong> → Kansai Airport
-        </div>
-        <div class="toggle" id="finalMode" data-mode-toggle="final"></div>
-      </div>
-      <details class="route-detail" id="rd-final"></details>
-    </div>
+    <div class="leg" data-leg="final"></div>
   </div>
 
   <aside class="summary">
@@ -1856,6 +1814,9 @@
     legs: [
       {
         id: "airport",
+        routeName: "<strong>Airport</strong> → Tokyo (Gotanda)",
+        toggles: ["terminal", "mode"],
+        routeDetail: true,
         ctrlPrefix: "air", // input/label id prefix (others default to the leg id)
         modeControl: "airportmode",
         terminalControl: "airport", // arrival-terminal sub-choice
@@ -1871,6 +1832,9 @@
       },
       {
         id: "th",
+        routeName: "Tokyo → <strong>Hakone</strong>",
+        toggles: ["mode"],
+        routeDetail: true,
         modeControl: "thmode",
         modes: {
           public: { label: "Romancecar", scale: "person" },
@@ -1880,6 +1844,10 @@
       },
       {
         id: "hk",
+        routeName: "Hakone → <strong>Kyoto</strong>",
+        note: "(Shinkansen, both adults, reserved seat: <b>$152</b> fixed)",
+        toggles: ["mode"],
+        routeDetail: true,
         modeControl: "hkmode",
         modes: {
           public: { label: "Bus/subway", scale: "person" },
@@ -1890,6 +1858,10 @@
       },
       {
         id: "final",
+        routeName: "<strong>Kyoto</strong> → Kansai Airport",
+        dynamicNameId: "finalLegName",
+        toggles: ["mode"],
+        routeDetail: true,
         modeControl: "finalmode",
         when: "noOsaka",
         modes: {
@@ -2321,6 +2293,52 @@
     });
   }
   renderStops();
+
+  // build each route leg (marker, route name, toggles, route-detail) from
+  // TRIP.transport.legs. The Osaka block stays hardcoded (optional-city work).
+  function renderLegs() {
+    document.querySelectorAll("[data-leg]").forEach((el) => {
+      const leg = TRIP.transport.legs.find((l) => l.id === el.dataset.leg);
+      const nameId = leg.dynamicNameId ? ' id="' + leg.dynamicNameId + '"' : "";
+      const note = leg.note
+        ? ' <span class="fixed-leg">' + leg.note + "</span>"
+        : "";
+      const toggles = (leg.toggles || [])
+        .map((t) =>
+          t === "terminal"
+            ? '<div class="toggle" id="airportChoice" data-terminal-toggle="' +
+              leg.id +
+              '"></div>'
+            : '<div class="toggle" id="' +
+              leg.id +
+              'Mode" data-mode-toggle="' +
+              leg.id +
+              '"></div>',
+        )
+        .join("");
+      const toggleHtml =
+        leg.id === "airport"
+          ? '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap">' +
+            toggles +
+            "</div>"
+          : toggles;
+      const rd = leg.routeDetail
+        ? '<details class="route-detail" id="rd-' + leg.id + '"></details>'
+        : "";
+      el.innerHTML =
+        '<div class="leg-marker"></div>' +
+        '<div class="leg-row"><div class="leg-name"' +
+        nameId +
+        ">" +
+        leg.routeName +
+        note +
+        "</div>" +
+        toggleHtml +
+        "</div>" +
+        rd;
+    });
+  }
+  renderLegs();
 
   TRIP.meta.route.forEach((c) => renderTiers(c + "Tiers", c));
   renderTiers("osakaTiers", "osaka");
