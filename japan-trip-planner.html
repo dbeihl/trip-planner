@@ -1709,12 +1709,35 @@
 </div>
 
 <script>
+  // ─────────────────────────────────────────────────────────────────
+  // TRIP DATA (Phase 1). All trip-specific data lives in one object.
+  // The large literals are assigned into it below (kept in place, so
+  // nothing is retyped); the engine reads them through the bindings at
+  // the end of the data block — its code is otherwise unchanged.
+  // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
+  // ─────────────────────────────────────────────────────────────────
+  const TRIP = {
+    meta: {
+      title: "Japan — Nov 2026",
+      route: ["tokyo", "hakone", "kyoto"], // ordered city keys (osaka is optional)
+      dates: { arrive: "2026-11-14", depart: "2026-11-22", nights: 8 },
+      travelers: { count: 2, note: "2 adults, separate arrival flights" },
+      currency: "USD",
+      reference: {
+        total: 9644,
+        label: "Kensington Tours quote",
+        caveat: "Placeholder dates Nov 7–14; not apples-to-apples.",
+      },
+      lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
+    },
+  };
+
   // FLIGHTS — international "getting there" legs, modular by traveler.
   // Each journey is one person's round trip from their home origin to Tokyo.
   // `fare` is a researched representative Nov-2026 round-trip price PER PERSON
   // (see caveat in the UI — these are NOT date-locked quotes like the hotels).
   // Add/remove journeys and options freely; the UI generates itself from this.
-  const FLIGHTS = {
+  TRIP.flights = {
     us: {
       label: "From the USA — David (IND)",
       traveler: "David",
@@ -1799,7 +1822,7 @@
     },
   };
 
-  const HOTELS = {
+  TRIP.hotels = {
     tokyo: {
       baseNights: 3,
       label: "Tokyo",
@@ -1926,7 +1949,7 @@
     },
   };
 
-  const TRANSPORT = {
+  TRIP.transport = {
     // audited against live fares — see DIY-Cost-Options.md "Transport audit" for sourcing
     airport: {
       nrt: { public: 43, private: 148 },
@@ -1940,15 +1963,13 @@
     osakaAirport: 18, // assumes Nankai ticketless/IC-card fare; standard walk-up fare is ~$21
   };
 
-  const REFERENCE_TOTAL = 9644;
-  // Researched hotel rates are pre-tax/pre-fee (Japan accommodation tax, VAT, service charges
-  // vary by property and weren't itemized during research). This buffer inflates lodging only,
-  // as a deliberately conservative planning margin -- not a researched figure itself.
-  const LODGING_TAX_BUFFER = 1.25;
+  // Scalars now live in TRIP.meta (the buffer note is there); bound for the engine:
+  const REFERENCE_TOTAL = TRIP.meta.reference.total;
+  const LODGING_TAX_BUFFER = TRIP.meta.lodgingTaxBuffer;
 
   // All costs below are researched 2-adult totals (scaled by personFactor at calc time),
   // same convention as TRANSPORT.
-  const ACTIVITIES = {
+  TRIP.activities = {
     tokyo: [
       {
         day: 2,
@@ -2151,7 +2172,7 @@
     ],
   };
 
-  const ROUTE_DETAIL = {
+  TRIP.routeDetail = {
     airport: {
       nrt: {
         label: "Narita → Gotanda (N'EX + Yamanote)",
@@ -2234,6 +2255,14 @@
       },
     },
   };
+
+  // ── engine bindings: the engine reads its data from TRIP ──────────
+  const FLIGHTS = TRIP.flights;
+  const HOTELS = TRIP.hotels;
+  const TRANSPORT = TRIP.transport;
+  const ACTIVITIES = TRIP.activities;
+  const ROUTE_DETAIL = TRIP.routeDetail;
+  const TRIP_START = TRIP.meta.dates.arrive; // fixed arrival date, ISO
 
   function renderActivities(containerId, cityKey) {
     const el = document.getElementById(containerId);
@@ -2639,8 +2668,6 @@
       grand,
     };
   }
-
-  const TRIP_START = "2026-11-14"; // fixed arrival date, ISO
 
   function toDate(iso) {
     return new Date(iso + "T00:00:00");
@@ -3072,7 +3099,7 @@
   // Narrative pools (experience only). Concrete hotel/transport/cost
   // rows are injected from __state at render time, so they always
   // reflect the Plan-tab choices. First entry per city is the travel-in day.
-  const ITIN_POOL = {
+  TRIP.itinPool = {
     tokyo: [
       {
         id: "t-arrive",
@@ -3374,6 +3401,7 @@
       },
     ],
   };
+  const ITIN_POOL = TRIP.itinPool;
 
   function itinDepartDay(osakaMode) {
     return {
@@ -3754,7 +3782,7 @@
 
   // Officer-friendly, literal one-liners for the visa form (the
   // itinerary's own titles are deliberately poetic — wrong register here).
-  const VISA_PLAN = {
+  TRIP.visaPlan = {
     "t-arrive": "Arrive in Tokyo; check in and rest.",
     "t-tsukiji": "Tsukiji Outer Market; Asakusa Senso-ji Temple & Nakamise St.",
     "t-gyoen": "Shinjuku Gyoen National Garden; Shinjuku district.",
@@ -3771,6 +3799,7 @@
     "o-arrive": "Travel to Osaka; Dotonbori & Namba.",
     depart: "Depart from Kansai International Airport.",
   };
+  const VISA_PLAN = TRIP.visaPlan;
 
   function xlEsc(s) {
     return String(s)
