@@ -1,0 +1,4 @@
+# generated exports
+*.pdf
+*.xlsx
+.playwright-mcp/

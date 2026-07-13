@@ -1,0 +1,4316 @@
+<meta charset="utf-8" />
+<title>Japan Trip Planner — Budget &amp; Itinerary</title>
+<style>
+  @font-face {
+    font-family: "Ledger Serif";
+    src:
+      local("Iowan Old Style"), local("Palatino Linotype"), local("Palatino");
+  }
+
+  :root {
+    --paper: #eeebe3;
+    --paper-raised: #f7f5ef;
+    --ink: #201f1a;
+    --ink-soft: #5a5648;
+    --indigo: #26456b;
+    --indigo-deep: #16293f;
+    --indigo-wash: rgba(38, 69, 107, 0.08);
+    --shu: #a8481f;
+    --shu-wash: rgba(168, 72, 31, 0.1);
+    --line: #d5d0c1;
+    --line-strong: #b7b09a;
+    --good: #3f6b4a;
+    --focus: #26456b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #171813;
+      --paper-raised: #201f19;
+      --ink: #ece8dc;
+      --ink-soft: #b0aa98;
+      --indigo: #86a7cd;
+      --indigo-deep: #b9cfe8;
+      --indigo-wash: rgba(134, 167, 205, 0.12);
+      --shu: #e2895c;
+      --shu-wash: rgba(226, 137, 92, 0.14);
+      --line: #38362c;
+      --line-strong: #4c4939;
+      --good: #7fb88d;
+      --focus: #b9cfe8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #171813;
+    --paper-raised: #201f19;
+    --ink: #ece8dc;
+    --ink-soft: #b0aa98;
+    --indigo: #86a7cd;
+    --indigo-deep: #b9cfe8;
+    --indigo-wash: rgba(134, 167, 205, 0.12);
+    --shu: #e2895c;
+    --shu-wash: rgba(226, 137, 92, 0.14);
+    --line: #38362c;
+    --line-strong: #4c4939;
+    --good: #7fb88d;
+    --focus: #b9cfe8;
+  }
+  :root[data-theme="light"] {
+    --paper: #eeebe3;
+    --paper-raised: #f7f5ef;
+    --ink: #201f1a;
+    --ink-soft: #5a5648;
+    --indigo: #26456b;
+    --indigo-deep: #16293f;
+    --indigo-wash: rgba(38, 69, 107, 0.08);
+    --shu: #a8481f;
+    --shu-wash: rgba(168, 72, 31, 0.1);
+    --line: #d5d0c1;
+    --line-strong: #b7b09a;
+    --good: #3f6b4a;
+    --focus: #26456b;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .wrap {
+      grid-template-columns: 1fr;
+      padding-bottom: 8rem;
+    }
+  }
+
+  header.masthead {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  h1 {
+    font-family: "Ledger Serif", "Iowan Old Style", Palatino, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    margin: 0.25rem 0 0.4rem;
+    text-wrap: balance;
+    color: var(--indigo-deep);
+  }
+
+  .sub {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    max-width: 62ch;
+  }
+
+  .route {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .trip-settings {
+    display: flex;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.8rem 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .setting {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .setting label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .setting input[type="number"] {
+    width: 4.2rem;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.88rem;
+  }
+
+  .setting input[type="number"]:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  .setting-hint {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .extra-night {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .extra-night .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+
+  .extra-night .label-row span:first-child {
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+
+  .extra-night .label-row span:last-child {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+  }
+
+  .seg label {
+    text-align: center;
+    padding: 0.5rem 0.3rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    background: var(--paper);
+    transition:
+      background 0.12s,
+      color 0.12s,
+      border-color 0.12s;
+  }
+
+  .seg input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .seg input:checked + label,
+  .seg label.checked {
+    background: var(--indigo);
+    border-color: var(--indigo);
+    color: var(--paper);
+  }
+
+  .seg input:focus-visible + label {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* --- rail line --- */
+  .stop {
+    position: relative;
+    padding-left: 2rem;
+    padding-bottom: 0.4rem;
+  }
+
+  .stop::before {
+    /* vertical rail */
+    content: "";
+    position: absolute;
+    left: 0.36rem;
+    top: 1.6rem;
+    bottom: -0.4rem;
+    width: 2px;
+    background: var(--line-strong);
+  }
+
+  .stop:last-of-type::before {
+    display: none;
+  }
+
+  .stop-marker {
+    position: absolute;
+    left: 0;
+    top: 0.3rem;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--indigo);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--indigo);
+  }
+
+  .stop-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .stop-head h2 {
+    font-family: "Ledger Serif", "Iowan Old Style", Palatino, Georgia, serif;
+    font-weight: 400;
+    font-size: 1.25rem;
+    margin: 0;
+    color: var(--indigo-deep);
+  }
+
+  .stop-head .nights {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .tier-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .tier {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper-raised);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .tier input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .tier:has(input:checked) {
+    border-color: var(--indigo);
+    background: var(--indigo-wash);
+  }
+
+  .tier:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  .tier-name {
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+
+  .tier-meta {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    margin-top: 0.1rem;
+  }
+
+  .tier-rating {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tier-price {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .tier-price small {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: var(--shu-wash);
+    color: var(--shu);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    margin-left: 0.4rem;
+  }
+
+  /* --- leg connector --- */
+  .leg {
+    position: relative;
+    padding-left: 2rem;
+    padding: 0.9rem 0 0.9rem 2rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .leg::before {
+    content: "";
+    position: absolute;
+    left: 0.36rem;
+    top: -0.4rem;
+    bottom: -0.4rem;
+    width: 2px;
+    background: repeating-linear-gradient(
+      var(--line-strong),
+      var(--line-strong) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+
+  .leg-marker {
+    position: absolute;
+    left: 0.14rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--paper);
+    border: 2px solid var(--line-strong);
+  }
+
+  .leg-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .leg-name {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .leg-name strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .toggle {
+    display: inline-flex;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .toggle label {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    background: var(--paper-raised);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .toggle input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .toggle input:checked + label {
+    background: var(--indigo);
+    color: var(--paper);
+  }
+
+  .toggle input:focus-visible + label {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+
+  .fixed-leg {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+
+  .fixed-leg b {
+    color: var(--ink);
+  }
+
+  /* --- activities --- */
+  .activities-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .activity-block {
+    margin-bottom: 0.9rem;
+  }
+
+  .activity-head {
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  /* --- route detail disclosure --- */
+  .route-detail {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  .route-detail summary {
+    cursor: pointer;
+    color: var(--indigo);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.75rem;
+    list-style: none;
+  }
+
+  .route-detail summary::-webkit-details-marker {
+    display: none;
+  }
+  .route-detail summary::before {
+    content: "▸ ";
+  }
+  .route-detail[open] summary::before {
+    content: "▾ ";
+  }
+
+  .route-detail summary:hover {
+    color: var(--indigo-deep);
+  }
+
+  .route-detail ol {
+    margin: 0.5rem 0 0;
+    padding-left: 1.3rem;
+    color: var(--ink-soft);
+  }
+
+  .route-detail ol li {
+    margin-bottom: 0.2rem;
+  }
+  .route-detail .rd-total {
+    color: var(--ink);
+    font-weight: 600;
+    margin-top: 0.4rem;
+  }
+  .route-detail .rd-note {
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-top: 0.3rem;
+  }
+
+  /* --- summary panel --- */
+  .summary {
+    position: sticky;
+    top: 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    padding: 1.25rem 1.3rem;
+  }
+
+  @media (max-width: 860px) {
+    .summary {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: auto;
+      border-radius: 0;
+      border-width: 1px 0 0;
+      z-index: 10;
+      padding: 0.9rem 1.2rem;
+    }
+    .summary .breakdown {
+      display: none;
+    }
+  }
+
+  .summary .eyebrow {
+    margin-bottom: 0.3rem;
+  }
+
+  .grand-total {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 2.1rem;
+    font-weight: 600;
+    color: var(--indigo-deep);
+    line-height: 1.1;
+  }
+
+  @media (max-width: 860px) {
+    .grand-total {
+      font-size: 1.5rem;
+    }
+  }
+
+  .delta {
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+
+  .delta.save {
+    color: var(--good);
+  }
+
+  .breakdown {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .breakdown-row span:first-child {
+    color: var(--ink-soft);
+  }
+  .breakdown-row span:last-child {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .reference-note {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  footer.notes {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  footer.notes h3 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    margin: 0 0 0.4rem;
+  }
+
+  footer.notes ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .generate-btn {
+    flex: 1;
+    padding: 0.65rem 0.7rem;
+    background: var(--indigo);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .generate-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+  }
+
+  .generate-btn:hover {
+    background: var(--indigo-deep);
+  }
+  .generate-btn.secondary:hover {
+    background: var(--indigo-wash);
+    border-color: var(--indigo);
+  }
+  .generate-btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 860px) {
+    .btn-row {
+      margin-top: 0.6rem;
+    }
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 8, 0.55);
+    z-index: 100;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .modal-box {
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    max-width: 640px;
+    width: 100%;
+    padding: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.9rem;
+  }
+
+  .modal-head h2 {
+    font-family: "Ledger Serif", "Iowan Old Style", Palatino, Georgia, serif;
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--indigo-deep);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: ui-monospace, monospace;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .modal-close:hover {
+    color: var(--ink);
+  }
+
+  .modal-note {
+    background: var(--indigo-wash);
+    border: 1px solid var(--indigo);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.78rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+  }
+
+  #shareOutput {
+    width: 100%;
+    min-height: 320px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    padding: 0.9rem;
+    white-space: pre;
+    overflow: auto;
+    resize: vertical;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+  }
+
+  .modal-actions button {
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  #copyBtn {
+    background: var(--indigo);
+    color: var(--paper);
+    border: none;
+    font-weight: 600;
+  }
+
+  #copyBtn:hover {
+    background: var(--indigo-deep);
+  }
+
+  #copyBtn.copied {
+    background: var(--good);
+  }
+
+  .modal-actions .secondary {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+  }
+
+  /* --- flights section --- */
+  .flights-intro {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin: 0 0 1rem;
+    max-width: 60ch;
+  }
+
+  .flight-journey {
+    margin-bottom: 1.4rem;
+  }
+
+  .journey-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  .journey-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+
+  .journey-pref {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .flights-caveat {
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.45;
+    border-left: 2px solid var(--shu);
+    padding-left: 0.7rem;
+    margin-top: 0.2rem;
+  }
+
+  /* ===== merged planner: tabs + itinerary view ===== */
+  .mono {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabs {
+    max-width: 1040px;
+    margin: 1.5rem auto 0;
+    padding: 0 1.5rem;
+    display: flex;
+    gap: 0.4rem;
+  }
+  .tab {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    padding: 0.55rem 1.05rem;
+    border: 1px solid var(--line-strong);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: var(--paper-raised);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .tab.active {
+    background: var(--indigo);
+    color: var(--paper);
+    border-color: var(--indigo);
+  }
+  .tab:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .theme-toggle {
+    margin-left: auto;
+    align-self: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .theme-toggle:hover {
+    border-color: var(--indigo);
+    color: var(--indigo);
+  }
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .itinwrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 6rem;
+  }
+
+  .itin-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.4rem;
+    align-items: center;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 0.85rem 1.05rem;
+    margin-bottom: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 6px 20px -14px rgba(0, 0, 0, 0.4);
+  }
+  .itin-controls .lbl {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    margin-right: 0.45rem;
+  }
+  .price-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .price-toggle input {
+    accent-color: var(--indigo);
+    width: 1rem;
+    height: 1rem;
+  }
+  .itin-controls .spacer {
+    flex: 1 1 auto;
+  }
+  .itin-summary {
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+  }
+
+  .generate-btn.copied {
+    background: var(--good);
+    color: var(--paper);
+    border-color: var(--good);
+  }
+
+  .flag {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--shu-wash);
+    color: var(--shu);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    margin-right: 0.35rem;
+  }
+
+  .day {
+    position: relative;
+    padding-left: 2.1rem;
+    padding-bottom: 1.9rem;
+  }
+  .day::before {
+    content: "";
+    position: absolute;
+    left: 0.4rem;
+    top: 1.9rem;
+    bottom: -0.1rem;
+    width: 2px;
+    background: var(--line-strong);
+  }
+  .day:last-child::before {
+    display: none;
+  }
+  .day-marker {
+    position: absolute;
+    left: 0;
+    top: 0.45rem;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    background: var(--indigo);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--indigo);
+  }
+  .day.travel .day-marker {
+    border-radius: 1px;
+    transform: rotate(45deg);
+    background: var(--shu);
+    box-shadow: 0 0 0 1px var(--shu);
+  }
+  .day-eyebrow {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.9rem;
+    align-items: baseline;
+  }
+  .day-eyebrow .city {
+    color: var(--shu);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .day-eyebrow .sun::before {
+    content: "\263E ";
+  }
+  .day h3 {
+    font-family:
+      "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin: 0.3rem 0 0.7rem;
+    color: var(--indigo-deep);
+    text-wrap: balance;
+  }
+
+  .drow {
+    display: grid;
+    grid-template-columns: 5.6rem 1fr;
+    gap: 0.3rem 0.9rem;
+    padding: 0.4rem 0;
+    align-items: start;
+    border-top: 1px solid var(--line);
+    font-size: 0.92rem;
+  }
+  .drow:first-of-type {
+    border-top: none;
+  }
+  .drow .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-top: 0.15rem;
+  }
+  .drow.anchor .tag,
+  .drow.move .tag {
+    color: var(--indigo);
+  }
+  .drow.table .tag {
+    color: var(--shu);
+  }
+  .drow .body {
+    color: var(--ink);
+  }
+  .drow .body .lead {
+    font-weight: 600;
+  }
+  .drow .body .detail {
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+  }
+  .drow.soft .body {
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+  }
+  .drow .cost {
+    font-family: ui-monospace, monospace;
+    color: var(--good);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  @media (max-width: 520px) {
+    .drow {
+      grid-template-columns: 1fr;
+      gap: 0.1rem;
+    }
+  }
+
+  .fuller {
+    margin: 0.6rem 0 0 6.1rem;
+    padding: 0.55rem 0.8rem;
+    border-left: 2px solid var(--shu);
+    background: var(--shu-wash);
+    border-radius: 0 3px 3px 0;
+    font-size: 0.83rem;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 0.55rem;
+    align-items: baseline;
+  }
+  .fuller .ftext b {
+    color: var(--shu);
+    font-weight: 600;
+  }
+  .fuller .ftoggle {
+    font-family: ui-monospace, monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    color: var(--shu);
+    font-weight: 700;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .fuller .ftoggle input {
+    accent-color: var(--shu);
+  }
+  .fuller.excluded {
+    opacity: 0.5;
+  }
+  @media (max-width: 520px) {
+    .fuller {
+      margin-left: 0;
+    }
+  }
+
+  .iask {
+    margin: 0.6rem 0 0 6.1rem;
+    font-size: 0.83rem;
+    color: var(--indigo);
+    font-style: italic;
+  }
+  .iask::before {
+    content: "\25C6 for you \2014 ";
+    font-style: normal;
+    font-weight: 600;
+  }
+  @media (max-width: 520px) {
+    .iask {
+      margin-left: 0;
+    }
+  }
+
+  .itin-total {
+    margin-top: 1.25rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    background: var(--paper-raised);
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+  .itin-total .gt {
+    font-family: ui-monospace, monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--indigo-deep);
+  }
+
+  @media print {
+    :root,
+    :root[data-theme="dark"],
+    :root[data-theme="light"] {
+      --paper: #fff;
+      --paper-raised: #fff;
+      --ink: #1a1a17;
+      --ink-soft: #444038;
+      --ink-faint: #6b6656;
+      --indigo: #26456b;
+      --indigo-deep: #16293f;
+      --shu: #a8481f;
+      --shu-wash: #f3e7e0;
+      --line: #ddd8cc;
+      --line-strong: #b7b09a;
+      --good: #3f6b4a;
+    }
+    body {
+      background: #fff;
+    }
+    .tabs,
+    .no-print,
+    #planPane {
+      display: none !important;
+    }
+    #itinPane {
+      display: block !important;
+    }
+    .itin-controls,
+    .itin-summary {
+      display: none !important;
+    }
+    .fuller .ftoggle {
+      display: none !important;
+    }
+    .fuller.excluded {
+      display: none !important;
+    }
+    .itinwrap {
+      padding: 0.4rem;
+      max-width: none;
+    }
+    .day,
+    .itin-total {
+      break-inside: avoid;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+  }
+</style>
+
+<script>
+  // Apply a saved theme before paint to avoid a flash of the wrong mode.
+  try {
+    var _saved = localStorage.getItem("theme");
+    if (_saved) document.documentElement.setAttribute("data-theme", _saved);
+  } catch (e) {}
+</script>
+
+<div class="tabs no-print">
+  <button class="tab active" data-tab="plan" type="button">
+    Plan &amp; Budget
+  </button>
+  <button class="tab" data-tab="itin" type="button">Itinerary</button>
+  <button
+    class="theme-toggle"
+    id="themeToggle"
+    type="button"
+    aria-label="Toggle light or dark mode"
+    title="Toggle light / dark"
+  ></button>
+</div>
+
+<div class="wrap pane" id="planPane">
+  <header class="masthead">
+    <div class="eyebrow">
+      Nov 14 → Nov 22, 2026 ·
+      <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)
+    </div>
+    <h1>Japan Trip Cost Ledger</h1>
+    <p class="sub">
+      Pick a hotel tier per stop and a transport mode per leg. Every figure is a
+      live-researched market rate for these exact dates — not an estimate. The
+      total updates as you go.
+    </p>
+  </header>
+
+  <div class="route">
+    <!-- FLIGHTS — getting there -->
+    <div class="stop flights-section">
+      <div class="stop-marker"></div>
+      <div class="stop-head">
+        <h2>Getting there — International flights</h2>
+        <span class="nights">2 origins · round trip</span>
+      </div>
+      <p class="flights-intro">
+        Two travelers converging in Tokyo from different origins. Pick a routing
+        for each — fares fold into the grand total. This block is data-driven:
+        edit the <code>FLIGHTS</code> object to add travelers, routings, or
+        fares.
+      </p>
+      <div id="usFlights" class="flight-journey"></div>
+      <div id="phFlights" class="flight-journey"></div>
+      <p class="flights-caveat" id="flightsCaveat"></p>
+    </div>
+
+    <div class="trip-settings">
+      <div class="setting">
+        <label for="travelerCount">Travelers</label>
+        <input
+          type="number"
+          id="travelerCount"
+          min="1"
+          max="6"
+          value="2"
+          inputmode="numeric"
+        />
+      </div>
+      <div class="setting">
+        <label for="minRating">Min. hotel rating</label>
+        <input
+          type="number"
+          id="minRating"
+          min="0"
+          max="10"
+          step="0.1"
+          value="8.0"
+          inputmode="decimal"
+        />
+        <span class="setting-hint">/ 10</span>
+      </div>
+    </div>
+
+    <div class="extra-night">
+      <div class="label-row">
+        <span>Where does the 9th night go?</span>
+        <span id="extraNightHint"
+          >3 Tokyo · 1 Hakone · 3 Kyoto = 7 nights, +1 to place</span
+        >
+      </div>
+      <div class="seg" id="extraNightSeg">
+        <input type="radio" name="extra" id="extra-tokyo" value="tokyo" />
+        <label for="extra-tokyo">+1 Tokyo</label>
+        <input type="radio" name="extra" id="extra-hakone" value="hakone" />
+        <label for="extra-hakone">+1 Hakone</label>
+        <input
+          type="radio"
+          name="extra"
+          id="extra-kyoto"
+          value="kyoto"
+          checked
+        />
+        <label for="extra-kyoto">+1 Kyoto</label>
+        <input type="radio" name="extra" id="extra-osaka" value="osaka" />
+        <label for="extra-osaka">Add Osaka</label>
+      </div>
+    </div>
+
+    <!-- Airport leg -->
+    <div class="leg">
+      <div class="leg-marker"></div>
+      <div class="leg-row">
+        <div class="leg-name"><strong>Airport</strong> → Tokyo (Gotanda)</div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+          <div class="toggle" id="airportChoice">
+            <input
+              type="radio"
+              name="airport"
+              id="air-nrt"
+              value="nrt"
+              checked
+            /><label for="air-nrt">Narita</label>
+            <input type="radio" name="airport" id="air-hnd" value="hnd" /><label
+              for="air-hnd"
+              >Haneda</label
+            >
+          </div>
+          <div class="toggle" id="airportMode">
+            <input
+              type="radio"
+              name="airportmode"
+              id="air-public"
+              value="public"
+              checked
+            /><label for="air-public" id="air-public-lbl">Train/bus</label>
+            <input
+              type="radio"
+              name="airportmode"
+              id="air-private"
+              value="private"
+            /><label for="air-private" id="air-private-lbl">Private car</label>
+          </div>
+        </div>
+      </div>
+      <details class="route-detail" id="rd-airport"></details>
+    </div>
+
+    <!-- TOKYO -->
+    <div class="stop">
+      <div class="stop-marker"></div>
+      <div class="stop-head">
+        <h2>Tokyo — Gotanda / Shinagawa</h2>
+        <span class="nights" id="tokyoNightsLbl">3 nights</span>
+      </div>
+      <div class="tier-list rateable" id="tokyoTiers"></div>
+      <div class="activities-label">Activities (optional paid upgrades)</div>
+      <div id="tokyoActivities"></div>
+    </div>
+
+    <!-- Tokyo -> Hakone leg -->
+    <div class="leg">
+      <div class="leg-marker"></div>
+      <div class="leg-row">
+        <div class="leg-name">Tokyo → <strong>Hakone</strong></div>
+        <div class="toggle" id="thMode">
+          <input
+            type="radio"
+            name="thmode"
+            id="th-public"
+            value="public"
+            checked
+          /><label for="th-public" id="th-public-lbl">Romancecar</label>
+          <input
+            type="radio"
+            name="thmode"
+            id="th-private"
+            value="private"
+          /><label for="th-private" id="th-private-lbl">Private car</label>
+        </div>
+      </div>
+      <details class="route-detail" id="rd-th"></details>
+    </div>
+
+    <!-- HAKONE -->
+    <div class="stop">
+      <div class="stop-marker"></div>
+      <div class="stop-head">
+        <h2>Hakone</h2>
+        <span class="nights" id="hakoneNightsLbl">1 night</span>
+      </div>
+      <div class="tier-list rateable" id="hakoneTiers"></div>
+      <div class="activities-label">Activities (optional paid upgrades)</div>
+      <div id="hakoneActivities"></div>
+    </div>
+
+    <!-- Hakone -> Kyoto leg -->
+    <div class="leg">
+      <div class="leg-marker"></div>
+      <div class="leg-row">
+        <div class="leg-name">
+          Hakone → <strong>Kyoto</strong>
+          <span class="fixed-leg"
+            >(Shinkansen, both adults, reserved seat: <b>$152</b> fixed)</span
+          >
+        </div>
+        <div class="toggle" id="hkMode">
+          <input
+            type="radio"
+            name="hkmode"
+            id="hk-public"
+            value="public"
+            checked
+          /><label for="hk-public" id="hk-public-lbl">Bus/subway</label>
+          <input
+            type="radio"
+            name="hkmode"
+            id="hk-private"
+            value="private"
+          /><label for="hk-private" id="hk-private-lbl">Taxi both ends</label>
+        </div>
+      </div>
+      <details class="route-detail" id="rd-hk"></details>
+    </div>
+
+    <!-- KYOTO -->
+    <div class="stop">
+      <div class="stop-marker"></div>
+      <div class="stop-head">
+        <h2>Kyoto — Gion</h2>
+        <span class="nights" id="kyotoNightsLbl">3 nights</span>
+      </div>
+      <div class="tier-list rateable" id="kyotoTiers"></div>
+      <div class="activities-label">Activities (optional paid upgrades)</div>
+      <div id="kyotoActivities"></div>
+    </div>
+
+    <!-- OSAKA (conditional) -->
+    <div id="osakaBlock" style="display: none">
+      <div class="leg">
+        <div class="leg-marker"></div>
+        <div class="leg-row">
+          <div class="leg-name">
+            Kyoto → <strong>Osaka</strong>
+            <span class="fixed-leg"
+              >(Kintetsu Ltd. Express, both adults: <b>$28</b>, only public
+              option researched)</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="stop-marker"></div>
+        <div class="stop-head">
+          <h2>Osaka — Namba</h2>
+          <span class="nights">1 night</span>
+        </div>
+        <div class="tier-list rateable" id="osakaTiers"></div>
+      </div>
+    </div>
+
+    <!-- Final leg to airport -->
+    <div class="leg">
+      <div class="leg-marker"></div>
+      <div class="leg-row">
+        <div class="leg-name" id="finalLegName">
+          <strong>Kyoto</strong> → Kansai Airport
+        </div>
+        <div class="toggle" id="finalMode">
+          <input
+            type="radio"
+            name="finalmode"
+            id="final-public"
+            value="public"
+            checked
+          /><label for="final-public" id="final-public-lbl">JR Haruka</label>
+          <input
+            type="radio"
+            name="finalmode"
+            id="final-private"
+            value="private"
+          /><label for="final-private" id="final-private-lbl"
+            >Private car</label
+          >
+        </div>
+      </div>
+      <details class="route-detail" id="rd-final"></details>
+    </div>
+  </div>
+
+  <aside class="summary">
+    <div class="eyebrow">
+      Grand total · <span class="traveler-count-lbl">2</span> travelers
+    </div>
+    <div class="grand-total" id="grandTotal">$0</div>
+    <div class="delta" id="deltaLine"></div>
+
+    <div class="breakdown" id="breakdown"></div>
+
+    <div class="reference-note">
+      Kensington Tours quoted <b>$9,644</b> for this same route — but for
+      placeholder dates (Nov 7–14) that predate locking in the real Nov 14–22
+      travel window. Treat it as a rough order-of-magnitude reference, not an
+      apples-to-apples baseline: a Kensington re-quote for the actual dates
+      would run higher given the season.
+    </div>
+
+    <div class="btn-row">
+      <button class="generate-btn" id="generateBtn" type="button">
+        Shareable text
+      </button>
+      <button class="generate-btn secondary" id="downloadXlsxBtn" type="button">
+        Download Excel
+      </button>
+    </div>
+  </aside>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="modalTitle">Shareable itinerary</h2>
+        <button class="modal-close" id="modalClose" type="button">
+          close ✕
+        </button>
+      </div>
+      <div class="modal-note" id="modalNote" style="display: none"></div>
+      <textarea id="shareOutput" readonly spellcheck="false"></textarea>
+      <div class="modal-actions">
+        <button id="copyBtn" type="button">Copy to clipboard</button>
+        <button class="secondary" id="modalCloseBottom" type="button">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="notes">
+    <h3>Methodology</h3>
+    <ul>
+      <li>
+        All hotel rates are live, date-locked quotes for the actual stay dates
+        (Nov 2026), pulled directly from booking platforms — not seasonal floor
+        rates.
+      </li>
+      <li>
+        Every alternative hotel holds a private double/twin room, ≥8.0 guest
+        rating, and the same neighborhood (or one stop away) as the
+        currently-quoted property.
+      </li>
+      <li>
+        Transport fares are current published prices (JR, Odakyu, Nankai,
+        Kintetsu) plus representative private-transfer quotes from real booking
+        platforms (Klook, Viator, Welcome Pickups).
+      </li>
+      <li>
+        International flights ARE now included in the grand total, as researched
+        representative Nov-2026 round-trip fares (per the Flights section) —
+        these are estimates, not the date-locked quotes used for hotels. The
+        Kensington reference comparison stays ground-only, since that quote also
+        excluded airfare.
+      </li>
+      <li>
+        Excluded from every total: Japan's ~10% accommodation tax (varies by
+        city/hotel), meals outside included breakfasts, and activity/entrance
+        fees.
+      </li>
+      <li>
+        Kyoto→Osaka and Osaka→Kansai legs show public-transit cost only —
+        private car quotes for those specific legs weren't part of this research
+        pass.
+      </li>
+    </ul>
+  </footer>
+</div>
+
+<div class="itinwrap pane" id="itinPane" style="display: none">
+  <header class="masthead">
+    <div class="eyebrow">
+      Nov 14 → Nov 22, 2026 ·
+      <span class="traveler-count-lbl">2</span> travelers · self-booked
+    </div>
+    <h1>Your itinerary</h1>
+    <p class="sub">
+      The day-by-day, built from your choices on the Plan tab — the hotels you
+      picked, the transport modes, your flights. Set the pace, choose whether to
+      show prices, then send it.
+    </p>
+  </header>
+
+  <div class="itin-controls no-print">
+    <span
+      ><span class="lbl">Pace</span
+      ><span class="toggle" id="itinPaceSeg" style="vertical-align: middle">
+        <input
+          type="radio"
+          name="itinpace"
+          id="ip-relaxed"
+          value="relaxed"
+          checked
+        /><label for="ip-relaxed">Relaxed</label>
+        <input
+          type="radio"
+          name="itinpace"
+          id="ip-classic"
+          value="classic"
+        /><label for="ip-classic">Classic</label>
+        <input
+          type="radio"
+          name="itinpace"
+          id="ip-custom"
+          value="custom"
+        /><label for="ip-custom">Custom</label>
+      </span></span
+    >
+    <label class="price-toggle"
+      ><input type="checkbox" id="showPrices" /> Show prices</label
+    >
+    <div class="spacer"></div>
+    <button
+      class="generate-btn"
+      id="itinPdfBtn"
+      type="button"
+      style="flex: 0 0 auto"
+    >
+      Create PDF to send
+    </button>
+    <button
+      class="generate-btn secondary"
+      id="itinCopyBtn"
+      type="button"
+      style="flex: 0 0 auto"
+    >
+      Copy as text
+    </button>
+    <button
+      class="generate-btn secondary"
+      id="itinXlsxBtn"
+      type="button"
+      style="flex: 0 0 auto"
+    >
+      Download Excel
+    </button>
+    <span
+      class="no-print"
+      id="pdfHint"
+      style="
+        display: none;
+        flex-basis: 100%;
+        font-size: 0.78rem;
+        color: var(--shu);
+        text-align: right;
+        line-height: 1.4;
+      "
+    ></span>
+  </div>
+  <div
+    class="itin-summary no-print"
+    id="itinSummary"
+    style="margin: -1rem 0 1.5rem; text-align: right"
+  ></div>
+
+  <div id="itinRail"></div>
+  <div class="itin-total" id="itinTotal" style="display: none"></div>
+
+  <footer class="notes" style="margin-top: 2rem">
+    <h3>The fine print</h3>
+    <ul>
+      <li>
+        Hotels, transport modes, and flights shown here are exactly what's
+        selected on the Plan tab — change them there and this rebuilds.
+      </li>
+      <li>
+        "+ fuller" items are optional experience upgrades; toggle them per day,
+        or with the pace switch (Classic turns them all on).
+      </li>
+      <li>Flights and a few dinner reservations are still to be locked in.</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+  // FLIGHTS — international "getting there" legs, modular by traveler.
+  // Each journey is one person's round trip from their home origin to Tokyo.
+  // `fare` is a researched representative Nov-2026 round-trip price PER PERSON
+  // (see caveat in the UI — these are NOT date-locked quotes like the hotels).
+  // Add/remove journeys and options freely; the UI generates itself from this.
+  const FLIGHTS = {
+    us: {
+      label: "From the USA — David (IND)",
+      traveler: "David",
+      pax: 1,
+      preference: "Delta preferred · fewest stops",
+      options: [
+        {
+          name: "Delta via Detroit",
+          route: "IND → DTW → HND",
+          stops: 1,
+          cabin: "Premium Select",
+          fare: 2150,
+          note: "Delta throughout; DTW→HND is a nonstop A350 with Premium Select",
+          current: true,
+        },
+        {
+          name: "Delta via Minneapolis",
+          route: "IND → MSP → HND",
+          stops: 1,
+          cabin: "Premium Select",
+          fare: 2200,
+          note: "Delta throughout; MSP→HND nonstop widebody",
+        },
+        {
+          name: "Delta via Seattle",
+          route: "IND → SEA → HND",
+          stops: 1,
+          cabin: "Premium Select",
+          fare: 2260,
+          note: "Delta; longer domestic hop, west-coast gateway",
+        },
+        {
+          name: "Delta Main Cabin via Detroit",
+          route: "IND → DTW → HND",
+          stops: 1,
+          cabin: "Economy",
+          fare: 1200,
+          note: "Same routing in economy — cost reference",
+        },
+      ],
+    },
+    ph: {
+      label: "From the Philippines — partner (DVO)",
+      traveler: "Partner",
+      pax: 1,
+      preference: "Fewest stops · premium economy where offered",
+      options: [
+        {
+          name: "Philippine Airlines via Manila",
+          route: "DVO → MNL → NRT",
+          stops: 1,
+          cabin: "Premium Economy",
+          fare: 850,
+          note: "One airline, bags checked through — simplest connection",
+          current: true,
+        },
+        {
+          name: "ANA / JAL via Manila",
+          route: "DVO → MNL → HND/NRT",
+          stops: 1,
+          cabin: "Premium Economy",
+          fare: 950,
+          note: "Best premium-economy product; DVO→MNL feeder on PAL/Cebu",
+        },
+        {
+          name: "Via Cebu",
+          route: "DVO → CEB → NRT",
+          stops: 1,
+          cabin: "Premium Economy",
+          fare: 900,
+          note: "Alternate hub if she routes through Cebu",
+        },
+        {
+          name: "Cebu Pacific via Manila",
+          route: "DVO → MNL → NRT",
+          stops: 1,
+          cabin: "Economy (no PE)",
+          fare: 480,
+          note: "Budget carrier — economy only, no premium economy",
+        },
+      ],
+    },
+  };
+
+  const HOTELS = {
+    tokyo: {
+      baseNights: 3,
+      label: "Tokyo",
+      options: [
+        {
+          name: "OMO5 Tokyo Gotanda",
+          rate: 229,
+          rating: "8.9",
+          note: "King Room w/ breakfast · current pick",
+          current: true,
+        },
+        {
+          name: "Mitsui Garden Hotel Gotanda",
+          rate: 219,
+          rating: "8.5",
+          note: "Station-adjacent, no breakfast",
+        },
+        {
+          name: "Miyako City Tokyo Takanawa",
+          rate: 187,
+          rating: "8.8",
+          note: "Shinagawa, highest-rated alternative",
+        },
+        {
+          name: "Shinagawa Tobu Hotel",
+          rate: 167,
+          rating: "8.1",
+          note: "Shinagawa, plain business hotel",
+        },
+        {
+          name: "APA Hotel Shinagawa Togoshi Ekimae",
+          rate: 119,
+          rating: "8.2",
+          note: "Budget, 1 stop from Gotanda",
+        },
+      ],
+    },
+    hakone: {
+      baseNights: 1,
+      label: "Hakone",
+      options: [
+        {
+          name: "Hakone Kowakien Ten-yu",
+          rate: 710,
+          rating: "9.1",
+          note: "Half-board · private open-air onsen · current pick",
+          current: true,
+        },
+        {
+          name: "Mikawaya Ryokan",
+          rate: 559,
+          rating: "8.7",
+          note: "Half-board · private open-air onsen",
+        },
+        {
+          name: "Hakone Kowakien Hotel",
+          rate: 341,
+          rating: "8.4",
+          note: "Half-board · shared onsen + Yunessun pass, no private bath",
+        },
+      ],
+    },
+    kyoto: {
+      baseNights: 3,
+      label: "Kyoto",
+      options: [
+        {
+          name: "OMO5 Kyoto Gion",
+          rate: 290,
+          rating: "8.8",
+          note: "Non-refundable rate · current pick",
+          current: true,
+        },
+        {
+          name: "Kyoto Granbell Hotel",
+          rate: 288,
+          rating: "8.9",
+          note: "Gion-Shijo — essentially same price as current",
+        },
+        {
+          name: "APA Hotel Kyoto Gion Excellent",
+          rate: 161,
+          rating: "8.2",
+          note: "Gion",
+        },
+        { name: "Kyoto Gion Hotel", rate: 154, rating: "8.3", note: "Gion" },
+        {
+          name: "KIORI Hotel Higashino Toin",
+          rate: 153,
+          rating: "9.3",
+          note: "Higashiyama — best value, highest rated",
+        },
+      ],
+    },
+    osaka: {
+      baseNights: 0,
+      label: "Osaka",
+      options: [
+        {
+          name: "Citadines Namba Osaka",
+          rate: 232,
+          rating: "9.1",
+          note: "Serviced apartment, Namba",
+        },
+        {
+          name: "Fairfield by Marriott Osaka Namba",
+          rate: 212,
+          rating: "8.8",
+          note: "Namba",
+        },
+        {
+          name: "Hotel Forza Osaka Namba",
+          rate: 184,
+          rating: "8.8",
+          note: "Namba",
+        },
+        {
+          name: "Henn na Hotel Express Osaka Namba Nipponbashi",
+          rate: 123,
+          rating: "8.7",
+          note: "Budget, Namba/Nipponbashi",
+        },
+      ],
+    },
+  };
+
+  const TRANSPORT = {
+    // audited against live fares — see DIY-Cost-Options.md "Transport audit" for sourcing
+    airport: {
+      nrt: { public: 43, private: 148 },
+      hnd: { public: 6, private: 56 },
+    },
+    tokyoHakone: { public: 30, private: 340 },
+    hakoneKyoto: { public: 12, private: 52 }, // both bookend legs combined (hotel↔Odawara + Kyoto Stn↔Gion)
+    shinkansenFixed: 152,
+    kyotoAirport: { public: 45, private: 160 },
+    kyotoOsaka: 28, // assumes the Aoniyoshi Ltd. Express, the only current direct Kyoto↔Namba service
+    osakaAirport: 18, // assumes Nankai ticketless/IC-card fare; standard walk-up fare is ~$21
+  };
+
+  const REFERENCE_TOTAL = 9644;
+  // Researched hotel rates are pre-tax/pre-fee (Japan accommodation tax, VAT, service charges
+  // vary by property and weren't itemized during research). This buffer inflates lodging only,
+  // as a deliberately conservative planning margin -- not a researched figure itself.
+  const LODGING_TAX_BUFFER = 1.25;
+
+  // All costs below are researched 2-adult totals (scaled by personFactor at calc time),
+  // same convention as TRANSPORT.
+  const ACTIVITIES = {
+    tokyo: [
+      {
+        day: 2,
+        title: "Tsukiji Market / Tokyo Highlights",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Use the itinerary's own notes",
+            current: true,
+          },
+          {
+            name: "Klook small-group tour",
+            cost: 120,
+            note: "5 hrs, swaps lunch for Shibuya Crossing · 5.0★ (69)",
+          },
+          {
+            name: "GetYourGuide small-group",
+            cost: 138,
+            note: "4 hrs · 5.0★ (1, new listing)",
+          },
+          {
+            name: "Viator private guide",
+            cost: 278,
+            note: "6 hrs, customizable stops · 4.9★ (4,546) — closest match to original",
+          },
+        ],
+      },
+      {
+        day: 2,
+        title: "Ramen exploration",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Wander in — tours are an upsell here, not a fix",
+            current: true,
+          },
+          {
+            name: "Viator ramen tasting",
+            cost: 227,
+            note: "3 hrs, 6 mini bowls, 3 shops · 5.0★ (145)",
+          },
+          {
+            name: "GetYourGuide ramen tasting",
+            cost: 234,
+            note: "3 hrs · 4.9★ (462)",
+          },
+        ],
+      },
+      {
+        day: 3,
+        title: "Shinjuku / Yokocho bar hopping",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Many Golden Gai bars are locals-only/no walk-ins",
+            current: true,
+          },
+          {
+            name: "GetYourGuide bar hop",
+            cost: 74,
+            note: "3 hrs · 4.7★ (139)",
+          },
+          {
+            name: "Viator evening tour",
+            cost: 189,
+            note: "2 hrs, dinner + drinks · 5.0★ (160)",
+          },
+          {
+            name: "Viator bar hopping",
+            cost: 213,
+            note: "3 hrs, all-you-can-drink · 5.0★ (3,914) — solves a real access problem",
+          },
+        ],
+      },
+    ],
+    hakone: [
+      {
+        day: 4,
+        title: "Hakone Loop (museums, Owakudani, Lake Ashi)",
+        options: [
+          {
+            name: "Self-guided w/ Free Pass",
+            cost: 0,
+            note: "Pass (~$74–88/2) + admissions (~$25–30/2), not counted here",
+            current: true,
+          },
+          {
+            name: "GoWithGuide private guide",
+            cost: 372,
+            note: "8 hrs flat for the group · 5.0★ (33) — logistics/hand-holding, not new sights",
+          },
+        ],
+      },
+    ],
+    kyoto: [
+      {
+        day: 5,
+        title: "Higashiyama District",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Free public streets",
+            current: true,
+          },
+          {
+            name: "History-teacher walk",
+            cost: 60,
+            note: "2 hrs, small group ≤4 · 4.8★ (9)",
+          },
+          {
+            name: "Private Higashiyama walk",
+            cost: 84,
+            note: "3 hrs · 5.0★ (5)",
+          },
+        ],
+      },
+      {
+        day: 6,
+        title:
+          "Cultural Kyoto (Kinkaku-ji, Ryoan-ji, Kitano Tenmangu, Kamishichiken)",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "The one day Kensington originally guided",
+            current: true,
+          },
+          {
+            name: "Kyoto Guided Walks",
+            cost: 278,
+            note: "4 hrs private, Kinkaku-ji + Ryoan-ji only · 4.9★ (48)",
+          },
+          {
+            name: "Viator private 6hr + Kamishichiken add-on",
+            cost: 378,
+            note: "Covers all 4 original sites, across 2 bookings",
+          },
+        ],
+      },
+      {
+        day: 6,
+        title: "Pontocho evening",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Real tourist-trap risk in this alley",
+            current: true,
+          },
+          {
+            name: "13-dish food tour",
+            cost: 178,
+            note: "3 hrs · 4.9★ (447) — best-reviewed + cheapest paid pick",
+          },
+          {
+            name: "Kyoto Night Foodie Tour",
+            cost: 326,
+            note: "3 hrs, sake-focused · 5.0★ (1,762)",
+          },
+        ],
+      },
+      {
+        day: 7,
+        title: "Arashiyama",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Entrance fees only, ~$14–18/2",
+            current: true,
+          },
+          {
+            name: "Japanify all-sites tour",
+            cost: 125,
+            note: "5–6 hrs, covers all 4 sites · 5.0★ (1,711)",
+          },
+        ],
+      },
+      {
+        day: 7,
+        title: "Fushimi Inari Shrine",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Free, 24/7, well-marked trail",
+            current: true,
+          },
+          {
+            name: "DMO Kyoto guided tour",
+            cost: 68,
+            note: "60 min, includes a Kagura dance viewing you can't get solo · 5.0★",
+          },
+        ],
+      },
+    ],
+  };
+
+  const ROUTE_DETAIL = {
+    airport: {
+      nrt: {
+        label: "Narita → Gotanda (N'EX + Yamanote)",
+        steps: [
+          "8 min walk: arrivals → N'EX platform",
+          "~15 min wait (N'EX runs every 30–60 min)",
+          "65 min ride: Narita → Shinagawa (N'EX)",
+          "6 min transfer walk at Shinagawa",
+          "8 min ride: Shinagawa → Gotanda (Yamanote, via Osaki)",
+          "6 min walk: Gotanda Station → hotel",
+        ],
+        total: "~108 min (1h 48m)",
+        note: "Excludes immigration/customs (commonly 15–40+ min at NRT). OMO5's own guidance suggests Skyliner via Nippori instead, ~70 min total — faster, less luggage space.",
+      },
+      hnd: {
+        label: "Haneda → Gotanda (Keikyu + Yamanote)",
+        steps: [
+          "5 min walk: arrivals → Keikyu platform",
+          "5 min wait (Limited Express runs ~every 10 min)",
+          "17 min ride: Haneda T3 → Shinagawa (Keikyu Ltd. Express)",
+          "4 min transfer walk at Shinagawa",
+          "8 min ride: Shinagawa → Gotanda (Yamanote, via Osaki)",
+          "6 min walk: Gotanda Station → hotel",
+        ],
+        total: "~45 min",
+        note: "Matches OMO5's own published estimate almost exactly. Excludes immigration (faster than NRT with e-gates).",
+      },
+    },
+    th: {
+      label: "Gotanda → Hakone ryokan (Romancecar)",
+      steps: [
+        "6 min walk: hotel → Gotanda Station",
+        "3 min wait + 14 min ride: Gotanda → Shinjuku (Yamanote)",
+        "~10 min transfer walk within Shinjuku Station to the Romancecar platform",
+        "80 min ride: Odakyu Romancecar, Shinjuku → Hakone-Yumoto",
+        "37 min ride: Hakone-Yumoto → Gora (Hakone Tozan Railway)",
+        "13 min: Gora Station → ryokan (shuttle/bus + short walk)",
+      ],
+      total: "~150 min (2.5 hr) door-to-door",
+      note: "Biggest lever is the Romancecar run — stopping pattern varies train to train. Shuttle timing is soft; confirm with your specific ryokan.",
+    },
+    hk: {
+      label: "Hakone ryokan → Kyoto Gion (via Odawara Shinkansen)",
+      steps: [
+        "60–65 min: ryokan → Odawara (walk to Gora Stn + Tozan train to Hakone-Yumoto + transfer + Odakyu line to Odawara — this route requires a transfer at Hakone-Yumoto)",
+        "10–15 min transfer within Odawara Station to the Shinkansen platform",
+        "135–141 min: Shinkansen Odawara → Kyoto — must be a Hikari (Nozomi doesn't stop at Odawara); only ~6–8 direct departures/day, roughly every 2 hours",
+        "20–30 min: Kyoto Station → Gion hotel (bus or JR+Keihan via Tofukuji; both beat walking)",
+      ],
+      total: "~4 hours active transit (237–255 min)",
+      note: "Plan the Odawara departure around the sparse direct-Hikari schedule (~every 2 hrs) — missing one costs real time, not just a short wait.",
+    },
+    final: {
+      direct: {
+        label: "Kyoto Gion → Kansai Airport (JR Haruka)",
+        steps: [
+          "~30 min: hotel → Kyoto Station (distance estimate — every real source routes this by bus/subway, not on foot)",
+          "~7 min walk to the Haruka platform (far NW corner of the station)",
+          "75–80 min ride: JR Haruka Express, Kyoto → Kansai Airport",
+          "~7 min walk: platform → terminal",
+        ],
+        total: "~124 min (2h 4m)",
+        note: "",
+      },
+      osaka: {
+        label: "Kyoto Gion → Osaka Namba → Kansai Airport",
+        steps: [
+          "~30 min: hotel → Kyoto Station",
+          "~5 min walk to the Kintetsu platform (south/Hachijo side)",
+          "86 min ride: Kintetsu Aoniyoshi Ltd. Express, Kyoto → Kintetsu-Namba (direct)",
+          "~10 min walk: Kintetsu-Namba → Namba hotel",
+          "— (Osaka overnight stay) —",
+          "~10 min walk: Namba hotel → Nankai Namba platform",
+          "37 min ride: Nankai Rapi:t, Namba → Kansai Airport",
+          "~7 min walk: platform → terminal",
+        ],
+        total:
+          "~185 min (3h 5m) combined transit, excluding the Osaka overnight itself",
+        note: "",
+      },
+    },
+  };
+
+  function renderActivities(containerId, cityKey) {
+    const el = document.getElementById(containerId);
+    const acts = ACTIVITIES[cityKey] || [];
+    el.innerHTML = acts
+      .map(
+        (act, ai) => `
+    <div class="activity-block">
+      <div class="activity-head">Day ${act.day} — ${act.title}</div>
+      <div class="tier-list">
+        ${act.options
+          .map(
+            (opt, oi) => `
+          <label class="tier">
+            <input type="radio" name="${cityKey}Act${ai}" value="${oi}" ${oi === 0 ? "checked" : ""}>
+            <div>
+              <div class="tier-name">${opt.name}${opt.current ? '<span class="badge">default</span>' : ""}</div>
+              <div class="tier-meta">${opt.note}</div>
+            </div>
+            <div class="tier-price">${opt.cost === 0 ? "Free" : "$" + opt.cost}</div>
+          </label>
+        `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `,
+      )
+      .join("");
+  }
+
+  function renderRouteDetail(id, entry) {
+    const el = document.getElementById(id);
+    el.innerHTML = `
+    <summary>Route detail — ${entry.label}</summary>
+    <ol>${entry.steps.map((s) => `<li>${s}</li>`).join("")}</ol>
+    <div class="rd-total">Total: ${entry.total}</div>
+    ${entry.note ? `<div class="rd-note">${entry.note}</div>` : ""}
+  `;
+  }
+
+  function renderFlights(containerId, journeyKey) {
+    const el = document.getElementById(containerId);
+    const j = FLIGHTS[journeyKey];
+    el.innerHTML = `
+    <div class="journey-head">
+      <span class="journey-label">${j.label}</span>
+      <span class="journey-pref">${j.preference}</span>
+    </div>
+    <div class="tier-list">
+      ${j.options
+        .map(
+          (opt, i) => `
+        <label class="tier">
+          <input type="radio" name="${journeyKey}Flight" value="${i}" ${opt.current ? "checked" : ""}>
+          <div>
+            <div class="tier-name">${opt.name}${opt.current ? '<span class="badge">preferred</span>' : ""}</div>
+            <div class="tier-meta">${opt.route} · ${opt.stops} stop${opt.stops > 1 ? "s" : ""} · ${opt.cabin} · ${opt.note}</div>
+          </div>
+          <div class="tier-price">$${opt.fare.toLocaleString("en-US")}<small>per person, RT</small></div>
+        </label>
+      `,
+        )
+        .join("")}
+    </div>
+  `;
+  }
+
+  function renderTiers(containerId, cityKey) {
+    const el = document.getElementById(containerId);
+    const city = HOTELS[cityKey];
+    el.innerHTML = city.options
+      .map(
+        (opt, i) => `
+    <label class="tier" data-rating="${opt.rating}" data-current="${opt.current ? "1" : "0"}">
+      <input type="radio" name="${cityKey}Tier" value="${i}" ${i === 0 ? "checked" : ""}>
+      <div>
+        <div class="tier-name">${opt.name}${opt.current ? '<span class="badge">current</span>' : ""}</div>
+        <div class="tier-meta"><span class="tier-rating">★ ${opt.rating}</span> · ${opt.note}</div>
+      </div>
+      <div class="tier-price">$${opt.rate}<small>/night/room</small></div>
+    </label>
+  `,
+      )
+      .join("");
+  }
+
+  renderFlights("usFlights", "us");
+  renderFlights("phFlights", "ph");
+  document.getElementById("flightsCaveat").textContent =
+    "Fares are researched representative round-trip prices for Nov 2026 — not date-locked quotes like the hotel rates. Ask to lock exact fares (Google Flights, exact dates) when the browser connection is available.";
+
+  renderTiers("tokyoTiers", "tokyo");
+  renderTiers("hakoneTiers", "hakone");
+  renderTiers("kyotoTiers", "kyoto");
+  renderTiers("osakaTiers", "osaka");
+
+  renderActivities("tokyoActivities", "tokyo");
+  renderActivities("hakoneActivities", "hakone");
+  renderActivities("kyotoActivities", "kyoto");
+
+  renderRouteDetail("rd-th", ROUTE_DETAIL.th);
+  renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
+
+  function applyRatingFilter() {
+    const floor = parseFloat(document.getElementById("minRating").value);
+    const min = isNaN(floor) ? 0 : floor;
+    document.querySelectorAll(".tier-list.rateable").forEach((list) => {
+      let visibleChecked = false;
+      let firstVisible = null;
+      let currentEl = null;
+      list.querySelectorAll(".tier").forEach((tier) => {
+        const rating = parseFloat(tier.dataset.rating);
+        const isCurrent = tier.dataset.current === "1";
+        const show = isCurrent || rating >= min;
+        tier.style.display = show ? "" : "none";
+        if (isCurrent) currentEl = tier;
+        if (show && !firstVisible) firstVisible = tier;
+        if (show && tier.querySelector("input").checked) visibleChecked = true;
+      });
+      if (!visibleChecked) {
+        const fallback = currentEl || firstVisible;
+        if (fallback) fallback.querySelector("input").checked = true;
+      }
+    });
+  }
+
+  function selectedIndex(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? parseInt(el.value, 10) : 0;
+  }
+
+  function selectedValue(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  }
+
+  function pickActivities(cityKey) {
+    const acts = ACTIVITIES[cityKey] || [];
+    let total = 0;
+    const chosen = [];
+    acts.forEach((act, ai) => {
+      const idx = selectedIndex(`${cityKey}Act${ai}`);
+      const opt = act.options[idx];
+      total += opt.cost;
+      if (opt.cost > 0)
+        chosen.push({
+          day: act.day,
+          title: act.title,
+          name: opt.name,
+          cost: opt.cost,
+        });
+    });
+    return { total, chosen };
+  }
+
+  function fmt(n) {
+    return "$" + Math.round(n).toLocaleString("en-US");
+  }
+
+  function fmt2(n) {
+    return Math.round(n).toLocaleString("en-US");
+  }
+
+  function recalc() {
+    applyRatingFilter();
+
+    // Hotel rooms cap at 2 adults each (per the researched room types), so party size
+    // determines rooms needed, not a per-head multiplier. Public transit fares are
+    // genuinely per-passenger (linear with N). Private transfers are a flat per-vehicle
+    // rate — this models 1 vehicle covering up to 4 people, a simplifying assumption.
+    const N = Math.max(
+      1,
+      parseInt(document.getElementById("travelerCount").value, 10) || 2,
+    );
+    const rooms = Math.ceil(N / 2);
+    const personFactor = N / 2;
+    const vehicleFactor = Math.ceil(N / 4);
+    document
+      .querySelectorAll(".traveler-count-lbl")
+      .forEach((el) => (el.textContent = N));
+
+    const extra = selectedValue("extra");
+    const osakaMode = extra === "osaka";
+    document.getElementById("osakaBlock").style.display = osakaMode
+      ? "block"
+      : "none";
+    document.getElementById("finalLegName").innerHTML = osakaMode
+      ? "<strong>Osaka</strong> → Kansai Airport"
+      : "<strong>Kyoto</strong> → Kansai Airport";
+    document.getElementById("finalMode").style.display = osakaMode
+      ? "none"
+      : "inline-flex";
+
+    const nights = {
+      tokyo: HOTELS.tokyo.baseNights + (extra === "tokyo" ? 1 : 0),
+      hakone: HOTELS.hakone.baseNights + (extra === "hakone" ? 1 : 0),
+      kyoto: HOTELS.kyoto.baseNights + (extra === "kyoto" ? 1 : 0),
+      osaka: osakaMode ? 1 : 0,
+    };
+
+    document.getElementById("tokyoNightsLbl").textContent =
+      nights.tokyo + " nights";
+    document.getElementById("hakoneNightsLbl").textContent =
+      nights.hakone + " night" + (nights.hakone > 1 ? "s" : "");
+    document.getElementById("kyotoNightsLbl").textContent =
+      nights.kyoto + " nights";
+    document.getElementById("extraNightHint").textContent =
+      "3 Tokyo · 1 Hakone · 3 Kyoto = 7 nights, +1 → " +
+      (extra === "osaka"
+        ? "new Osaka stop"
+        : extra.charAt(0).toUpperCase() + extra.slice(1));
+
+    const tokyoRate = HOTELS.tokyo.options[selectedIndex("tokyoTier")].rate;
+    const hakoneRate = HOTELS.hakone.options[selectedIndex("hakoneTier")].rate;
+    const kyotoRate = HOTELS.kyoto.options[selectedIndex("kyotoTier")].rate;
+    const osakaRate = HOTELS.osaka.options[selectedIndex("osakaTier")].rate;
+
+    const hotelCost = {
+      tokyo: tokyoRate * nights.tokyo * rooms,
+      hakone: hakoneRate * nights.hakone * rooms,
+      kyoto: kyotoRate * nights.kyoto * rooms,
+      osaka: osakaMode ? osakaRate * nights.osaka * rooms : 0,
+    };
+
+    const tokyoAct = pickActivities("tokyo");
+    const hakoneAct = pickActivities("hakone");
+    const kyotoAct = pickActivities("kyoto");
+    const activitiesCost =
+      (tokyoAct.total + hakoneAct.total + kyotoAct.total) * personFactor;
+    const chosenActivities = [
+      ...tokyoAct.chosen,
+      ...hakoneAct.chosen,
+      ...kyotoAct.chosen,
+    ];
+
+    const airport = selectedValue("airport");
+    const airportMode = selectedValue("airportmode");
+    const airportBase = TRANSPORT.airport[airport][airportMode];
+    const airportCost =
+      airportMode === "public"
+        ? airportBase * personFactor
+        : airportBase * vehicleFactor;
+
+    document.getElementById("air-public-lbl").textContent =
+      "Train/bus $" + TRANSPORT.airport[airport].public;
+    document.getElementById("air-private-lbl").textContent =
+      "Private car $" + TRANSPORT.airport[airport].private;
+    document.getElementById("th-public-lbl").textContent =
+      "Romancecar $" + TRANSPORT.tokyoHakone.public;
+    document.getElementById("th-private-lbl").textContent =
+      "Private car $" + TRANSPORT.tokyoHakone.private;
+    document.getElementById("hk-public-lbl").textContent =
+      "Bus/subway $" + TRANSPORT.hakoneKyoto.public;
+    document.getElementById("hk-private-lbl").textContent =
+      "Taxi both ends $" + TRANSPORT.hakoneKyoto.private;
+    document.getElementById("final-public-lbl").textContent =
+      "JR Haruka $" + TRANSPORT.kyotoAirport.public;
+    document.getElementById("final-private-lbl").textContent =
+      "Private car $" + TRANSPORT.kyotoAirport.private;
+
+    renderRouteDetail("rd-airport", ROUTE_DETAIL.airport[airport]);
+    renderRouteDetail(
+      "rd-final",
+      osakaMode ? ROUTE_DETAIL.final.osaka : ROUTE_DETAIL.final.direct,
+    );
+
+    const thMode = selectedValue("thmode");
+    const thBase = TRANSPORT.tokyoHakone[thMode];
+    const thCost =
+      thMode === "public" ? thBase * personFactor : thBase * vehicleFactor;
+
+    const hkMode = selectedValue("hkmode");
+    const hkBase = TRANSPORT.hakoneKyoto[hkMode];
+    const hkBookendCost =
+      hkMode === "public" ? hkBase * personFactor : hkBase * vehicleFactor;
+    const shinkansenCost = TRANSPORT.shinkansenFixed * personFactor;
+    const hkCost = hkBookendCost + shinkansenCost;
+
+    let finalCost, kyotoOsakaCost, osakaAirportCost;
+    const finalMode = osakaMode ? null : selectedValue("finalmode");
+    if (osakaMode) {
+      kyotoOsakaCost = TRANSPORT.kyotoOsaka * personFactor;
+      osakaAirportCost = TRANSPORT.osakaAirport * personFactor;
+      finalCost = kyotoOsakaCost + osakaAirportCost;
+    } else {
+      const finalBase = TRANSPORT.kyotoAirport[finalMode];
+      finalCost =
+        finalMode === "public"
+          ? finalBase * personFactor
+          : finalBase * vehicleFactor;
+    }
+
+    const usFlight = FLIGHTS.us.options[selectedIndex("usFlight")];
+    const phFlight = FLIGHTS.ph.options[selectedIndex("phFlight")];
+    const flightsCost =
+      usFlight.fare * FLIGHTS.us.pax + phFlight.fare * FLIGHTS.ph.pax;
+
+    const transportTotal = airportCost + thCost + hkCost + finalCost;
+    const hotelSubtotal =
+      hotelCost.tokyo + hotelCost.hakone + hotelCost.kyoto + hotelCost.osaka;
+    const lodgingBuffer = hotelSubtotal * (LODGING_TAX_BUFFER - 1);
+    const hotelTotal = hotelSubtotal + lodgingBuffer;
+    const groundTotal = transportTotal + hotelTotal + activitiesCost;
+    const grand = groundTotal + flightsCost;
+
+    document.getElementById("grandTotal").textContent = fmt(grand);
+
+    // Kensington's quote was ground + tour only (no international airfare), so the
+    // reference delta compares ground-only to keep it apples-to-apples.
+    const scaledReference = REFERENCE_TOTAL * personFactor;
+    const delta = groundTotal - scaledReference;
+    const deltaEl = document.getElementById("deltaLine");
+    const refLabel =
+      N === 2
+        ? "$9,644"
+        : fmt(scaledReference) + " (scaled from Kensington's 2-traveler quote)";
+    if (delta < 0) {
+      deltaEl.textContent =
+        fmt(Math.abs(delta)) +
+        " under the " +
+        refLabel +
+        " reference (ground only; flights extra)";
+      deltaEl.className = "delta save";
+    } else {
+      deltaEl.textContent =
+        fmt(delta) +
+        " over the " +
+        refLabel +
+        " reference (ground only; flights extra)";
+      deltaEl.className = "delta";
+    }
+
+    const rows = [
+      ["Flights — getting there (2 origins)", flightsCost],
+      [
+        "Tokyo lodging" + (rooms > 1 ? ` (${rooms} rooms)` : ""),
+        hotelCost.tokyo,
+      ],
+      [
+        "Hakone lodging" + (rooms > 1 ? ` (${rooms} rooms)` : ""),
+        hotelCost.hakone,
+      ],
+      [
+        "Kyoto lodging" + (rooms > 1 ? ` (${rooms} rooms)` : ""),
+        hotelCost.kyoto,
+      ],
+    ];
+    if (osakaMode)
+      rows.push([
+        "Osaka lodging" + (rooms > 1 ? ` (${rooms} rooms)` : ""),
+        hotelCost.osaka,
+      ]);
+    rows.push([
+      `Lodging taxes/fees buffer (+${Math.round((LODGING_TAX_BUFFER - 1) * 100)}%)`,
+      lodgingBuffer,
+    ]);
+    rows.push(["Airport transfer", airportCost]);
+    rows.push(["Tokyo↔Hakone", thCost]);
+    rows.push(["Hakone↔Kyoto (+Shinkansen)", hkCost]);
+    rows.push([osakaMode ? "Kyoto↔Osaka↔Airport" : "Kyoto↔Airport", finalCost]);
+    if (activitiesCost > 0)
+      rows.push(["Activities (optional)", activitiesCost]);
+
+    document.getElementById("breakdown").innerHTML = rows
+      .map(
+        ([label, val]) => `
+    <div class="breakdown-row"><span>${label}</span><span>${fmt(val)}</span></div>
+  `,
+      )
+      .join("");
+
+    // stash computed state for the itinerary generator
+    window.__state = {
+      extra,
+      osakaMode,
+      nights,
+      N,
+      rooms,
+      usFlight,
+      phFlight,
+      flightsCost,
+      tokyo: HOTELS.tokyo.options[selectedIndex("tokyoTier")],
+      hakone: HOTELS.hakone.options[selectedIndex("hakoneTier")],
+      kyoto: HOTELS.kyoto.options[selectedIndex("kyotoTier")],
+      osaka: HOTELS.osaka.options[selectedIndex("osakaTier")],
+      airport,
+      airportMode,
+      airportCost,
+      thMode,
+      thCost,
+      hkMode,
+      hkCost,
+      finalMode,
+      finalCost,
+      kyotoOsakaCost,
+      osakaAirportCost,
+      activitiesCost,
+      chosenActivities,
+      hotelSubtotal,
+      lodgingBuffer,
+      hotelTotal,
+      grand,
+    };
+  }
+
+  const TRIP_START = "2026-11-14"; // fixed arrival date, ISO
+
+  function toDate(iso) {
+    return new Date(iso + "T00:00:00");
+  }
+
+  function addDays(date, n) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function buildItinerary() {
+    const s = window.__state;
+    const lines = [];
+    let cursor = toDate(TRIP_START);
+    const totalNights =
+      s.nights.tokyo + s.nights.hakone + s.nights.kyoto + s.nights.osaka;
+
+    const push = (d, title, detail) => {
+      lines.push(`${fmtDate(d)}  —  ${title}`);
+      if (detail) lines.push(`  ${detail}`);
+    };
+
+    lines.push("JAPAN TRIP — DIY ITINERARY");
+    lines.push(
+      `${fmtDate(cursor)} → ${fmtDate(addDays(cursor, totalNights))}  ·  ${s.N} traveler${s.N > 1 ? "s" : ""}, ${s.rooms} room${s.rooms > 1 ? "s" : ""}`,
+    );
+    lines.push("");
+
+    lines.push("GETTING THERE (international flights, round trip)");
+    lines.push(
+      `  ${FLIGHTS.us.traveler}: ${s.usFlight.name} — ${s.usFlight.route}, ${s.usFlight.cabin} ($${fmt2(s.usFlight.fare * FLIGHTS.us.pax)})`,
+    );
+    lines.push(
+      `  ${FLIGHTS.ph.traveler}: ${s.phFlight.name} — ${s.phFlight.route}, ${s.phFlight.cabin} ($${fmt2(s.phFlight.fare * FLIGHTS.ph.pax)})`,
+    );
+    lines.push("");
+
+    const tokyoNightCost = s.tokyo.rate * s.rooms;
+    const hakoneNightCost = s.hakone.rate * s.rooms;
+    const kyotoNightCost = s.kyoto.rate * s.rooms;
+    const osakaNightCost = s.osaka.rate * s.rooms;
+
+    // Tokyo
+    push(
+      cursor,
+      "Arrive Tokyo",
+      `Airport (${s.airport === "nrt" ? "Narita" : "Haneda"}) → hotel: ${s.airportMode === "public" ? "train/bus" : "private car"} ($${fmt2(s.airportCost)})`,
+    );
+    lines.push(
+      `  Stay: ${s.tokyo.name} — $${s.tokyo.rate}/night/room × ${s.rooms} room(s) × ${s.nights.tokyo} = $${fmt2(tokyoNightCost * s.nights.tokyo)}`,
+    );
+    for (let i = 1; i < s.nights.tokyo; i++) {
+      cursor = addDays(cursor, 1);
+      push(cursor, "Tokyo");
+    }
+
+    // -> Hakone
+    cursor = addDays(cursor, 1);
+    push(
+      cursor,
+      "Tokyo → Hakone",
+      `${s.thMode === "public" ? "Odakyu Romancecar" : "Private car"} ($${fmt2(s.thCost)})`,
+    );
+    lines.push(
+      `  Stay: ${s.hakone.name} — $${s.hakone.rate}/night/room × ${s.rooms} room(s) × ${s.nights.hakone} = $${fmt2(hakoneNightCost * s.nights.hakone)}`,
+    );
+    for (let i = 1; i < s.nights.hakone; i++) {
+      cursor = addDays(cursor, 1);
+      push(cursor, "Hakone");
+    }
+
+    // -> Kyoto
+    cursor = addDays(cursor, 1);
+    push(
+      cursor,
+      "Hakone → Kyoto",
+      `Shinkansen + ${s.hkMode === "public" ? "bus/subway" : "taxi both ends"} ($${fmt2(s.hkCost)})`,
+    );
+    lines.push(
+      `  Stay: ${s.kyoto.name} — $${s.kyoto.rate}/night/room × ${s.rooms} room(s) × ${s.nights.kyoto} = $${fmt2(kyotoNightCost * s.nights.kyoto)}`,
+    );
+    for (let i = 1; i < s.nights.kyoto; i++) {
+      cursor = addDays(cursor, 1);
+      push(cursor, "Kyoto");
+    }
+
+    if (s.osakaMode) {
+      cursor = addDays(cursor, 1);
+      push(
+        cursor,
+        "Kyoto → Osaka",
+        `Kintetsu Ltd. Express ($${fmt2(s.kyotoOsakaCost)})`,
+      );
+      lines.push(
+        `  Stay: ${s.osaka.name} — $${s.osaka.rate}/night/room × ${s.rooms} room(s) = $${fmt2(osakaNightCost)}`,
+      );
+      cursor = addDays(cursor, 1);
+      push(
+        cursor,
+        "Depart — Osaka → Kansai Airport",
+        `Nankai Rapi:t ($${fmt2(s.osakaAirportCost)})`,
+      );
+    } else {
+      cursor = addDays(cursor, 1);
+      push(
+        cursor,
+        "Depart — Kyoto → Kansai Airport",
+        `${s.finalMode === "public" ? "JR Haruka" : "Private car"} ($${fmt2(s.finalCost)})`,
+      );
+    }
+
+    if (s.chosenActivities.length) {
+      lines.push("");
+      lines.push("SELECTED ACTIVITIES (paid upgrades)");
+      s.chosenActivities.forEach((a) => {
+        lines.push(
+          `  Day ${a.day} — ${a.title}: ${a.name} ($${fmt2((a.cost * s.N) / 2)})`,
+        );
+      });
+    }
+
+    lines.push("");
+    lines.push("COST SUMMARY");
+    lines.push(`  Flights (getting there)  $${fmt2(s.flightsCost)}`);
+    lines.push(
+      `  Tokyo lodging (${s.nights.tokyo}n × ${s.rooms} room(s))   $${fmt2(tokyoNightCost * s.nights.tokyo)}`,
+    );
+    lines.push(
+      `  Hakone lodging (${s.nights.hakone}n × ${s.rooms} room(s))  $${fmt2(hakoneNightCost * s.nights.hakone)}`,
+    );
+    lines.push(
+      `  Kyoto lodging (${s.nights.kyoto}n × ${s.rooms} room(s))   $${fmt2(kyotoNightCost * s.nights.kyoto)}`,
+    );
+    if (s.osakaMode)
+      lines.push(
+        `  Osaka lodging (1n × ${s.rooms} room(s))    $${fmt2(osakaNightCost)}`,
+      );
+    lines.push(
+      `  Lodging taxes/fees buffer (+${Math.round((LODGING_TAX_BUFFER - 1) * 100)}%)  $${fmt2(s.lodgingBuffer)}`,
+    );
+    lines.push(
+      `  Transport (all legs)  $${fmt2(s.airportCost + s.thCost + s.hkCost + s.finalCost)}`,
+    );
+    if (s.activitiesCost > 0)
+      lines.push(`  Activities (optional) $${fmt2(s.activitiesCost)}`);
+    lines.push(`  ${"-".repeat(28)}`);
+    lines.push(
+      `  TOTAL                 $${Math.round(s.grand).toLocaleString("en-US")}`,
+    );
+    lines.push("");
+    lines.push(
+      s.N === 2
+        ? `Reference: Kensington Tours quoted $9,644 for this route (placeholder Nov 7–14 dates, not the actual Nov 14–22 travel window).`
+        : `Reference: Kensington Tours quoted $9,644 for 2 travelers on this route (placeholder Nov 7–14 dates) — scaled linearly to $${fmt2((REFERENCE_TOTAL * s.N) / 2)} for ${s.N} travelers as a rough comparison, not a real quote.`,
+    );
+    lines.push("");
+    lines.push(
+      "Flights ARE included above (researched representative Nov-2026 round-trip fares, not date-locked quotes). Excludes: ~10% Japan accommodation tax, meals beyond included breakfasts, and entrance/admission fees for self-guided activities (paid activity upgrades above ARE included in the total).",
+    );
+    lines.push(
+      "Private-transfer costs assume 1 vehicle seats up to 4 travelers; larger groups may need a second vehicle.",
+    );
+
+    return lines.join("\n");
+  }
+
+  function buildRows() {
+    const s = window.__state;
+    const rows = [];
+    let cursor = toDate(TRIP_START);
+    const add = (category, title, detail, cost) =>
+      rows.push({ date: new Date(cursor), category, title, detail, cost });
+
+    const roomNote = `${s.rooms} room${s.rooms > 1 ? "s" : ""}`;
+
+    add(
+      "Flight",
+      `${FLIGHTS.us.traveler} — ${s.usFlight.name}`,
+      `${s.usFlight.route}, ${s.usFlight.cabin}, round trip`,
+      s.usFlight.fare * FLIGHTS.us.pax,
+    );
+    add(
+      "Flight",
+      `${FLIGHTS.ph.traveler} — ${s.phFlight.name}`,
+      `${s.phFlight.route}, ${s.phFlight.cabin}, round trip`,
+      s.phFlight.fare * FLIGHTS.ph.pax,
+    );
+
+    add(
+      "Transport",
+      "Airport → Tokyo",
+      `${s.airport === "nrt" ? "Narita" : "Haneda"}, ${s.airportMode === "public" ? "train/bus" : "private car"}`,
+      s.airportCost,
+    );
+    for (let i = 0; i < s.nights.tokyo; i++) {
+      add(
+        "Lodging",
+        s.tokyo.name,
+        `Tokyo, per night (${roomNote})`,
+        s.tokyo.rate * s.rooms,
+      );
+      if (i < s.nights.tokyo - 1) cursor = addDays(cursor, 1);
+    }
+
+    cursor = addDays(cursor, 1);
+    add(
+      "Transport",
+      "Tokyo → Hakone",
+      s.thMode === "public" ? "Odakyu Romancecar" : "Private car",
+      s.thCost,
+    );
+    for (let i = 0; i < s.nights.hakone; i++) {
+      add(
+        "Lodging",
+        s.hakone.name,
+        `Hakone, per night, half-board (${roomNote})`,
+        s.hakone.rate * s.rooms,
+      );
+      if (i < s.nights.hakone - 1) cursor = addDays(cursor, 1);
+    }
+
+    cursor = addDays(cursor, 1);
+    add(
+      "Transport",
+      "Hakone → Kyoto",
+      `Shinkansen + ${s.hkMode === "public" ? "bus/subway" : "taxi both ends"}`,
+      s.hkCost,
+    );
+    for (let i = 0; i < s.nights.kyoto; i++) {
+      add(
+        "Lodging",
+        s.kyoto.name,
+        `Kyoto, per night (${roomNote})`,
+        s.kyoto.rate * s.rooms,
+      );
+      if (i < s.nights.kyoto - 1) cursor = addDays(cursor, 1);
+    }
+
+    if (s.osakaMode) {
+      cursor = addDays(cursor, 1);
+      add(
+        "Transport",
+        "Kyoto → Osaka",
+        "Kintetsu Ltd. Express",
+        s.kyotoOsakaCost,
+      );
+      add(
+        "Lodging",
+        s.osaka.name,
+        `Osaka, per night (${roomNote})`,
+        s.osaka.rate * s.rooms,
+      );
+      cursor = addDays(cursor, 1);
+      add(
+        "Transport",
+        "Osaka → Kansai Airport",
+        "Nankai Rapi:t",
+        s.osakaAirportCost,
+      );
+    } else {
+      cursor = addDays(cursor, 1);
+      add(
+        "Transport",
+        "Kyoto → Kansai Airport",
+        s.finalMode === "public" ? "JR Haruka" : "Private car",
+        s.finalCost,
+      );
+    }
+
+    s.chosenActivities.forEach((a) => {
+      rows.push({
+        date: addDays(toDate(TRIP_START), a.day - 1),
+        category: "Activity",
+        title: a.title,
+        detail: a.name,
+        cost: (a.cost * s.N) / 2,
+      });
+    });
+    rows.sort((a, b) => a.date - b.date);
+
+    return rows;
+  }
+
+  function csvEscape(v) {
+    const str = String(v);
+    return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+  }
+
+  function buildCSV() {
+    const s = window.__state;
+    const rows = buildRows();
+    const out = [];
+    out.push(["Japan Trip — DIY Itinerary"]);
+    out.push([
+      `${fmtDate(toDate(TRIP_START))} to ${fmtDate(addDays(toDate(TRIP_START), s.nights.tokyo + s.nights.hakone + s.nights.kyoto + s.nights.osaka))}`,
+      `${s.N} travelers, ${s.rooms} room(s)`,
+    ]);
+    out.push([]);
+    out.push([
+      "Date",
+      "Category",
+      "Item",
+      "Detail",
+      `Cost USD (${s.N} travelers)`,
+    ]);
+    rows.forEach((r) =>
+      out.push([
+        fmtDate(r.date),
+        r.category,
+        r.title,
+        r.detail,
+        Math.round(r.cost),
+      ]),
+    );
+    out.push([
+      "",
+      "Lodging",
+      `Taxes/fees buffer (+${Math.round((LODGING_TAX_BUFFER - 1) * 100)}%)`,
+      "Applied to lodging subtotal only",
+      Math.round(s.lodgingBuffer),
+    ]);
+    out.push([]);
+    out.push(["", "", "", "TOTAL", Math.round(s.grand)]);
+    out.push([
+      "",
+      "",
+      "",
+      `Kensington reference (2 travelers, placeholder Nov 7–14 dates)`,
+      REFERENCE_TOTAL,
+    ]);
+    if (s.N !== 2)
+      out.push([
+        "",
+        "",
+        "",
+        `Kensington reference scaled to ${s.N} travelers (rough, not a real quote)`,
+        Math.round((REFERENCE_TOTAL * s.N) / 2),
+      ]);
+    return "﻿" + out.map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  }
+
+  function tryFileDownload() {
+    // Best-effort: works when the page runs in a normal (non-sandboxed) browser tab.
+    // Sandboxed hosting contexts often block this silently, which is why the modal
+    // below is the guaranteed path, not just a fallback shown on failure.
+    try {
+      const blob = new Blob([buildCSV()], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "japan-trip-itinerary.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      /* ignored — the modal below still gives the user the data */
+    }
+  }
+
+  const modalOverlay = document.getElementById("modalOverlay");
+  const shareOutput = document.getElementById("shareOutput");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalNote = document.getElementById("modalNote");
+
+  document
+    .getElementById("downloadXlsxBtn")
+    .addEventListener("click", () => downloadExcel(true));
+
+  document.getElementById("generateBtn").addEventListener("click", () => {
+    modalTitle.textContent = "Shareable itinerary";
+    modalNote.style.display = "none";
+    shareOutput.value = buildItinerary();
+    modalOverlay.classList.add("open");
+    shareOutput.focus();
+    shareOutput.setSelectionRange(0, 0);
+  });
+
+  function closeModal() {
+    modalOverlay.classList.remove("open");
+  }
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  document
+    .getElementById("modalCloseBottom")
+    .addEventListener("click", closeModal);
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("copyBtn");
+    try {
+      await navigator.clipboard.writeText(shareOutput.value);
+    } catch {
+      shareOutput.select();
+      document.execCommand("copy");
+    }
+    btn.textContent = "Copied ✓";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.textContent = "Copy to clipboard";
+      btn.classList.remove("copied");
+    }, 1600);
+  });
+
+  document.addEventListener("change", recalc);
+  document.getElementById("travelerCount").addEventListener("input", recalc);
+  document.getElementById("minRating").addEventListener("input", recalc);
+  recalc();
+
+  /* ============================================================
+   ITINERARY VIEW — narrative day-by-day rendered from the SAME
+   selections the ledger computes (window.__state). Reuses
+   TRIP_START / toDate / addDays / fmtDate / fmt / fmt2 / ACTIVITIES.
+   ============================================================ */
+
+  // Narrative pools (experience only). Concrete hotel/transport/cost
+  // rows are injected from __state at render time, so they always
+  // reflect the Plan-tab choices. First entry per city is the travel-in day.
+  const ITIN_POOL = {
+    tokyo: [
+      {
+        id: "t-arrive",
+        travel: true,
+        cityTag: "Tokyo — arrive",
+        sun: "16:35",
+        move: "airport",
+        lodging: "tokyo",
+        title: "Land, get to Gotanda, and do almost nothing",
+        rows: [
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Whatever's open and close.",
+            detail:
+              "Gotanda has 1,000+ eateries within a few blocks — a bowl of ramen or a neighborhood izakaya. No reservation, no ambition.",
+          },
+          {
+            tag: "Settle",
+            kind: "soft",
+            detail:
+              "Add mobile Suica to Apple Wallet, activate the eSIM, hit a konbini. First night is jet-lag triage. We arrive on separate flights — meet at the hotel, not the airport.",
+          },
+        ],
+        ask: "what time do our flights actually land? It decides whether tonight has a dinner in it at all.",
+      },
+      {
+        id: "t-tsukiji",
+        cityTag: "Tokyo",
+        sun: "16:34",
+        title: "Breakfast at the fish market, then old Tokyo",
+        rows: [
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Tsukiji Outer Market, early (~8 am).",
+            detail:
+              "Tamagoyaki on a stick, uni, fatty tuna, grilled scallops — grazing breakfast is the point. Beats the crowds.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Asakusa — Sensō-ji &amp; Nakamise.",
+            detail:
+              "Tokyo's oldest temple and the approach street of little shops. Late morning, unhurried.",
+          },
+          {
+            tag: "Evening",
+            kind: "soft",
+            detail:
+              "Free. Shibuya Crossing after dark if there's energy; if not, a depachika food-hall dinner and an early night.",
+          },
+        ],
+        fuller:
+          'Add <b>Meiji Shrine + Omotesandō/Harajuku</b> in the afternoon — that\'s the full Kensington "Tokyo Highlights" loop in one day.',
+        ask: "rain plan is <b>teamLab Planets</b> (needs advance tickets) — want me to hold a slot?",
+      },
+      {
+        id: "t-gyoen",
+        cityTag: "Tokyo",
+        sun: "16:33",
+        title: "A garden by day, the alleyways by night",
+        rows: [
+          {
+            tag: "Morning",
+            kind: "soft",
+            detail: "Slow start. Coffee somewhere good.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shinjuku Gyoen.",
+            detail:
+              "A huge, calm garden starting to turn for autumn in mid-November — the antidote to Tokyo's density. (Free observation deck at the Metro Gov't Building nearby for the skyline.)",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Yokochō night in Shinjuku.",
+            detail:
+              "Yakitori under the tracks at Omoide Yokochō, or a ramen crawl (Nakiryu, Afuri, Fūunji). The food night in Tokyo.",
+          },
+        ],
+        fuller:
+          "Golden Gai's tiny bars are famously locals-only. A <b>guided bar-hop</b> gets us in the doors — solves a real access problem, not just another stop.",
+      },
+      {
+        id: "t-daytrip",
+        cityTag: "Tokyo — day out",
+        sun: "16:32",
+        title: "A day out of the city — Kamakura",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "The Great Buddha &amp; Hase-dera.",
+            detail:
+              "~1 hr south by train: the bronze Daibutsu in the open air, then Hase-dera's hillside gardens and sea views. A real change of pace.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Shirasu-don by the coast.",
+            detail:
+              "Kamakura's specialty — a rice bowl of tiny local whitebait, fresh from Sagami Bay.",
+          },
+        ],
+        fuller:
+          "Ride one stop to <b>Enoshima</b> for the island shrine, the sea caves, and a sunset over the water on the way back.",
+      },
+    ],
+    hakone: [
+      {
+        id: "h-arrive",
+        travel: true,
+        cityTag: "Tokyo → Hakone",
+        sun: "16:32",
+        move: "th",
+        lodging: "hakone",
+        title: "The mountain, and the best meal of the trip",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Hakone Open-Air Museum",
+            detail:
+              "or the Lake Ashi / Owakudani loop on the Free Pass — but honestly, one stop then straight to the onsen. This is the rest day.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Kaiseki dinner at the ryokan.",
+            detail:
+              "Multi-course seasonal dinner (half-board) plus a private open-air hot-spring bath on the balcony. The romantic centerpiece — nowhere to be, nothing to catch.",
+          },
+          {
+            tag: "Luggage",
+            kind: "soft",
+            flag: "luggage",
+            detail:
+              "This morning, forward the big suitcases <b>Tokyo → Kyoto hotel</b> by takkyūbin (~¥2,500/bag, next-day). Ride to Hakone with just an overnight bag; the cases meet us in Kyoto. <em>Confirm the Kyoto hotel accepts the delivery.</em>",
+          },
+        ],
+      },
+      {
+        id: "h-full",
+        cityTag: "Hakone",
+        sun: "16:31",
+        title: "A full day in the hills",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "The complete Hakone loop.",
+            detail:
+              "Ropeway over the sulphur vents at Owakudani, the pirate ship across Lake Ashi, the red Hakone Shrine torii standing in the water — the classic circuit, no rushing.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Black eggs &amp; a second kaiseki.",
+            detail:
+              "Owakudani's kuro-tamago (boiled black in the hot springs) by day; another multi-course ryokan dinner and a long soak by night.",
+          },
+          {
+            tag: "Soak",
+            kind: "soft",
+            detail:
+              "The whole reason to give Hakone a second night — a slow morning in the private open-air bath before anything else.",
+          },
+        ],
+      },
+    ],
+    kyoto: [
+      {
+        id: "k-arrive",
+        travel: true,
+        cityTag: "Hakone → Kyoto",
+        sun: "16:50",
+        move: "hk",
+        lodging: "kyoto",
+        title: "Bullet train west, into old Kyoto",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Higashiyama at dusk.",
+            detail:
+              "The stone lanes of Sannenzaka &amp; Ninenzaka up to Kiyomizu-dera, arriving for sunset over the city. Old-Kyoto at its most cinematic. Daypacks only — the bags went ahead.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "First dinner in Gion or Pontochō.",
+            detail:
+              "Lantern-lit riverside alley; anything from yakitori to kaiseki.",
+          },
+        ],
+      },
+      {
+        id: "k-fushimi",
+        cityTag: "Kyoto",
+        sun: "16:49",
+        title: "Ten thousand torii gates, early",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Fushimi Inari — before 8 am.",
+            detail:
+              "The vermilion torii tunnels up the mountain. Going early is the whole game: by 10 it's shoulder-to-shoulder. Hike as far up as we feel like.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Pontochō food tour in the evening.",
+            detail:
+              "A well-reviewed small-group crawl (~13 tastes) is the easiest way into an alley that's otherwise a tourist-trap minefield.",
+          },
+        ],
+        fuller:
+          "One stop up the line is <b>Tōfuku-ji</b> — its maple valley is one of Kyoto's great autumn sights and peaks right about now. Pairs perfectly with an early Fushimi Inari.",
+        ask: "Fushimi Inari means a 7 am start. Worth it for empty gates, or trade sleep for crowds?",
+      },
+      {
+        id: "k-arashiyama",
+        cityTag: "Kyoto",
+        sun: "16:48",
+        title: "Bamboo, a Zen garden, and tofu",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Arashiyama — bamboo grove &amp; Tenryū-ji.",
+            detail:
+              "Go early before the grove fills. Tenryū-ji's garden (UNESCO) is stunning against peak-ish foliage.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Yudōfu (hot-pot tofu) lunch.",
+            detail:
+              "The local specialty — simple, warming, exactly right for a cool November day by the river.",
+          },
+          {
+            tag: "Evening",
+            kind: "soft",
+            detail: "Back to Gion, easy dinner.",
+          },
+        ],
+        fuller:
+          "The <b>Sagano Scenic Railway</b> through the autumn gorge is spectacular in late November — and books out. Say the word and I'll grab tickets now.",
+      },
+      {
+        id: "k-foliage",
+        cityTag: "Kyoto",
+        sun: "16:47",
+        title: "Peak foliage, and a slow last look",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "The Golden Pavilion, or a foliage temple at its peak.",
+            detail:
+              "Kinkaku-ji + Ryōan-ji's rock garden is the classic pairing; but late Nov is prime colour, so Eikandō or Tōfuku-ji (day or evening illumination) may be the better call. We'll pick from the foliage forecast closer in.",
+          },
+        ],
+        fuller:
+          "Kensington's guided <b>Cultural Kyoto</b> half-day covers Kinkaku-ji, Ryōan-ji, Kitano Tenmangū, and the quieter Kamishichiken geisha district with a guide who explains what we're seeing.",
+      },
+    ],
+    osaka: [
+      {
+        id: "o-arrive",
+        travel: true,
+        cityTag: "Kyoto → Osaka",
+        sun: "16:47",
+        move: "kyotoOsaka",
+        lodging: "osaka",
+        title: "Osaka — neon, canals, and street food",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Dotonbori &amp; Namba after dark.",
+            detail:
+              "The Glico running man, the canal lights, the roar of the arcades — Osaka is the loud, fun counterweight to Kyoto's quiet.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "A street-food crawl.",
+            detail:
+              "Takoyaki, okonomiyaki, kushikatsu — Osaka is Japan's kitchen and this is the point of coming. Graze, don't sit down.",
+          },
+        ],
+        fuller:
+          "By day, <b>Osaka Castle</b> or the <b>Kuromon Ichiba market</b> before the train out.",
+      },
+    ],
+  };
+
+  function itinDepartDay(osakaMode) {
+    return {
+      id: "depart",
+      travel: true,
+      move: "final",
+      sun: "16:46",
+      cityTag: (osakaMode ? "Osaka" : "Kyoto") + " → home",
+      title: "Kansai Airport, and the long way home",
+      rows: [
+        {
+          tag: "Note",
+          kind: "soft",
+          detail:
+            "~" +
+            (osakaMode ? "40 min" : "2 hrs") +
+            " to the gate — build in buffer and have Visit Japan Web ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy.",
+        },
+      ],
+      ask: "when do our flights home actually leave? That sets how much of the morning is ours.",
+    };
+  }
+
+  let ITIN_PACE = "relaxed"; // relaxed | classic | custom
+  const itinFuller = {}; // dayId -> bool (custom mode)
+  let SHOW_PRICES = false;
+
+  function itinFullerOn(id) {
+    if (ITIN_PACE === "classic") return true;
+    if (ITIN_PACE === "relaxed") return false;
+    return !!itinFuller[id];
+  }
+
+  // transport for a travel day, derived from current selections
+  function moveData(move, s) {
+    switch (move) {
+      case "airport": {
+        const an = s.airport === "nrt" ? "Narita" : "Haneda";
+        const m = s.airportMode === "public" ? "train/bus" : "private car";
+        return {
+          lead: an + " → Tokyo (Gotanda)",
+          detail: "by " + m,
+          cost: s.airportCost,
+        };
+      }
+      case "th": {
+        const m = s.thMode === "public" ? "Odakyu Romancecar" : "private car";
+        return { lead: "Tokyo → Hakone", detail: m, cost: s.thCost };
+      }
+      case "hk": {
+        const m = s.hkMode === "public" ? "bus/subway" : "taxi both ends";
+        return {
+          lead: "Hakone → Kyoto",
+          detail: "Shinkansen (Hikari) + " + m,
+          cost: s.hkCost,
+        };
+      }
+      case "kyotoOsaka":
+        return {
+          lead: "Kyoto → Osaka",
+          detail: "Kintetsu Ltd. Express (direct)",
+          cost: s.kyotoOsakaCost,
+        };
+      case "final":
+        if (s.osakaMode)
+          return {
+            lead: "Osaka → Kansai Airport",
+            detail: "Nankai Rapi:t",
+            cost: s.osakaAirportCost,
+          };
+        return {
+          lead: "Kyoto → Kansai Airport",
+          detail: s.finalMode === "public" ? "JR Haruka" : "private car",
+          cost: s.finalCost,
+        };
+      default:
+        return { lead: "", detail: "", cost: 0 };
+    }
+  }
+
+  function chosenActsByCity() {
+    const res = { tokyo: [], hakone: [], kyoto: [] };
+    Object.keys(res).forEach((city) => {
+      (ACTIVITIES[city] || []).forEach((act, ai) => {
+        const opt = act.options[selectedIndex(city + "Act" + ai)];
+        if (opt.cost > 0)
+          res[city].push({ title: act.title, name: opt.name, cost: opt.cost });
+      });
+    });
+    return res;
+  }
+
+  function assembleItinDays(s) {
+    const days = [];
+    ["tokyo", "hakone", "kyoto", "osaka"].forEach((city) => {
+      ITIN_POOL[city]
+        .slice(0, s.nights[city] || 0)
+        .forEach((d, idx) =>
+          days.push(
+            Object.assign({}, d, { cityKey: city, firstOfCity: idx === 0 }),
+          ),
+        );
+    });
+    days.push(itinDepartDay(s.osakaMode));
+    // the last overnight day carries the "special last dinner" nudge
+    const lastStay = days[days.length - 2];
+    if (lastStay) lastStay.lastNight = true;
+    return days;
+  }
+
+  function renderItinerary() {
+    const s = window.__state;
+    if (!s) return;
+    const acts = chosenActsByCity();
+    const days = assembleItinDays(s);
+    const cur = toDate(TRIP_START);
+    const priceSpan = (c) =>
+      SHOW_PRICES && c ? ' <span class="cost">$' + fmt2(c) + "</span>" : "";
+
+    document.getElementById("itinRail").innerHTML = days
+      .map((d, i) => {
+        const date = fmtDate(addDays(cur, i));
+        let rows = "";
+
+        if (d.move) {
+          const m = moveData(d.move, s);
+          rows +=
+            '<div class="drow move"><span class="tag">Move</span><span class="body"><span class="lead">' +
+            m.lead +
+            '</span> <span class="detail">' +
+            m.detail +
+            priceSpan(m.cost) +
+            "</span></span></div>";
+        }
+
+        rows += d.rows
+          .map((r) => {
+            const flag = r.flag
+              ? '<span class="flag">' + r.flag + "</span>"
+              : "";
+            const lead = r.lead
+              ? '<span class="lead">' + flag + r.lead + "</span> "
+              : flag;
+            return (
+              '<div class="drow ' +
+              r.kind +
+              '"><span class="tag">' +
+              r.tag +
+              '</span><span class="body">' +
+              lead +
+              '<span class="detail">' +
+              r.detail +
+              "</span></span></div>"
+            );
+          })
+          .join("");
+
+        if (d.firstOfCity && d.lodging) {
+          const h = s[d.lodging];
+          const nights = s.nights[d.lodging] || 1;
+          const meta = SHOW_PRICES
+            ? " · $" +
+              h.rate +
+              "/night × " +
+              s.rooms +
+              " room" +
+              (s.rooms > 1 ? "s" : "") +
+              " × " +
+              nights +
+              ' = <span class="cost">$' +
+              fmt2(h.rate * s.rooms * nights) +
+              "</span>"
+            : " · ★" +
+              h.rating +
+              " · " +
+              nights +
+              " night" +
+              (nights > 1 ? "s" : "");
+          rows +=
+            '<div class="drow soft"><span class="tag">Stay</span><span class="body"><span class="lead">' +
+            h.name +
+            '</span><span class="detail">' +
+            meta +
+            "</span></span></div>";
+        }
+
+        if (d.firstOfCity && acts[d.cityKey] && acts[d.cityKey].length) {
+          rows += acts[d.cityKey]
+            .map(
+              (a) =>
+                '<div class="drow soft"><span class="tag">Booked</span><span class="body"><span class="lead">' +
+                a.title +
+                ':</span> <span class="detail">' +
+                a.name +
+                priceSpan((a.cost * s.N) / 2) +
+                "</span></span></div>",
+            )
+            .join("");
+        }
+
+        if (d.lastNight) {
+          rows +=
+            '<div class="drow table"><span class="tag">Last night</span><span class="body"><span class="lead">Worth reserving a special dinner.</span> <span class="detail">A counter sushi seat or a proper kaiseki — the one to book well ahead before peak season fills up.</span></span></div>';
+        }
+
+        let fuller = "";
+        if (d.fuller) {
+          const on = itinFullerOn(d.id);
+          fuller =
+            '<div class="fuller ' +
+            (on ? "" : "excluded") +
+            '"><label class="ftoggle no-print"><input type="checkbox" data-ifuller="' +
+            d.id +
+            '" ' +
+            (on ? "checked" : "") +
+            '>+ fuller</label><span class="ftext">' +
+            d.fuller +
+            "</span></div>";
+        }
+        const ask = d.ask ? '<div class="iask">' + d.ask + "</div>" : "";
+
+        return (
+          '<div class="day ' +
+          (d.travel ? "travel" : "") +
+          '"><div class="day-marker"></div>' +
+          '<div class="day-eyebrow"><span>Day ' +
+          (i + 1) +
+          '</span><span class="mono">' +
+          date +
+          '</span><span class="city">' +
+          d.cityTag +
+          '</span><span class="sun mono">' +
+          d.sun +
+          "</span></div><h3>" +
+          d.title +
+          "</h3>" +
+          rows +
+          fuller +
+          ask +
+          "</div>"
+        );
+      })
+      .join("");
+
+    document.querySelectorAll("input[data-ifuller]").forEach((cb) =>
+      cb.addEventListener("change", (e) => {
+        ITIN_PACE = "custom";
+        document.getElementById("ip-custom").checked = true;
+        itinFuller[e.target.dataset.ifuller] = e.target.checked;
+        renderItinerary();
+      }),
+    );
+
+    const n = s.nights;
+    const route =
+      "Tokyo " +
+      n.tokyo +
+      " / Hakone " +
+      n.hakone +
+      " / Kyoto " +
+      n.kyoto +
+      (n.osaka ? " / Osaka " + n.osaka : "");
+    const addOns = days.filter((d) => d.fuller && itinFullerOn(d.id)).length;
+    document.getElementById("itinSummary").innerHTML =
+      "9 days · " +
+      route +
+      " · " +
+      addOns +
+      " “+ fuller” add-on" +
+      (addOns === 1 ? "" : "s") +
+      " on";
+
+    const tot = document.getElementById("itinTotal");
+    if (SHOW_PRICES) {
+      tot.style.display = "";
+      tot.innerHTML =
+        '<div class="gt">' +
+        fmt(s.grand) +
+        '</div><div style="margin-top:0.25rem">Estimated total for ' +
+        s.N +
+        " traveler" +
+        (s.N > 1 ? "s" : "") +
+        " — flights, lodging (+tax buffer), transport" +
+        (s.activitiesCost > 0 ? ", and the paid activities you picked" : "") +
+        ". Full line-by-line breakdown on the Plan tab.</div>";
+    } else {
+      tot.style.display = "none";
+    }
+  }
+
+  function buildItinText() {
+    const s = window.__state;
+    if (!s) return "";
+    const acts = chosenActsByCity();
+    const days = assembleItinDays(s);
+    const cur = toDate(TRIP_START);
+    const n = s.nights;
+    const strip = (x) =>
+      String(x)
+        .replace(/<[^>]+>/g, "")
+        .replace(/&mdash;/g, "—")
+        .replace(/&amp;/g, "&")
+        .replace(/&rarr;/g, "→")
+        .replace(/&ndash;/g, "–")
+        .replace(/&[a-z]+\d*;/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    const money = (c) => (SHOW_PRICES && c ? " ($" + fmt2(c) + ")" : "");
+    const out = [];
+    out.push("JAPAN — Sat Nov 14 to Sun Nov 22, 2026");
+    out.push(
+      "Tokyo " +
+        n.tokyo +
+        " / Hakone " +
+        n.hakone +
+        " / Kyoto " +
+        n.kyoto +
+        (n.osaka ? " / Osaka " + n.osaka : ""),
+    );
+    if (SHOW_PRICES)
+      out.push(
+        "Estimated total: " +
+          fmt(s.grand) +
+          " for " +
+          s.N +
+          " traveler" +
+          (s.N > 1 ? "s" : ""),
+      );
+    out.push("");
+    days.forEach((d, i) => {
+      out.push(
+        fmtDate(addDays(cur, i)).toUpperCase() + " — " + strip(d.cityTag),
+      );
+      out.push("  " + strip(d.title));
+      if (d.move) {
+        const m = moveData(d.move, s);
+        out.push("   - Move: " + m.lead + " — " + m.detail + money(m.cost));
+      }
+      d.rows.forEach((r) => {
+        const t = strip((r.lead ? r.lead + " " : "") + r.detail);
+        if (t) out.push("   - " + r.tag + ": " + t);
+      });
+      if (d.firstOfCity && d.lodging) {
+        const h = s[d.lodging];
+        out.push(
+          "   - Stay: " +
+            h.name +
+            (SHOW_PRICES ? " ($" + h.rate + "/night)" : " (★" + h.rating + ")"),
+        );
+      }
+      if (d.firstOfCity && acts[d.cityKey])
+        acts[d.cityKey].forEach((a) =>
+          out.push(
+            "   - Booked: " +
+              a.title +
+              " — " +
+              a.name +
+              money((a.cost * s.N) / 2),
+          ),
+        );
+      if (d.lastNight)
+        out.push("   - Last night: worth reserving a special dinner.");
+      if (d.fuller && itinFullerOn(d.id))
+        out.push("   + also: " + strip(d.fuller));
+      out.push("");
+    });
+    out.push("Flights and a few dinner reservations still to lock in.");
+    return out.join("\n");
+  }
+
+  /* ============================================================
+     EXCEL (.xlsx) EXPORT — dependency-free. Builds a real
+     multi-sheet workbook (OOXML zipped by hand, no libraries) so
+     it stays self-contained. Sheet 1 = itinerary; Budget sheet
+     when prices are shown; final sheet = the Japan MOFA visa
+     "Travel Itinerary" form, pre-filled from the trip.
+     ============================================================ */
+
+  // Officer-friendly, literal one-liners for the visa form (the
+  // itinerary's own titles are deliberately poetic — wrong register here).
+  const VISA_PLAN = {
+    "t-arrive": "Arrive in Tokyo; check in and rest.",
+    "t-tsukiji": "Tsukiji Outer Market; Asakusa Senso-ji Temple & Nakamise St.",
+    "t-gyoen": "Shinjuku Gyoen National Garden; Shinjuku district.",
+    "t-daytrip": "Day trip to Kamakura (Great Buddha, Hase-dera Temple).",
+    "h-arrive":
+      "Travel to Hakone; Hakone Open-Air Museum; onsen (hot spring) ryokan.",
+    "h-full": "Hakone loop — Lake Ashi, Owakudani, Hakone Shrine.",
+    "k-arrive":
+      "Travel to Kyoto by Shinkansen; Higashiyama & Kiyomizu-dera Temple.",
+    "k-fushimi": "Fushimi Inari Shrine; evening in Pontocho.",
+    "k-arashiyama": "Arashiyama bamboo grove & Tenryu-ji Temple.",
+    "k-foliage":
+      "Kinkaku-ji (Golden Pavilion) & Ryoan-ji; autumn foliage viewing.",
+    "o-arrive": "Travel to Osaka; Dotonbori & Namba.",
+    depart: "Depart from Kansai International Airport.",
+  };
+
+  function xlEsc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function xlCol(n) {
+    let s = "";
+    n++;
+    while (n > 0) {
+      const m = (n - 1) % 26;
+      s = String.fromCharCode(65 + m) + s;
+      n = Math.floor((n - 1) / 26);
+    }
+    return s;
+  }
+  function xlCrc32(buf) {
+    if (!xlCrc32.t) {
+      xlCrc32.t = [];
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++)
+          c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        xlCrc32.t[n] = c >>> 0;
+      }
+    }
+    const t = xlCrc32.t;
+    let crc = 0xffffffff;
+    for (let i = 0; i < buf.length; i++)
+      crc = (crc >>> 8) ^ t[(crc ^ buf[i]) & 0xff];
+    return (crc ^ 0xffffffff) >>> 0;
+  }
+  function xlZip(files) {
+    const u16 = (n) => [n & 255, (n >> 8) & 255];
+    const u32 = (n) => [
+      n & 255,
+      (n >> 8) & 255,
+      (n >> 16) & 255,
+      (n >> 24) & 255,
+    ];
+    const enc = new TextEncoder();
+    const parts = [];
+    const central = [];
+    let offset = 0;
+    files.forEach((f) => {
+      const nameB = enc.encode(f.name);
+      const data = f.data;
+      const crc = xlCrc32(data);
+      const local = [].concat(
+        u32(0x04034b50),
+        u16(20),
+        u16(0),
+        u16(0),
+        u16(0),
+        u16(0),
+        u32(crc),
+        u32(data.length),
+        u32(data.length),
+        u16(nameB.length),
+        u16(0),
+      );
+      parts.push(new Uint8Array(local), nameB, data);
+      const cen = [].concat(
+        u32(0x02014b50),
+        u16(20),
+        u16(20),
+        u16(0),
+        u16(0),
+        u16(0),
+        u16(0),
+        u32(crc),
+        u32(data.length),
+        u32(data.length),
+        u16(nameB.length),
+        u16(0),
+        u16(0),
+        u16(0),
+        u16(0),
+        u32(0),
+        u32(offset),
+      );
+      central.push(new Uint8Array(cen), nameB);
+      offset += local.length + nameB.length + data.length;
+    });
+    let cenLen = 0;
+    central.forEach((c) => (cenLen += c.length));
+    const end = new Uint8Array(
+      [].concat(
+        u32(0x06054b50),
+        u16(0),
+        u16(0),
+        u16(files.length),
+        u16(files.length),
+        u32(cenLen),
+        u32(offset),
+        u16(0),
+      ),
+    );
+    const all = parts.concat(central, [end]);
+    let total = 0;
+    all.forEach((a) => (total += a.length));
+    const out = new Uint8Array(total);
+    let p = 0;
+    all.forEach((a) => {
+      out.set(a, p);
+      p += a.length;
+    });
+    return out;
+  }
+
+  const XL_STYLES =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="16"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' +
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"/><right style="thin"/><top style="thin"/><bottom style="thin"/><diagonal/></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="6">' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+    '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/>' +
+    '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf>' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
+    '<xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="right"/></xf>' +
+    "</cellXfs>" +
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+    "</styleSheet>";
+  // style indices: 0 plain · 1 bold · 2 title(center) · 3 bordered-wrap · 4 bordered-bold-center · 5 right
+
+  function xlSheet(rows, cols, merges) {
+    const rowsXml = rows
+      .map((row, r) => {
+        const cells = row
+          .map((cell, c) => {
+            if (cell == null) return "";
+            const ref = xlCol(c) + (r + 1);
+            const s = cell.s != null ? ' s="' + cell.s + '"' : "";
+            if (cell.v === "" || cell.v == null)
+              return '<c r="' + ref + '"' + s + "/>";
+            if (cell.n)
+              return '<c r="' + ref + '"' + s + "><v>" + cell.v + "</v></c>";
+            return (
+              '<c r="' +
+              ref +
+              '"' +
+              s +
+              ' t="inlineStr"><is><t xml:space="preserve">' +
+              xlEsc(cell.v) +
+              "</t></is></c>"
+            );
+          })
+          .join("");
+        return '<row r="' + (r + 1) + '">' + cells + "</row>";
+      })
+      .join("");
+    const colsXml = cols
+      ? "<cols>" +
+        cols
+          .map(
+            (w, i) =>
+              '<col min="' +
+              (i + 1) +
+              '" max="' +
+              (i + 1) +
+              '" width="' +
+              w +
+              '" customWidth="1"/>',
+          )
+          .join("") +
+        "</cols>"
+      : "";
+    const mergeXml =
+      merges && merges.length
+        ? '<mergeCells count="' +
+          merges.length +
+          '">' +
+          merges.map((m) => '<mergeCell ref="' + m + '"/>').join("") +
+          "</mergeCells>"
+        : "";
+    return (
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      colsXml +
+      "<sheetData>" +
+      rowsXml +
+      "</sheetData>" +
+      mergeXml +
+      "</worksheet>"
+    );
+  }
+
+  function buildXlsx(sheets) {
+    const enc = new TextEncoder();
+    let ov = "";
+    for (let i = 1; i <= sheets.length; i++)
+      ov +=
+        '<Override PartName="/xl/worksheets/sheet' +
+        i +
+        '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+    const ct =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+      ov +
+      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+    const rootRels =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+    const sheetsXml = sheets
+      .map(
+        (s, i) =>
+          '<sheet name="' +
+          xlEsc(s.name) +
+          '" sheetId="' +
+          (i + 1) +
+          '" r:id="rId' +
+          (i + 1) +
+          '"/>',
+      )
+      .join("");
+    const wb =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+      sheetsXml +
+      "</sheets></workbook>";
+    let rels = "";
+    for (let i = 1; i <= sheets.length; i++)
+      rels +=
+        '<Relationship Id="rId' +
+        i +
+        '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' +
+        i +
+        '.xml"/>';
+    rels +=
+      '<Relationship Id="rId' +
+      (sheets.length + 1) +
+      '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
+    const wbRels =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      rels +
+      "</Relationships>";
+    const files = [
+      { name: "[Content_Types].xml", data: enc.encode(ct) },
+      { name: "_rels/.rels", data: enc.encode(rootRels) },
+      { name: "xl/workbook.xml", data: enc.encode(wb) },
+      { name: "xl/_rels/workbook.xml.rels", data: enc.encode(wbRels) },
+      { name: "xl/styles.xml", data: enc.encode(XL_STYLES) },
+    ];
+    sheets.forEach((s, i) =>
+      files.push({
+        name: "xl/worksheets/sheet" + (i + 1) + ".xml",
+        data: enc.encode(xlSheet(s.rows, s.cols, s.merges)),
+      }),
+    );
+    return xlZip(files);
+  }
+
+  function visaDate(d) {
+    return (
+      d.getFullYear() +
+      "/" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "/" +
+      String(d.getDate()).padStart(2, "0")
+    );
+  }
+
+  function buildExcelWorkbook(forceBudget) {
+    const s = window.__state;
+    const days = assembleItinDays(s);
+    const cur = toDate(TRIP_START);
+    const strip = (x) =>
+      String(x)
+        .replace(/<[^>]+>/g, "")
+        .replace(/&mdash;/g, "—")
+        .replace(/&amp;/g, "&")
+        .replace(/&rarr;/g, "→")
+        .replace(/&ndash;/g, "–")
+        .replace(/&[a-z]+\d*;/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    const cell = (v, st) => ({ v: v, s: st });
+    const num = (v, st) => ({ v: v, n: true, s: st });
+    const accomFor = (d) =>
+      d.cityKey
+        ? s[d.cityKey].name +
+          " (" +
+          strip(ITIN_POOL[d.cityKey][0].cityTag).replace(/ .*/, "") +
+          ")"
+        : "—";
+
+    // --- Sheet 1: Itinerary (readable) ---
+    const itinRows = [
+      [
+        cell("Date", 1),
+        cell("Day", 1),
+        cell("Plan", 1),
+        cell("Accommodation", 1),
+        cell("Transport", 1),
+      ],
+    ];
+    days.forEach((d, i) => {
+      const date = fmtDate(addDays(cur, i));
+      const plan = VISA_PLAN[d.id] || strip(d.title);
+      const move = d.move
+        ? (function () {
+            const m = moveData(d.move, s);
+            return (
+              strip(m.lead) +
+              " — " +
+              strip(m.detail) +
+              (SHOW_PRICES && m.cost ? " ($" + fmt2(m.cost) + ")" : "")
+            );
+          })()
+        : "";
+      itinRows.push([
+        cell(date),
+        cell("Day " + (i + 1)),
+        cell(plan),
+        cell(d.cityKey ? s[d.cityKey].name : "—"),
+        cell(move),
+      ]);
+    });
+    const sheets = [
+      { name: "Itinerary", rows: itinRows, cols: [16, 8, 46, 30, 40] },
+    ];
+
+    // --- Budget sheet: when prices are shown, or forced (Plan-tab export) ---
+    if (SHOW_PRICES || forceBudget) {
+      const rows = buildRows();
+      const bud = [
+        [
+          cell("Date", 1),
+          cell("Category", 1),
+          cell("Item", 1),
+          cell("Detail", 1),
+          cell("Cost (USD)", 1),
+        ],
+      ];
+      rows.forEach((r) =>
+        bud.push([
+          cell(fmtDate(r.date)),
+          cell(r.category),
+          cell(r.title),
+          cell(r.detail),
+          num(Math.round(r.cost)),
+        ]),
+      );
+      bud.push([
+        cell(""),
+        cell("Lodging"),
+        cell("Taxes/fees buffer"),
+        cell("Applied to lodging subtotal"),
+        num(Math.round(s.lodgingBuffer)),
+      ]);
+      bud.push([
+        cell(""),
+        cell(""),
+        cell(""),
+        cell("TOTAL", 1),
+        num(Math.round(s.grand), 1),
+      ]);
+      sheets.push({ name: "Budget", rows: bud, cols: [16, 14, 30, 40, 14] });
+    }
+
+    // --- Final sheet: Japan MOFA "Travel Itinerary" visa form ---
+    const v = [];
+    v.push([]); // row 1 spacer
+    v.push([null, null, null, cell("(Year)      (Month)      (Day)", 5)]); // row 2, top-right
+    v.push([]); // row 3
+    v.push([cell("Travel Itinerary", 2)]); // row 4 title (merged A4:D4)
+    v.push([]); // row 5
+    v.push([
+      cell("The travel itinerary of the visa applicant(s) is as follows:"),
+    ]); // row 6
+    v.push([]); // row 7
+    v.push([
+      cell("Date", 4),
+      cell("Activity Plan", 4),
+      cell("Contact", 4),
+      cell("Accommodation", 4),
+    ]); // row 8 header
+    days.forEach((d, i) => {
+      v.push([
+        cell(visaDate(addDays(cur, i)), 3),
+        cell(VISA_PLAN[d.id] || strip(d.title), 3),
+        cell("", 3),
+        cell(d.cityKey ? s[d.cityKey].name : "Departing Japan", 3),
+      ]);
+    });
+    for (let k = 0; k < 3; k++)
+      v.push([cell("", 3), cell("", 3), cell("", 3), cell("", 3)]); // blank rows to fill
+    sheets.push({
+      name: "Visa Itinerary",
+      rows: v,
+      cols: [16, 52, 20, 30],
+      merges: ["A4:D4"],
+    });
+
+    return buildXlsx(sheets);
+  }
+
+  function downloadExcel(forceBudget) {
+    let embedded = false;
+    try {
+      embedded = window.self !== window.top;
+    } catch (e) {
+      embedded = true;
+    }
+    if (embedded) {
+      // Sandboxed previews block binary downloads — fall back to the
+      // guaranteed copy-paste path via the modal (works on either tab).
+      modalTitle.textContent = "Copy this into a spreadsheet";
+      modalNote.style.display = "block";
+      modalNote.textContent =
+        "This embedded preview blocks file downloads. Open the site at its own web address to get the real .xlsx — or copy the text below into Excel / Google Sheets (it auto-splits into columns).";
+      shareOutput.value = buildCSV();
+      modalOverlay.classList.add("open");
+      shareOutput.focus();
+      shareOutput.setSelectionRange(0, 0);
+      return;
+    }
+    const data = buildExcelWorkbook(forceBudget);
+    const blob = new Blob([data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "japan-trip-itinerary.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function themeInit() {
+    const root = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const isDark = () => {
+      const a = root.getAttribute("data-theme");
+      return a ? a === "dark" : mq.matches;
+    };
+    // icon shows the mode you'd switch TO
+    const paint = () => (btn.textContent = isDark() ? "☀" : "☾");
+    btn.addEventListener("click", () => {
+      const next = isDark() ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("theme", next);
+      } catch (e) {}
+      paint();
+    });
+    // follow the OS if the user hasn't chosen a manual override
+    mq.addEventListener("change", () => {
+      if (!root.getAttribute("data-theme")) paint();
+    });
+    paint();
+  }
+
+  function showTab(t) {
+    document
+      .querySelectorAll(".tab")
+      .forEach((b) => b.classList.toggle("active", b.dataset.tab === t));
+    document.getElementById("planPane").style.display =
+      t === "plan" ? "" : "none";
+    document.getElementById("itinPane").style.display =
+      t === "itin" ? "" : "none";
+    window.scrollTo(0, 0);
+  }
+
+  function initPlanner() {
+    themeInit();
+    document
+      .querySelectorAll(".tab")
+      .forEach((t) =>
+        t.addEventListener("click", () => showTab(t.dataset.tab)),
+      );
+    document.getElementById("itinPaceSeg").addEventListener("change", (e) => {
+      ITIN_PACE = e.target.value;
+      renderItinerary();
+    });
+    document.getElementById("showPrices").addEventListener("change", (e) => {
+      SHOW_PRICES = e.target.checked;
+      renderItinerary();
+    });
+    document.getElementById("itinPdfBtn").addEventListener("click", () => {
+      // Some embedded/sandboxed viewers (e.g. the preview iframe) block the
+      // browser's print dialog, so window.print() silently no-ops there.
+      // Detect that case and tell the user instead of failing quietly.
+      let embedded = false;
+      try {
+        embedded = window.self !== window.top;
+      } catch (e) {
+        embedded = true;
+      }
+      if (embedded) {
+        const hint = document.getElementById("pdfHint");
+        hint.textContent =
+          "This embedded preview blocks the PDF dialog. Open the itinerary at its own web address to save a PDF — or use “Copy as text” to paste it into a message.";
+        hint.style.display = "";
+        return;
+      }
+      window.print();
+    });
+    document
+      .getElementById("itinCopyBtn")
+      .addEventListener("click", async () => {
+        const btn = document.getElementById("itinCopyBtn");
+        const text = buildItinText();
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+        btn.textContent = "Copied ✓";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy as text";
+          btn.classList.remove("copied");
+        }, 1600);
+      });
+    document
+      .getElementById("itinXlsxBtn")
+      .addEventListener("click", () => downloadExcel(false));
+    // keep the itinerary in sync with every Plan-tab change
+    document.addEventListener("change", renderItinerary);
+    document
+      .getElementById("travelerCount")
+      .addEventListener("input", renderItinerary);
+    document
+      .getElementById("minRating")
+      .addEventListener("input", renderItinerary);
+    renderItinerary();
+    // A shared "#itinerary" link opens straight to the day-by-day.
+    if (location.hash === "#itinerary") showTab("itin");
+  }
+
+  initPlanner();
+</script>
