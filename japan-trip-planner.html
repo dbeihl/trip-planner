@@ -1340,16 +1340,7 @@
     </div>
 
     <!-- TOKYO -->
-    <div class="stop">
-      <div class="stop-marker"></div>
-      <div class="stop-head">
-        <h2>Tokyo — Gotanda / Shinagawa</h2>
-        <span class="nights" id="tokyoNightsLbl">3 nights</span>
-      </div>
-      <div class="tier-list rateable" id="tokyoTiers"></div>
-      <div class="activities-label">Activities (optional paid upgrades)</div>
-      <div id="tokyoActivities"></div>
-    </div>
+    <div class="stop" data-stop="tokyo"></div>
 
     <!-- Tokyo -> Hakone leg -->
     <div class="leg">
@@ -1362,16 +1353,7 @@
     </div>
 
     <!-- HAKONE -->
-    <div class="stop">
-      <div class="stop-marker"></div>
-      <div class="stop-head">
-        <h2>Hakone</h2>
-        <span class="nights" id="hakoneNightsLbl">1 night</span>
-      </div>
-      <div class="tier-list rateable" id="hakoneTiers"></div>
-      <div class="activities-label">Activities (optional paid upgrades)</div>
-      <div id="hakoneActivities"></div>
-    </div>
+    <div class="stop" data-stop="hakone"></div>
 
     <!-- Hakone -> Kyoto leg -->
     <div class="leg">
@@ -1389,16 +1371,7 @@
     </div>
 
     <!-- KYOTO -->
-    <div class="stop">
-      <div class="stop-marker"></div>
-      <div class="stop-head">
-        <h2>Kyoto — Gion</h2>
-        <span class="nights" id="kyotoNightsLbl">3 nights</span>
-      </div>
-      <div class="tier-list rateable" id="kyotoTiers"></div>
-      <div class="activities-label">Activities (optional paid upgrades)</div>
-      <div id="kyotoActivities"></div>
-    </div>
+    <div class="stop" data-stop="kyoto"></div>
 
     <!-- OSAKA (conditional) -->
     <div id="osakaBlock" style="display: none">
@@ -1747,6 +1720,7 @@
     tokyo: {
       baseNights: 3,
       label: "Tokyo",
+      header: "Tokyo — Gotanda / Shinagawa",
       options: [
         {
           name: "OMO5 Tokyo Gotanda",
@@ -1784,6 +1758,7 @@
     hakone: {
       baseNights: 1,
       label: "Hakone",
+      header: "Hakone",
       options: [
         {
           name: "Hakone Kowakien Ten-yu",
@@ -1809,6 +1784,7 @@
     kyoto: {
       baseNights: 3,
       label: "Kyoto",
+      header: "Kyoto — Gion",
       options: [
         {
           name: "OMO5 Kyoto Gion",
@@ -2323,14 +2299,33 @@
   document.getElementById("flightsCaveat").textContent =
     "Fares are researched representative round-trip prices for Nov 2026 — not date-locked quotes like the hotel rates. Ask to lock exact fares (Google Flights, exact dates) when the browser connection is available.";
 
-  renderTiers("tokyoTiers", "tokyo");
-  renderTiers("hakoneTiers", "hakone");
-  renderTiers("kyotoTiers", "kyoto");
+  // build each route city's stop (header, night label, tier + activity
+  // containers) from TRIP.route + hotel headers, then fill them.
+  function renderStops() {
+    document.querySelectorAll("[data-stop]").forEach((el) => {
+      const city = el.dataset.stop;
+      el.innerHTML =
+        '<div class="stop-marker"></div>' +
+        '<div class="stop-head"><h2>' +
+        HOTELS[city].header +
+        '</h2><span class="nights" id="' +
+        city +
+        'NightsLbl"></span></div>' +
+        '<div class="tier-list rateable" id="' +
+        city +
+        'Tiers"></div>' +
+        '<div class="activities-label">Activities (optional paid upgrades)</div>' +
+        '<div id="' +
+        city +
+        'Activities"></div>';
+    });
+  }
+  renderStops();
+
+  TRIP.meta.route.forEach((c) => renderTiers(c + "Tiers", c));
   renderTiers("osakaTiers", "osaka");
 
-  renderActivities("tokyoActivities", "tokyo");
-  renderActivities("hakoneActivities", "hakone");
-  renderActivities("kyotoActivities", "kyoto");
+  TRIP.meta.route.forEach((c) => renderActivities(c + "Activities", c));
 
   renderRouteDetail("rd-th", ROUTE_DETAIL.th);
   renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
