@@ -2611,7 +2611,33 @@
     const flightsCost =
       usFlight.fare * FLIGHTS.us.pax + phFlight.fare * FLIGHTS.ph.pax;
 
-    const transportTotal = airportCost + thCost + hkCost + finalCost;
+    // generic transport total: sum every active leg by its shape, so any leg
+    // — a per-vehicle drive leg, a per-person rail segment — is included, not
+    // just the Japan four. `when` gates the optional-detour legs.
+    const legCost = (leg) => {
+      if (leg.when === "osaka" && !osakaMode) return 0;
+      if (leg.when === "noOsaka" && osakaMode) return 0;
+      let c = 0;
+      if (leg.terminals) {
+        const t = selectedValue(leg.terminalControl);
+        const m = selectedValue(leg.modeControl);
+        c = leg.cost[t][m] * scaleOf(leg.modes[m].scale);
+      } else if (leg.modes) {
+        const m = selectedValue(leg.modeControl);
+        c = leg.cost[m] * scaleOf(leg.modes[m].scale);
+      } else if (leg.flat) {
+        c = leg.flat.cost * scaleOf(leg.flat.scale);
+      }
+      if (leg.fixed) c += leg.fixed.cost * scaleOf(leg.fixed.scale);
+      return c;
+    };
+    // optional rental car (road trips): perDay × total nights × vehicles.
+    const totalNights = Object.values(nights).reduce((a, b) => a + b, 0);
+    const rentalCost = TRIP.transport.rental
+      ? TRIP.transport.rental.perDay * totalNights * vehicleFactor
+      : 0;
+    const transportTotal =
+      TRIP.transport.legs.reduce((s, leg) => s + legCost(leg), 0) + rentalCost;
     const hotelSubtotal =
       hotelCost.tokyo + hotelCost.hakone + hotelCost.kyoto + hotelCost.osaka;
     const lodgingBuffer = hotelSubtotal * (LODGING_TAX_BUFFER - 1);
@@ -2674,6 +2700,11 @@
     rows.push(["Tokyo↔Hakone", thCost]);
     rows.push(["Hakone↔Kyoto (+Shinkansen)", hkCost]);
     rows.push([osakaMode ? "Kyoto↔Osaka↔Airport" : "Kyoto↔Airport", finalCost]);
+    if (rentalCost > 0)
+      rows.push([
+        (TRIP.transport.rental && TRIP.transport.rental.label) || "Rental car",
+        rentalCost,
+      ]);
     if (activitiesCost > 0)
       rows.push(["Activities (optional)", activitiesCost]);
 
