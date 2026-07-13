@@ -1322,50 +1322,10 @@
       <div class="seg" id="extraNightSeg"></div>
     </div>
 
-    <!-- Airport leg -->
-    <div class="leg" data-leg="airport"></div>
-
-    <!-- TOKYO -->
-    <div class="stop" data-stop="tokyo"></div>
-
-    <!-- Tokyo -> Hakone leg -->
-    <div class="leg" data-leg="th"></div>
-
-    <!-- HAKONE -->
-    <div class="stop" data-stop="hakone"></div>
-
-    <!-- Hakone -> Kyoto leg -->
-    <div class="leg" data-leg="hk"></div>
-
-    <!-- KYOTO -->
-    <div class="stop" data-stop="kyoto"></div>
-
-    <!-- OSAKA (conditional) -->
-    <div id="osakaBlock" style="display: none">
-      <div class="leg">
-        <div class="leg-marker"></div>
-        <div class="leg-row">
-          <div class="leg-name">
-            Kyoto → <strong>Osaka</strong>
-            <span class="fixed-leg"
-              >(Kintetsu Ltd. Express, both adults: <b>$28</b>, only public
-              option researched)</span
-            >
-          </div>
-        </div>
-      </div>
-      <div class="stop">
-        <div class="stop-marker"></div>
-        <div class="stop-head">
-          <h2>Osaka — Namba</h2>
-          <span class="nights">1 night</span>
-        </div>
-        <div class="tier-list rateable" id="osakaTiers"></div>
-      </div>
-    </div>
-
-    <!-- Final leg to airport -->
-    <div class="leg" data-leg="final"></div>
+    <!-- The whole leg + stop sequence is generated from TRIP by
+         renderRouteBody(): arrival leg → stops with inter-city legs →
+         optional-city blocks → departure leg. -->
+    <div id="routeBody"></div>
   </div>
 
   <aside class="summary">
@@ -1775,6 +1735,7 @@
     osaka: {
       baseNights: 0,
       label: "Osaka",
+      header: "Osaka — Namba",
       options: [
         {
           name: "Citadines Namba Osaka",
@@ -1814,6 +1775,7 @@
     legs: [
       {
         id: "airport",
+        role: "arrival", // renders before the first stop
         routeName: "<strong>Airport</strong> → Tokyo (Gotanda)",
         toggles: ["terminal", "mode"],
         routeDetail: true,
@@ -1832,6 +1794,8 @@
       },
       {
         id: "th",
+        from: "tokyo",
+        to: "hakone",
         routeName: "Tokyo → <strong>Hakone</strong>",
         toggles: ["mode"],
         routeDetail: true,
@@ -1844,6 +1808,8 @@
       },
       {
         id: "hk",
+        from: "hakone",
+        to: "kyoto",
         routeName: "Hakone → <strong>Kyoto</strong>",
         note: "(Shinkansen, both adults, reserved seat: <b>$152</b> fixed)",
         toggles: ["mode"],
@@ -1858,6 +1824,7 @@
       },
       {
         id: "final",
+        role: "departure", // renders after the last stop
         routeName: "<strong>Kyoto</strong> → Kansai Airport",
         dynamicNameId: "finalLegName",
         toggles: ["mode"],
@@ -1870,9 +1837,20 @@
         },
         cost: { public: 45, private: 160 }, // Kyoto↔Kansai Airport
       },
-      { id: "kyotoOsaka", when: "osaka", flat: { cost: 28, scale: "person" } }, // Aoniyoshi Ltd. Express
+      {
+        id: "kyotoOsaka",
+        role: "optional", // arrival leg into an optional city
+        to: "osaka",
+        routeName: "Kyoto → <strong>Osaka</strong>",
+        note: "(Kintetsu Ltd. Express, both adults: <b>$28</b>, only public option researched)",
+        toggles: [],
+        routeDetail: false,
+        when: "osaka",
+        flat: { cost: 28, scale: "person" },
+      }, // Aoniyoshi Ltd. Express
       {
         id: "osakaAirport",
+        role: "cost", // cost-only; the departure leg UI covers this segment
         when: "osaka",
         flat: { cost: 18, scale: "person" },
       }, // Nankai IC fare
@@ -2273,72 +2251,100 @@
 
   // build each route city's stop (header, night label, tier + activity
   // containers) from TRIP.route + hotel headers, then fill them.
-  function renderStops() {
-    document.querySelectorAll("[data-stop]").forEach((el) => {
-      const city = el.dataset.stop;
-      el.innerHTML =
-        '<div class="stop-marker"></div>' +
-        '<div class="stop-head"><h2>' +
-        HOTELS[city].header +
-        '</h2><span class="nights" id="' +
-        city +
-        'NightsLbl"></span></div>' +
-        '<div class="tier-list rateable" id="' +
-        city +
-        'Tiers"></div>' +
-        '<div class="activities-label">Activities (optional paid upgrades)</div>' +
+  // ── generate the whole route body (legs + stops) from TRIP ────────
+  // Sequence: arrival leg → each route stop (with the inter-city leg to
+  // the next) → optional-city blocks (hidden) → departure leg. A single-
+  // city route just omits inter-city legs; a legs-less trip omits legs.
+  function legHtml(leg) {
+    const nameId = leg.dynamicNameId ? ' id="' + leg.dynamicNameId + '"' : "";
+    const note = leg.note
+      ? ' <span class="fixed-leg">' + leg.note + "</span>"
+      : "";
+    const toggles = (leg.toggles || [])
+      .map((t) =>
+        t === "terminal"
+          ? '<div class="toggle" id="airportChoice" data-terminal-toggle="' +
+            leg.id +
+            '"></div>'
+          : '<div class="toggle" id="' +
+            leg.id +
+            'Mode" data-mode-toggle="' +
+            leg.id +
+            '"></div>',
+      )
+      .join("");
+    const toggleHtml = (leg.toggles || []).includes("terminal")
+      ? '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap">' +
+        toggles +
+        "</div>"
+      : toggles;
+    const rd = leg.routeDetail
+      ? '<details class="route-detail" id="rd-' + leg.id + '"></details>'
+      : "";
+    return (
+      '<div class="leg" data-leg="' +
+      leg.id +
+      '"><div class="leg-marker"></div><div class="leg-row"><div class="leg-name"' +
+      nameId +
+      ">" +
+      leg.routeName +
+      note +
+      "</div>" +
+      toggleHtml +
+      "</div>" +
+      rd +
+      "</div>"
+    );
+  }
+  function stopHtml(city, withActivities) {
+    return (
+      '<div class="stop" data-stop="' +
+      city +
+      '"><div class="stop-marker"></div><div class="stop-head"><h2>' +
+      HOTELS[city].header +
+      '</h2><span class="nights" id="' +
+      city +
+      'NightsLbl"></span></div><div class="tier-list rateable" id="' +
+      city +
+      'Tiers"></div>' +
+      (withActivities
+        ? '<div class="activities-label">Activities (optional paid upgrades)</div><div id="' +
+          city +
+          'Activities"></div>'
+        : "") +
+      "</div>"
+    );
+  }
+  function renderRouteBody() {
+    const legs = TRIP.transport.legs;
+    const byRole = (r) => legs.find((l) => l.role === r);
+    const interLeg = (from, to) =>
+      legs.find((l) => l.from === from && l.to === to);
+    let html = "";
+    const arrival = byRole("arrival");
+    if (arrival) html += legHtml(arrival);
+    TRIP.meta.route.forEach((c, i) => {
+      html += stopHtml(c, true);
+      if (i < TRIP.meta.route.length - 1) {
+        const l = interLeg(c, TRIP.meta.route[i + 1]);
+        if (l) html += legHtml(l);
+      }
+    });
+    TRIP.meta.optionalCities.forEach((oc) => {
+      const oleg = legs.find((l) => l.role === "optional" && l.to === oc);
+      html +=
         '<div id="' +
-        city +
-        'Activities"></div>';
+        oc +
+        'Block" style="display: none">' +
+        (oleg ? legHtml(oleg) : "") +
+        stopHtml(oc, false) +
+        "</div>";
     });
+    const departure = byRole("departure");
+    if (departure) html += legHtml(departure);
+    document.getElementById("routeBody").innerHTML = html;
   }
-  renderStops();
-
-  // build each route leg (marker, route name, toggles, route-detail) from
-  // TRIP.transport.legs. The Osaka block stays hardcoded (optional-city work).
-  function renderLegs() {
-    document.querySelectorAll("[data-leg]").forEach((el) => {
-      const leg = TRIP.transport.legs.find((l) => l.id === el.dataset.leg);
-      const nameId = leg.dynamicNameId ? ' id="' + leg.dynamicNameId + '"' : "";
-      const note = leg.note
-        ? ' <span class="fixed-leg">' + leg.note + "</span>"
-        : "";
-      const toggles = (leg.toggles || [])
-        .map((t) =>
-          t === "terminal"
-            ? '<div class="toggle" id="airportChoice" data-terminal-toggle="' +
-              leg.id +
-              '"></div>'
-            : '<div class="toggle" id="' +
-              leg.id +
-              'Mode" data-mode-toggle="' +
-              leg.id +
-              '"></div>',
-        )
-        .join("");
-      const toggleHtml =
-        leg.id === "airport"
-          ? '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap">' +
-            toggles +
-            "</div>"
-          : toggles;
-      const rd = leg.routeDetail
-        ? '<details class="route-detail" id="rd-' + leg.id + '"></details>'
-        : "";
-      el.innerHTML =
-        '<div class="leg-marker"></div>' +
-        '<div class="leg-row"><div class="leg-name"' +
-        nameId +
-        ">" +
-        leg.routeName +
-        note +
-        "</div>" +
-        toggleHtml +
-        "</div>" +
-        rd;
-    });
-  }
-  renderLegs();
+  renderRouteBody();
 
   TRIP.meta.route.forEach((c) => renderTiers(c + "Tiers", c));
   renderTiers("osakaTiers", "osaka");
@@ -2500,10 +2506,11 @@
       nights[c] = extra === c ? 1 : 0;
     });
 
-    TRIP.meta.route.forEach((c) => {
-      const n = nights[c];
-      document.getElementById(c + "NightsLbl").textContent =
-        n + " night" + (n !== 1 ? "s" : "");
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
+      const el = document.getElementById(c + "NightsLbl");
+      if (!el) return;
+      const n = nights[c] || 0;
+      el.textContent = n + " night" + (n !== 1 ? "s" : "");
     });
     const baseTotal = TRIP.meta.route.reduce(
       (s, c) => s + HOTELS[c].baseNights,
