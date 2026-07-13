@@ -12,7 +12,8 @@ The home for generalizing a single-file trip planner into a **"pick a destinatio
 
 One self-contained file (no framework, no build, no network at view time): `<style>`, body markup for two tabs, and a `<script>` with two halves meeting at one shared state object, `window.__state`.
 
-- **Budget engine** — data constants (`FLIGHTS`, `HOTELS`, `TRANSPORT`, `ACTIVITIES`, `ROUTE_DETAIL`, `REFERENCE_TOTAL`, `LODGING_TAX_BUFFER`) + `recalc()`, which computes the total and stashes everything on `window.__state`.
+- **Trip data** — all of it lives in one `TRIP` object at the top of the script (`meta`, `flights`, `hotels`, `transport`, `activities`, `routeDetail`, `itinPool`, `visaPlan`). The engine reads it through thin bindings (`const HOTELS = TRIP.hotels`, etc.) so the engine code stays data-agnostic. This is the Phase 1 seam; Phase 2 externalizes `TRIP` to JSON.
+- **Budget engine** — `recalc()` reads the bound data, computes the total, and stashes everything on `window.__state`.
 - **Itinerary layer** — `ITIN_POOL` (narrative day content), `renderItinerary()` which renders a day-by-day _from_ `__state` (hotels/transport/costs injected via `moveData()` and the Stay-row builder), plus exports (`window.print()` PDF, `buildExcelWorkbook()` .xlsx incl. a Japan MOFA visa sheet, copy-as-text).
 
 ## Load-bearing invariants (do not break)
