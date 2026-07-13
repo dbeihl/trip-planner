@@ -1343,34 +1343,12 @@
       <div class="leg-row">
         <div class="leg-name"><strong>Airport</strong> → Tokyo (Gotanda)</div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
-          <div class="toggle" id="airportChoice">
-            <input
-              type="radio"
-              name="airport"
-              id="air-nrt"
-              value="nrt"
-              checked
-            /><label for="air-nrt">Narita</label>
-            <input type="radio" name="airport" id="air-hnd" value="hnd" /><label
-              for="air-hnd"
-              >Haneda</label
-            >
-          </div>
-          <div class="toggle" id="airportMode">
-            <input
-              type="radio"
-              name="airportmode"
-              id="air-public"
-              value="public"
-              checked
-            /><label for="air-public" id="air-public-lbl">Train/bus</label>
-            <input
-              type="radio"
-              name="airportmode"
-              id="air-private"
-              value="private"
-            /><label for="air-private" id="air-private-lbl">Private car</label>
-          </div>
+          <div
+            class="toggle"
+            id="airportChoice"
+            data-terminal-toggle="airport"
+          ></div>
+          <div class="toggle" id="airportMode" data-mode-toggle="airport"></div>
         </div>
       </div>
       <details class="route-detail" id="rd-airport"></details>
@@ -1393,21 +1371,7 @@
       <div class="leg-marker"></div>
       <div class="leg-row">
         <div class="leg-name">Tokyo → <strong>Hakone</strong></div>
-        <div class="toggle" id="thMode">
-          <input
-            type="radio"
-            name="thmode"
-            id="th-public"
-            value="public"
-            checked
-          /><label for="th-public" id="th-public-lbl">Romancecar</label>
-          <input
-            type="radio"
-            name="thmode"
-            id="th-private"
-            value="private"
-          /><label for="th-private" id="th-private-lbl">Private car</label>
-        </div>
+        <div class="toggle" id="thMode" data-mode-toggle="th"></div>
       </div>
       <details class="route-detail" id="rd-th"></details>
     </div>
@@ -1434,21 +1398,7 @@
             >(Shinkansen, both adults, reserved seat: <b>$152</b> fixed)</span
           >
         </div>
-        <div class="toggle" id="hkMode">
-          <input
-            type="radio"
-            name="hkmode"
-            id="hk-public"
-            value="public"
-            checked
-          /><label for="hk-public" id="hk-public-lbl">Bus/subway</label>
-          <input
-            type="radio"
-            name="hkmode"
-            id="hk-private"
-            value="private"
-          /><label for="hk-private" id="hk-private-lbl">Taxi both ends</label>
-        </div>
+        <div class="toggle" id="hkMode" data-mode-toggle="hk"></div>
       </div>
       <details class="route-detail" id="rd-hk"></details>
     </div>
@@ -1496,23 +1446,7 @@
         <div class="leg-name" id="finalLegName">
           <strong>Kyoto</strong> → Kansai Airport
         </div>
-        <div class="toggle" id="finalMode">
-          <input
-            type="radio"
-            name="finalmode"
-            id="final-public"
-            value="public"
-            checked
-          /><label for="final-public" id="final-public-lbl">JR Haruka</label>
-          <input
-            type="radio"
-            name="finalmode"
-            id="final-private"
-            value="private"
-          /><label for="final-private" id="final-private-lbl"
-            >Private car</label
-          >
-        </div>
+        <div class="toggle" id="finalMode" data-mode-toggle="final"></div>
       </div>
       <details class="route-detail" id="rd-final"></details>
     </div>
@@ -1959,8 +1893,10 @@
     legs: [
       {
         id: "airport",
+        ctrlPrefix: "air", // input/label id prefix (others default to the leg id)
         modeControl: "airportmode",
         terminalControl: "airport", // arrival-terminal sub-choice
+        terminals: { nrt: { label: "Narita" }, hnd: { label: "Haneda" } },
         modes: {
           public: { label: "Train/bus", scale: "person" },
           private: { label: "Private car", scale: "vehicle" },
@@ -2411,6 +2347,44 @@
 
   renderRouteDetail("rd-th", ROUTE_DETAIL.th);
   renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
+
+  // ── generate the transport toggles from TRIP.transport.legs ───────
+  // Builds the same radios/labels the engine expects (ids by ctrl prefix),
+  // so a leg's mode/terminal options are a data change, not markup.
+  function legToggleOptionsHtml(name, prefix, options, withLabelId) {
+    return Object.keys(options)
+      .map((key, i) => {
+        const inputId = prefix + "-" + key;
+        const lblId = withLabelId ? ` id="${inputId}-lbl"` : "";
+        return (
+          `<input type="radio" name="${name}" id="${inputId}" value="${key}"${i === 0 ? " checked" : ""} />` +
+          `<label for="${inputId}"${lblId}>${options[key].label}</label>`
+        );
+      })
+      .join("");
+  }
+  function renderTransportControls() {
+    const legById = (id) => TRIP.transport.legs.find((l) => l.id === id);
+    document.querySelectorAll("[data-mode-toggle]").forEach((el) => {
+      const leg = legById(el.dataset.modeToggle);
+      el.innerHTML = legToggleOptionsHtml(
+        leg.modeControl,
+        leg.ctrlPrefix || leg.id,
+        leg.modes,
+        true,
+      );
+    });
+    document.querySelectorAll("[data-terminal-toggle]").forEach((el) => {
+      const leg = legById(el.dataset.terminalToggle);
+      el.innerHTML = legToggleOptionsHtml(
+        leg.terminalControl,
+        leg.ctrlPrefix || leg.id,
+        leg.terminals,
+        false,
+      );
+    });
+  }
+  renderTransportControls();
 
   function applyRatingFilter() {
     const floor = parseFloat(document.getElementById("minRating").value);
