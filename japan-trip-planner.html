@@ -1949,18 +1949,63 @@
     },
   };
 
+  // Ordered transport legs — audited against live fares (see
+  // DIY-Cost-Options.md "Transport audit"). Each leg carries its toggle's
+  // mode labels + per-mode cost + scale, so recalc() iterates this list
+  // instead of naming legs. `scale`: "person" (fare per traveler) or
+  // "vehicle" (one private vehicle for up to 4). `when` gates a leg on the
+  // optional Osaka detour. `fixed` is an always-added cost (the Shinkansen).
   TRIP.transport = {
-    // audited against live fares — see DIY-Cost-Options.md "Transport audit" for sourcing
-    airport: {
-      nrt: { public: 43, private: 148 },
-      hnd: { public: 6, private: 56 },
-    },
-    tokyoHakone: { public: 30, private: 340 },
-    hakoneKyoto: { public: 12, private: 52 }, // both bookend legs combined (hotel↔Odawara + Kyoto Stn↔Gion)
-    shinkansenFixed: 152,
-    kyotoAirport: { public: 45, private: 160 },
-    kyotoOsaka: 28, // assumes the Aoniyoshi Ltd. Express, the only current direct Kyoto↔Namba service
-    osakaAirport: 18, // assumes Nankai ticketless/IC-card fare; standard walk-up fare is ~$21
+    legs: [
+      {
+        id: "airport",
+        modeControl: "airportmode",
+        terminalControl: "airport", // arrival-terminal sub-choice
+        modes: {
+          public: { label: "Train/bus", scale: "person" },
+          private: { label: "Private car", scale: "vehicle" },
+        },
+        cost: {
+          nrt: { public: 43, private: 148 },
+          hnd: { public: 6, private: 56 },
+        },
+      },
+      {
+        id: "th",
+        modeControl: "thmode",
+        modes: {
+          public: { label: "Romancecar", scale: "person" },
+          private: { label: "Private car", scale: "vehicle" },
+        },
+        cost: { public: 30, private: 340 }, // Tokyo↔Hakone
+      },
+      {
+        id: "hk",
+        modeControl: "hkmode",
+        modes: {
+          public: { label: "Bus/subway", scale: "person" },
+          private: { label: "Taxi both ends", scale: "vehicle" },
+        },
+        cost: { public: 12, private: 52 }, // bookend legs (hotel↔Odawara + Kyoto Stn↔Gion)
+        fixed: { cost: 152, scale: "person" }, // Shinkansen, always added
+      },
+      {
+        id: "final",
+        modeControl: "finalmode",
+        when: "noOsaka",
+        modes: {
+          public: { label: "JR Haruka", scale: "person" },
+          private: { label: "Private car", scale: "vehicle" },
+        },
+        cost: { public: 45, private: 160 }, // Kyoto↔Kansai Airport
+      },
+      { id: "kyotoOsaka", when: "osaka", flat: { cost: 28, scale: "person" } }, // Aoniyoshi Ltd. Express
+      {
+        id: "osakaAirport",
+        when: "osaka",
+        flat: { cost: 18, scale: "person" },
+      }, // Nankai IC fare
+    ],
   };
 
   // Scalars now live in TRIP.meta (the buffer note is there); bound for the engine:
@@ -2499,30 +2544,30 @@
       ...kyotoAct.chosen,
     ];
 
+    // legs are iterated from data; these helpers read a leg by id + scale a fare
+    const legOf = (id) => TRIP.transport.legs.find((l) => l.id === id);
+    const scaleOf = (scale) =>
+      scale === "vehicle" ? vehicleFactor : personFactor;
+
+    const airportLeg = legOf("airport");
     const airport = selectedValue("airport");
     const airportMode = selectedValue("airportmode");
-    const airportBase = TRANSPORT.airport[airport][airportMode];
     const airportCost =
-      airportMode === "public"
-        ? airportBase * personFactor
-        : airportBase * vehicleFactor;
+      airportLeg.cost[airport][airportMode] *
+      scaleOf(airportLeg.modes[airportMode].scale);
 
-    document.getElementById("air-public-lbl").textContent =
-      "Train/bus $" + TRANSPORT.airport[airport].public;
-    document.getElementById("air-private-lbl").textContent =
-      "Private car $" + TRANSPORT.airport[airport].private;
-    document.getElementById("th-public-lbl").textContent =
-      "Romancecar $" + TRANSPORT.tokyoHakone.public;
-    document.getElementById("th-private-lbl").textContent =
-      "Private car $" + TRANSPORT.tokyoHakone.private;
-    document.getElementById("hk-public-lbl").textContent =
-      "Bus/subway $" + TRANSPORT.hakoneKyoto.public;
-    document.getElementById("hk-private-lbl").textContent =
-      "Taxi both ends $" + TRANSPORT.hakoneKyoto.private;
-    document.getElementById("final-public-lbl").textContent =
-      "JR Haruka $" + TRANSPORT.kyotoAirport.public;
-    document.getElementById("final-private-lbl").textContent =
-      "Private car $" + TRANSPORT.kyotoAirport.private;
+    // set each leg toggle's two labels from its mode labels + costs
+    const setLegLabels = (id, prefix, costObj) => {
+      const l = legOf(id);
+      document.getElementById(prefix + "-public-lbl").textContent =
+        l.modes.public.label + " $" + costObj.public;
+      document.getElementById(prefix + "-private-lbl").textContent =
+        l.modes.private.label + " $" + costObj.private;
+    };
+    setLegLabels("airport", "air", airportLeg.cost[airport]);
+    setLegLabels("th", "th", legOf("th").cost);
+    setLegLabels("hk", "hk", legOf("hk").cost);
+    setLegLabels("final", "final", legOf("final").cost);
 
     renderRouteDetail("rd-airport", ROUTE_DETAIL.airport[airport]);
     renderRouteDetail(
@@ -2530,30 +2575,29 @@
       osakaMode ? ROUTE_DETAIL.final.osaka : ROUTE_DETAIL.final.direct,
     );
 
+    const thLeg = legOf("th");
     const thMode = selectedValue("thmode");
-    const thBase = TRANSPORT.tokyoHakone[thMode];
-    const thCost =
-      thMode === "public" ? thBase * personFactor : thBase * vehicleFactor;
+    const thCost = thLeg.cost[thMode] * scaleOf(thLeg.modes[thMode].scale);
 
+    const hkLeg = legOf("hk");
     const hkMode = selectedValue("hkmode");
-    const hkBase = TRANSPORT.hakoneKyoto[hkMode];
     const hkBookendCost =
-      hkMode === "public" ? hkBase * personFactor : hkBase * vehicleFactor;
-    const shinkansenCost = TRANSPORT.shinkansenFixed * personFactor;
+      hkLeg.cost[hkMode] * scaleOf(hkLeg.modes[hkMode].scale);
+    const shinkansenCost = hkLeg.fixed.cost * scaleOf(hkLeg.fixed.scale);
     const hkCost = hkBookendCost + shinkansenCost;
 
     let finalCost, kyotoOsakaCost, osakaAirportCost;
     const finalMode = osakaMode ? null : selectedValue("finalmode");
     if (osakaMode) {
-      kyotoOsakaCost = TRANSPORT.kyotoOsaka * personFactor;
-      osakaAirportCost = TRANSPORT.osakaAirport * personFactor;
+      const ko = legOf("kyotoOsaka").flat;
+      const oa = legOf("osakaAirport").flat;
+      kyotoOsakaCost = ko.cost * scaleOf(ko.scale);
+      osakaAirportCost = oa.cost * scaleOf(oa.scale);
       finalCost = kyotoOsakaCost + osakaAirportCost;
     } else {
-      const finalBase = TRANSPORT.kyotoAirport[finalMode];
+      const finalLeg = legOf("final");
       finalCost =
-        finalMode === "public"
-          ? finalBase * personFactor
-          : finalBase * vehicleFactor;
+        finalLeg.cost[finalMode] * scaleOf(finalLeg.modes[finalMode].scale);
     }
 
     const usFlight = FLIGHTS.us.options[selectedIndex("usFlight")];
