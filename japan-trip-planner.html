@@ -1434,7 +1434,9 @@
         <p class="flights-caveat">
           Driving to the start — no airfare in the total. Enter the one-way
           distance and we estimate premium fuel for the round trip (+15% for
-          real-world detours, about $5/gal). Leave miles at 0 to skip it.
+          real-world detours, about $5/gal). If the drive takes more than a day
+          each way, add overnight stops and we fold in en-route lodging. Leave
+          miles at 0 to skip it.
         </p>
         <div class="quiz-row">
           <label class="origin-pax"
@@ -1457,6 +1459,29 @@
           /></label>
           <span class="origin-pax"
             >Est. fuel: <strong id="driveCostOut">$0</strong></span
+          >
+        </div>
+        <div class="quiz-row">
+          <label class="origin-pax"
+            >Days for the drive (each way)
+            <input
+              type="number"
+              id="driveDays"
+              min="1"
+              value="1"
+              inputmode="numeric"
+          /></label>
+          <label class="origin-pax"
+            >Overnight stop ($/night)
+            <input
+              type="number"
+              id="driveStopRate"
+              min="0"
+              value="120"
+              inputmode="numeric"
+          /></label>
+          <span class="origin-pax"
+            >Overnight stops: <strong id="driveStopsOut">0</strong></span
           >
         </div>
       </div>
@@ -2988,7 +3013,11 @@
         ? "drive"
         : "fly";
     const sameAirport = sameAirportOn();
-    let origins, flightsCost;
+    let origins,
+      flightsCost,
+      fuelCost = 0,
+      enrouteNights = 0,
+      enrouteLodging = 0;
     if (arriveMode === "drive") {
       origins = [];
       const miles = Math.max(
@@ -3000,9 +3029,23 @@
         parseFloat((document.getElementById("driveMpg") || {}).value) || 25,
       );
       const gallons = (miles * 2 * DRIVE_PAD) / mpg; // round trip + detour padding
-      flightsCost = Math.round(gallons * FUEL_PRICE);
+      fuelCost = Math.round(gallons * FUEL_PRICE);
+      const driveDays = Math.max(
+        1,
+        parseInt((document.getElementById("driveDays") || {}).value, 10) || 1,
+      );
+      const stopRate = Math.max(
+        0,
+        parseInt((document.getElementById("driveStopRate") || {}).value, 10) ||
+          0,
+      );
+      enrouteNights = (driveDays - 1) * 2; // an overnight each way per extra day
+      enrouteLodging = enrouteNights * stopRate * rooms;
+      flightsCost = fuelCost + enrouteLodging;
       const dco = document.getElementById("driveCostOut");
-      if (dco) dco.textContent = "$" + flightsCost.toLocaleString("en-US");
+      if (dco) dco.textContent = "$" + fuelCost.toLocaleString("en-US");
+      const dso = document.getElementById("driveStopsOut");
+      if (dso) dso.textContent = String(enrouteNights);
     } else {
       origins = computeActiveOrigins(N, sameAirport);
       flightsCost = origins.reduce((s, o) => s + o.sel.fare * o.pax, 0);
@@ -3065,8 +3108,13 @@
     const roomsSuffix = rooms > 1 ? ` (${rooms} rooms)` : "";
     const rows = [];
     if (arriveMode === "drive") {
-      if (flightsCost > 0)
-        rows.push(["Getting there — driving (est. fuel)", flightsCost]);
+      if (fuelCost > 0)
+        rows.push(["Getting there — driving (est. fuel)", fuelCost]);
+      if (enrouteLodging > 0)
+        rows.push([
+          `Drive — ${enrouteNights} overnight stop${enrouteNights > 1 ? "s" : ""}`,
+          enrouteLodging,
+        ]);
     } else {
       rows.push([
         "Flights — getting there (" + originsLabel + ")",
@@ -3131,6 +3179,9 @@
       arriveMode,
       origins,
       flightsCost,
+      fuelCost,
+      enrouteNights,
+      enrouteLodging,
       airport,
       airportMode,
       airportCost,
@@ -3197,8 +3248,12 @@
 
     if (s.arriveMode === "drive") {
       lines.push("GETTING THERE (driving)");
-      if (s.flightsCost > 0)
-        lines.push(`  Drive to the start ($${fmt2(s.flightsCost)})`);
+      if (s.fuelCost > 0)
+        lines.push(`  Drive to the start — fuel ($${fmt2(s.fuelCost)})`);
+      if (s.enrouteLodging > 0)
+        lines.push(
+          `  En-route overnight stops — ${s.enrouteNights}n ($${fmt2(s.enrouteLodging)})`,
+        );
     } else {
       lines.push("GETTING THERE (international flights, round trip)");
       s.origins.forEach((o) =>
@@ -3350,12 +3405,19 @@
     const roomNote = `${s.rooms} room${s.rooms > 1 ? "s" : ""}`;
 
     if (s.arriveMode === "drive") {
-      if (s.flightsCost > 0)
+      if (s.fuelCost > 0)
         add(
           "Getting there",
           "Drive to the start",
           "Estimated premium fuel, round trip (+15%)",
-          s.flightsCost,
+          s.fuelCost,
+        );
+      if (s.enrouteLodging > 0)
+        add(
+          "Getting there",
+          "En-route overnight stops",
+          `${s.enrouteNights} night${s.enrouteNights > 1 ? "s" : ""} of lodging on the drive`,
+          s.enrouteLodging,
         );
     } else {
       s.origins.forEach((o) =>
@@ -3611,7 +3673,7 @@
   document.addEventListener("change", recalc);
   document.getElementById("travelerCount").addEventListener("input", recalc);
   document.getElementById("minRating").addEventListener("input", recalc);
-  ["driveMiles", "driveMpg"].forEach((id) => {
+  ["driveMiles", "driveMpg", "driveDays", "driveStopRate"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", recalc);
   });
