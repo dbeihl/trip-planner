@@ -1,5 +1,5 @@
 <meta charset="utf-8" />
-<title>Yellowstone &amp; Grand Teton Road Trip — Budget &amp; Itinerary</title>
+<title>Southwest National Parks Road Trip — Budget &amp; Itinerary</title>
 <style>
   @font-face {
     font-family: "Ledger Serif";
@@ -1727,432 +1727,382 @@
   // the end of the data block — its code is otherwise unchanged.
   // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
   // ─────────────────────────────────────────────────────────────────
-  const TRIP = {
-    meta: {
-      title: "Yellowstone & Grand Teton — Sep 2026",
-      route: ["jackson", "oldFaithful", "canyon", "mammoth"],
-      optionalCities: [],
-      flexNightDefault: "jackson",
-      dates: { arrive: "2026-09-12", depart: "2026-09-20", nights: 8 },
-      travelers: {
-        count: 2,
-        note: "2 travelers; fly into Jackson Hole, out of Bozeman",
-      },
-      currency: "USD",
-      lodgingTaxBuffer: 1.12, // WY/MT lodging tax + park/resort fees
-      destLabel: "Jackson Hole", // gateway shown for an "Other airport" origin
-      ui: {
-        eyebrow:
-          'Sep 12 → Sep 20, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
-        planTitle: "Yellowstone &amp; Grand Teton Road Trip",
-        planSub:
-          "A driving loop through the Tetons and Yellowstone. Pick a lodge tier per stop; the rental car, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
-        flightsTitle: "Getting there — flights to the gateway",
-        flightsIntro:
-          "Two travelers converging on Jackson Hole. Pick a routing for each — fares fold into the grand total. Fly into Jackson Hole (JAC), out of Bozeman (BZN) to skip the backtrack.",
-        itinTitle: "Wyoming &amp; Montana, by road — nine days in the parks",
-        itinDek:
-          "A relaxed loop: Grand Teton, then the Yellowstone grand loop. One anchor a day, wildlife at dawn and dusk, and enough road time to actually see the country in between.",
-      },
+const TRIP = {
+  meta: {
+    title: "Southwest National Parks Road Trip — May 2026",
+    route: ["zion", "bryce", "grandCanyon"],
+    optionalCities: [],
+    flexNightDefault: "zion",
+    dates: { arrive: "2026-05-09", depart: "2026-05-15", nights: 6 },
+    travelers: {
+      count: 2,
+      note: "2 travelers; fly into and out of Las Vegas, driving loop by rental SUV",
     },
-  };
+    currency: "USD",
+    lodgingTaxBuffer: 1.13, // UT/AZ lodging tax + resort/park fees
+    destLabel: "Las Vegas", // gateway shown for an "Other airport" origin / drive
+    ui: {
+      eyebrow:
+        'May 9 → May 15, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
+      planTitle: "Southwest National Parks Road Trip",
+      planSub:
+        "A driving loop out of Las Vegas through Zion, Bryce, and the Grand Canyon's South Rim. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
+      flightsTitle: "Getting there — flights to the gateway",
+      flightsIntro:
+        "Two travelers converging on Las Vegas. Pick a routing for each — fares fold into the grand total. Fly into and out of Las Vegas (LAS); the rental car handles the rest.",
+      itinTitle: "Utah &amp; Arizona, by road — seven days across three parks",
+      itinDek:
+        "A tight loop: Zion's canyons, Bryce's hoodoos, and the Grand Canyon's South Rim. One anchor hike or overlook a day, red rock the whole way, and enough drive time to watch the country change under you.",
+    },
+  },
+};
 
-  TRIP.flights = {
-    us: {
-      label: "From the USA — David (IND)",
-      traveler: "David",
-      pax: 1,
-      preference: "Delta preferred · fewest stops",
-      options: [
-        {
-          name: "Delta via Salt Lake City",
-          route: "IND → SLC → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 480,
-          note: "Fewest stops into Jackson Hole; seasonal SLC→JAC nonstop",
-          current: true,
-        },
-        {
-          name: "Delta via Minneapolis",
-          route: "IND → MSP → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 400,
-          note: "Often the cheapest 1-stop; fly out of Bozeman",
-        },
-        {
-          name: "Delta via Atlanta",
-          route: "IND → ATL → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 510,
-          note: "Seasonal ATL→JAC nonstop",
-        },
-        {
-          name: "Delta via Detroit",
-          route: "IND → DTW → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 430,
-          note: "Backup via the DTW hub",
-        },
-      ],
-    },
-    ph: {
-      label: "From the Philippines — partner (MNL/DVO)",
-      traveler: "Partner",
-      pax: 1,
-      preference: "Fewest stops · one alliance where possible",
-      options: [
-        {
-          name: "Philippine Airlines + Delta",
-          route: "MNL → NRT → SEA → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1650,
-          note: "Long-haul to Tokyo, US carrier to Seattle + Bozeman",
-          current: true,
-        },
-        {
-          name: "Korean Air + Delta (SkyTeam)",
-          route: "MNL → ICN → SLC → JAC",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1750,
-          note: "SkyTeam via Incheon + SLC into Jackson",
-        },
-        {
-          name: "United + ANA (Star Alliance)",
-          route: "MNL → NRT → DEN → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1700,
-          note: "Alliance alternative via Tokyo + Denver",
-        },
-        {
-          name: "From Davao (add domestic hop)",
-          route: "DVO → MNL → ICN → SEA → BZN",
-          stops: 3,
-          cabin: "Economy",
-          fare: 1950,
-          note: "Extra domestic leg out of Davao",
-        },
-      ],
-    },
-    ord: {
-      label: "USA — Chicago (ORD)",
-      traveler: "Traveler",
-      pax: 1,
-      preset: true, // available in the dropdown; not part of the default split
-      preference: "Open-jaw JAC in / BZN out",
-      options: [
-        {
-          name: "United nonstop (open-jaw)",
-          route: "ORD → JAC / BZN → ORD",
-          stops: 0,
-          cabin: "Main Cabin",
-          fare: 540,
-          note: "Seasonal United nonstops both ways; book as one multi-city fare",
-          current: true,
-        },
-        {
-          name: "United via Denver",
-          route: "ORD → DEN → JAC / BZN → DEN → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 460,
-          note: "Most schedule flexibility; often cheaper than the nonstop",
-        },
-        {
-          name: "Delta via Salt Lake City",
-          route: "ORD → SLC → JAC / BZN → SLC → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 485,
-          note: "Strong SLC-hub service to both airports",
-        },
-        {
-          name: "American via Dallas/Fort Worth",
-          route: "ORD → DFW → JAC / BZN → DFW → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 565,
-          note: "DFW-hub backup; longer connections",
-        },
-      ],
-    },
-  };
-
-  TRIP.hotels = {
-    jackson: {
-      baseNights: 2,
-      label: "Grand Teton",
-      header: "Jackson / Grand Teton",
-      options: [
-        {
-          name: "Cowboy Village Resort (Jackson town)",
-          rate: 210,
-          rating: "8.0",
-          note: "Log-cabin motel near Town Square",
-          current: true,
-        },
-        {
-          name: "Colter Bay Log Cabins (in-park)",
-          rate: 250,
-          rating: "8.0",
-          note: "Classic cabins near Jackson Lake",
-        },
-        {
-          name: "Signal Mountain Lodge (lakeside)",
-          rate: 320,
-          rating: "8.2",
-          note: "On Jackson Lake, quieter",
-        },
-        {
-          name: "Jackson Lake Lodge (in-park icon)",
-          rate: 500,
-          rating: "8.4",
-          note: "60-ft windows facing the Tetons",
-        },
-        {
-          name: "Jenny Lake Lodge (all-inclusive)",
-          rate: 1400,
-          rating: "9.1",
-          note: "Base of the peaks; meals + activities included",
-        },
-      ],
-    },
-    oldFaithful: {
-      baseNights: 2,
-      label: "Old Faithful",
-      header: "Old Faithful",
-      options: [
-        {
-          name: "Old Faithful Lodge Cabin",
-          rate: 165,
-          rating: "7.8",
-          note: "Basic cabin steps from the geyser",
-          current: true,
-        },
-        {
-          name: "Old Faithful Inn — Old House",
-          rate: 260,
-          rating: "8.6",
-          note: "Iconic 1904 log lodge, shared bath",
-        },
-        {
-          name: "Old Faithful Inn — private bath",
-          rate: 400,
-          rating: "8.6",
-          note: "Historic Inn, private bath",
-        },
-        {
-          name: "Old Faithful Inn — premium/suite",
-          rate: 550,
-          rating: "8.6",
-          note: "Best rooms, geyser views",
-        },
-      ],
-    },
-    canyon: {
-      baseNights: 2,
-      label: "Canyon / Lake",
-      header: "Canyon / Yellowstone Lake",
-      options: [
-        {
-          name: "Canyon Lodge Western Cabin",
-          rate: 260,
-          rating: "8.0",
-          note: "Near the canyon rim",
-          current: true,
-        },
-        {
-          name: "Canyon Lodge — standard room",
-          rate: 370,
-          rating: "8.2",
-          note: "Rebuilt modern lodge",
-        },
-        {
-          name: "Lake Yellowstone Hotel — lake view",
-          rate: 450,
-          rating: "8.0",
-          note: "Elegant 1891 hotel on the lake",
-        },
-        {
-          name: "Canyon Lodge — premium",
-          rate: 460,
-          rating: "8.2",
-          note: "Larger updated rooms",
-        },
-      ],
-    },
-    mammoth: {
-      baseNights: 1,
-      label: "Mammoth",
-      header: "Mammoth / Lamar Valley",
-      options: [
-        {
-          name: "Mammoth Hotel — shared bath",
-          rate: 175,
-          rating: "7.8",
-          note: "By the terraces + north entrance",
-          current: true,
-        },
-        {
-          name: "Mammoth — frontier/hot-tub cabin",
-          rate: 250,
-          rating: "8.0",
-          note: "Some cabins have private hot tubs",
-        },
-        {
-          name: "Mammoth Hotel — private bath",
-          rate: 320,
-          rating: "8.0",
-          note: "Closest in-park base to Gardiner/Bozeman",
-        },
-      ],
-    },
-  };
-
-  TRIP.transport = {
-    rental: {
-      perDay: 130,
-      oneTime: 210,
-      label: "Rental SUV + fuel + park pass",
-      note: "Mid-size SUV at Jackson Hole (~$130/day) + ~$140 fuel for the loop + $70 park pass. Book early — the JAC fleet is limited in peak season.",
-    },
-    legs: [
+TRIP.flights = {
+  us: {
+    label: "From the USA — David (ORD)",
+    traveler: "David",
+    pax: 1,
+    preference: "Nonstop preferred · fewest stops",
+    options: [
       {
-        id: "arrive",
-        role: "arrival",
-        routeName: "Arrive Jackson Hole (JAC) · pick up rental SUV",
-        note: "~15 min into town / Grand Teton",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Southwest nonstop",
+        route: "ORD → LAS",
+        stops: 0,
+        cabin: "Economy",
+        fare: 208,
+        note: "Direct Midway/O'Hare service, no assigned seats",
+        current: true,
       },
       {
-        id: "j-of",
-        from: "jackson",
-        to: "oldFaithful",
-        routeName: "Jackson → <strong>Old Faithful</strong>",
-        note: "Drive ~2h15 · 83 mi (South Entrance & West Thumb)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "United nonstop",
+        route: "ORD → LAS",
+        stops: 0,
+        cabin: "Economy",
+        fare: 246,
+        note: "Multiple daily nonstops from the O'Hare hub",
       },
       {
-        id: "of-c",
-        from: "oldFaithful",
-        to: "canyon",
-        routeName: "Old Faithful → <strong>Canyon</strong>",
-        note: "Drive ~50 min · 32 mi (stop at Grand Prismatic)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Frontier nonstop (budget)",
+        route: "ORD → LAS",
+        stops: 0,
+        cabin: "Basic Economy",
+        fare: 148,
+        note: "Cheapest nonstop; carry-on and seat fees add up fast",
       },
       {
-        id: "c-m",
-        from: "canyon",
-        to: "mammoth",
-        routeName: "Canyon → <strong>Mammoth</strong>",
-        note: "Drive ~2h · via Lamar Valley (wolves & bison)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
-      },
-      {
-        id: "depart",
-        role: "departure",
-        routeName: "<strong>Mammoth</strong> → Bozeman (BZN)",
-        note: "Drive ~1h30 · 80 mi · fly home",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Delta via Salt Lake City",
+        route: "ORD → SLC → LAS",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 268,
+        note: "Backup if the nonstops sell out",
       },
     ],
-  };
+  },
+  ph: {
+    label: "From the Philippines — partner (MNL)",
+    traveler: "Partner",
+    pax: 1,
+    preference: "Fewest stops · one alliance where possible",
+    options: [
+      {
+        name: "Philippine Airlines + United",
+        route: "MNL → LAX → LAS",
+        stops: 2,
+        cabin: "Economy",
+        fare: 1180,
+        note: "Long-haul to LA, short connector on to Las Vegas",
+        current: true,
+      },
+      {
+        name: "ANA + United (Star Alliance)",
+        route: "MNL → NRT → DEN → LAS",
+        stops: 2,
+        cabin: "Economy",
+        fare: 1320,
+        note: "Alliance routing via Tokyo + Denver",
+      },
+      {
+        name: "Korean Air + Delta (SkyTeam)",
+        route: "MNL → ICN → SLC → LAS",
+        stops: 2,
+        cabin: "Economy",
+        fare: 1250,
+        note: "SkyTeam via Incheon + Salt Lake City",
+      },
+      {
+        name: "EVA Air + American",
+        route: "MNL → TPE → DFW → LAS",
+        stops: 2,
+        cabin: "Economy",
+        fare: 1400,
+        note: "Via Taipei + Dallas; longer total transit",
+      },
+    ],
+  },
+  nyc: {
+    label: "From the USA — Guest (JFK)",
+    traveler: "Guest",
+    pax: 1,
+    preference: "Nonstop preferred",
+    preset: true,
+    options: [
+      {
+        name: "JetBlue nonstop",
+        route: "JFK → LAS",
+        stops: 0,
+        cabin: "Economy",
+        fare: 228,
+        note: "JetBlue's transcon nonstop, extra legroom available",
+        current: true,
+      },
+      {
+        name: "Delta nonstop",
+        route: "JFK → LAS",
+        stops: 0,
+        cabin: "Main Cabin",
+        fare: 260,
+        note: "Multiple daily nonstops",
+      },
+      {
+        name: "American via Dallas",
+        route: "JFK → DFW → LAS",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 245,
+        note: "Backup routing via the DFW hub",
+      },
+      {
+        name: "Spirit nonstop (budget)",
+        route: "JFK → LAS",
+        stops: 0,
+        cabin: "Basic Economy",
+        fare: 158,
+        note: "Cheapest nonstop; bags and seats cost extra",
+      },
+    ],
+  },
+};
 
-  TRIP.activities = {
-    jackson: [
+TRIP.hotels = {
+  zion: {
+    baseNights: 2,
+    label: "Zion",
+    header: "Springdale / Zion Canyon",
+    options: [
       {
-        day: 2,
-        title: "Jenny Lake & the Tetons",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Jenny Lake loop + Hidden Falls; park entry only",
-            current: true,
-          },
-          {
-            name: "Jenny Lake shuttle boat",
-            cost: 44,
-            note: "Round-trip boat, shortens the Cascade Canyon approach",
-          },
-          {
-            name: "Snake River scenic float (guided)",
-            cost: 190,
-            note: "~3 hr guided raft, no rapids, Tetons backdrop",
-          },
-        ],
+        name: "Driftwood Lodge",
+        rate: 195,
+        rating: "8.3",
+        note: "Simple motor-lodge steps from the shuttle stop, orchard views",
+        current: true,
+      },
+      {
+        name: "Zion Lodge (in-park)",
+        rate: 275,
+        rating: "8.6",
+        note: "The only in-park lodging, tucked inside the canyon itself",
+      },
+      {
+        name: "Cable Mountain Lodge",
+        rate: 340,
+        rating: "8.7",
+        note: "Upscale resort feel a few steps from the South Entrance",
+      },
+      {
+        name: "Cliffrose Springdale, Curio Collection by Hilton",
+        rate: 385,
+        rating: "8.9",
+        note: "Riverside grounds, pool, and red-rock views at the park gate",
       },
     ],
-    oldFaithful: [
+  },
+  bryce: {
+    baseNights: 1,
+    label: "Bryce",
+    header: "Bryce Canyon City",
+    options: [
       {
-        day: 4,
-        title: "Geyser basins",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Old Faithful + Upper Geyser Basin + Grand Prismatic",
-            current: true,
-          },
-        ],
+        name: "Best Western Plus Ruby's Inn",
+        rate: 175,
+        rating: "8.0",
+        note: "Sprawling lodge a mile from the park entrance, big breakfast",
+        current: true,
+      },
+      {
+        name: "Bryce Canyon Grand Hotel",
+        rate: 225,
+        rating: "8.2",
+        note: "Newer hotel just outside the park boundary",
+      },
+      {
+        name: "Bryce Canyon Lodge (in-park)",
+        rate: 265,
+        rating: "8.6",
+        note: "The only in-park lodge, walking distance to Sunset Point",
+      },
+      {
+        name: "Stone Canyon Inn (cabins)",
+        rate: 340,
+        rating: "9.0",
+        note: "Private cabins with hoodoo views south of the park",
       },
     ],
-    canyon: [
+  },
+  grandCanyon: {
+    baseNights: 2,
+    label: "Grand Canyon South Rim",
+    header: "Grand Canyon Village / Tusayan",
+    options: [
       {
-        day: 6,
-        title: "Canyon & wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Grand Canyon rim + Hayden Valley pullouts",
-            current: true,
-          },
-          {
-            name: "Yellowstone Lake scenic cruise",
-            cost: 50,
-            note: "~1 hr narrated cruise from Bridge Bay",
-          },
-        ],
+        name: "Yavapai Lodge (in-park)",
+        rate: 200,
+        rating: "7.9",
+        note: "Largest in-park lodge, near the General Store and visitor center",
+        current: true,
+      },
+      {
+        name: "The Grand Hotel at the Grand Canyon (Tusayan)",
+        rate: 255,
+        rating: "8.3",
+        note: "Full-service hotel with a pool, a mile outside the South Entrance",
+      },
+      {
+        name: "Thunderbird Lodge (in-park, rim-adjacent)",
+        rate: 300,
+        rating: "8.2",
+        note: "A short walk to the rim trail, some rooms with partial canyon views",
+      },
+      {
+        name: "El Tovar Hotel (in-park icon)",
+        rate: 470,
+        rating: "8.9",
+        note: "The 1905 log-and-stone landmark, steps from the rim",
       },
     ],
-    mammoth: [
-      {
-        day: 8,
-        title: "Lamar Valley wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Dawn drive through Lamar Valley + Mammoth terraces",
-            current: true,
-          },
-          {
-            name: "Guided wildlife safari",
-            cost: 550,
-            note: "Full-day naturalist tour with spotting scopes",
-          },
-        ],
-      },
-    ],
-  };
+  },
+};
 
+TRIP.transport = {
+  rental: {
+    perDay: 95,
+    oneTime: 155,
+    label: "Rental SUV + fuel + park pass",
+    note: "Mid-size SUV picked up at LAS (~$95/day) + ~$120 fuel for the full loop + $35 park entry (or upgrade to the $80 America the Beautiful annual pass if you'll use it again).",
+  },
+  legs: [
+    {
+      id: "arrive",
+      role: "arrival",
+      from: "LAS",
+      to: "zion",
+      routeName: "Arrive Las Vegas (LAS) → <strong>Zion</strong>",
+      note: "Drive ~2h45 · 160 mi · pick up rental SUV at LAS",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "vehicle" },
+    },
+    {
+      id: "z-b",
+      from: "zion",
+      to: "bryce",
+      routeName: "Zion → <strong>Bryce</strong>",
+      note: "Drive ~1h30 · 72 mi (Hwy-9 through the tunnel & Hwy-89)",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "vehicle" },
+    },
+    {
+      id: "b-gc",
+      from: "bryce",
+      to: "grandCanyon",
+      routeName: "Bryce → <strong>Grand Canyon</strong>",
+      note: "Drive ~4h · 210 mi (Hwy-89 & US-89A via Marble Canyon)",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "vehicle" },
+    },
+    {
+      id: "depart",
+      role: "departure",
+      routeName: "<strong>Grand Canyon</strong> → Las Vegas (LAS)",
+      note: "Drive ~4h30 · 280 mi · fly home",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "vehicle" },
+    },
+  ],
+};
+
+TRIP.activities = {
+  zion: [
+    {
+      day: 2,
+      title: "Zion Canyon & Angels Landing",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "Zion Canyon shuttle + the Angels Landing approach trail (permit lottery needed for the final chains); park entry only",
+          current: true,
+        },
+        {
+          name: "The Narrows guided hike",
+          cost: 140,
+          note: "Bottom-up wade with a guide; dry-bag & trekking-pole rental included",
+        },
+        {
+          name: "Guided canyoneering half-day",
+          cost: 175,
+          note: "Rappelling and slot-canyon scrambling with a local outfitter, gear included",
+        },
+      ],
+    },
+  ],
+  bryce: [
+    {
+      day: 4,
+      title: "Rim trail at sunrise",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "Sunrise/Sunset Point + the Navajo Loop–Queen's Garden combo through the hoodoos; park entry only",
+          current: true,
+        },
+        {
+          name: "Guided sunrise photography walk",
+          cost: 85,
+          note: "Small-group walk timed to first light with a local photo guide",
+        },
+      ],
+    },
+  ],
+  grandCanyon: [
+    {
+      day: 6,
+      title: "South Rim overlooks",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "Rim Trail from the Village to Mather Point + the free shuttle out to Hermits Rest; park entry only",
+          current: true,
+        },
+        {
+          name: "Desert View Drive + Watchtower guided tour",
+          cost: 65,
+          note: "Small-van tour east along the rim to the Watchtower and Lipan Point",
+        },
+        {
+          name: "Mule ride to Plateau Point",
+          cost: 300,
+          note: "Half-day mule trip below the rim; book months ahead",
+        },
+      ],
+    },
+  ],
+};
   // ── engine bindings: the engine reads its data from TRIP ──────────
   const FLIGHTS = TRIP.flights;
   const HOTELS = TRIP.hotels;
@@ -3448,295 +3398,241 @@
   // Narrative pools (experience only). Concrete hotel/transport/cost
   // rows are injected from __state at render time, so they always
   // reflect the Plan-tab choices. First entry per city is the travel-in day.
-  TRIP.itinPool = {
-    jackson: [
-      {
-        id: "j-arrive",
-        travel: true,
-        move: "arrive",
-        lodging: "jackson",
-        cityTag: "Jackson — arrive",
-        sun: "19:47",
-        title: "Land, grab the car, ease in",
-        rows: [
-          {
-            tag: "Move",
-            kind: "move",
-            lead: "Fly into Jackson Hole (JAC).",
-            detail:
-              "Pick up the rental SUV; ~15 min into town or the park. We land separately — meet at the lodge.",
-          },
-          {
-            tag: "Evening",
-            kind: "soft",
-            detail:
-              "Dinner in Jackson off the Town Square, or catch first light on the Tetons at dusk. Stock a cooler for the road.",
-          },
-        ],
-        ask: "what time do our flights land? It decides whether tonight has a sunset drive in it.",
-      },
-      {
-        id: "j-tetons",
-        cityTag: "Grand Teton",
-        sun: "19:45",
-        title: "Jenny Lake and the Cathedral Group",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Jenny Lake — Hidden Falls & Inspiration Point.",
-            detail:
-              "Shuttle boat across, then walk up; the Tetons rise straight out of the water. Go early for parking.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lakeside picnic, then a Jackson dinner.",
-            detail: "Grab supplies in town; dinner back on the Square.",
-          },
-          {
-            tag: "Wildlife",
-            kind: "soft",
-            detail:
-              "Dawn or dusk on Mormon Row / Antelope Flats for moose, bison, and the classic barn-and-Tetons shot.",
-          },
-        ],
-        fuller:
-          "Add the <b>Snake River scenic float</b> — a calm guided raft with the Tetons as the backdrop, ~3 hours.",
-        ask: "one big hike (Cascade Canyon, ~9 mi) or keep it easy with the float?",
-      },
-      {
-        id: "j-cascade",
-        cityTag: "Grand Teton",
-        sun: "19:43",
-        title: "A canyon under the peaks",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Cascade Canyon.",
-            detail:
-              "The signature Teton hike — boat across Jenny Lake, then up the canyon between the Grand and Mt Owen. Turn around whenever you like.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "A well-earned dinner in Jackson.",
-            detail: "",
-          },
-        ],
-        fuller:
-          "Prefer a slow day? Swap the hike for the <b>Jenny Lake scenic cruise</b> + String Lake and a lazy afternoon.",
-      },
-    ],
-    oldFaithful: [
-      {
-        id: "of-arrive",
-        travel: true,
-        move: "j-of",
-        lodging: "oldFaithful",
-        cityTag: "Jackson → Old Faithful",
-        sun: "19:40",
-        title: "North into Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Old Faithful + the Upper Geyser Basin.",
-            detail:
-              "Time an eruption, then walk the boardwalk loop past Morning Glory and the big geysers — half the world's geysers are in this basin.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at the Old Faithful Inn.",
-            detail:
-              "The great log lobby is worth a wander even if you're not staying.",
-          },
-        ],
-        ask: "leave Jackson early — the South Entrance line and wildlife stops eat the morning.",
-      },
-      {
-        id: "of-prismatic",
-        cityTag: "Old Faithful",
-        sun: "19:38",
-        title: "Grand Prismatic and the color",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Grand Prismatic Spring.",
-            detail:
-              "Walk the Midway boardwalk at ground level, then the Fairy Falls overlook spur for the aerial view of the largest hot spring in the US.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Casual dinner at the village.",
-            detail: "",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "Black Sand and Biscuit basins are quieter, colorful add-ons nearby.",
-          },
-        ],
-        fuller:
-          "Active option: <b>Fairy Falls + Twin Buttes</b> (~5.4 mi) or the <b>Mystic Falls loop</b> (~4 mi) for a real walk.",
-      },
-      {
-        id: "of-extra",
-        cityTag: "Old Faithful",
-        sun: "19:36",
-        title: "More geyser country",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Firehole Lake Drive + Lone Star Geyser.",
-            detail:
-              "An easy geyser side-road, then the flat trail to a backcountry geyser that erupts about every 3 hours.",
-          },
-        ],
-        fuller:
-          "Or drive down to <b>West Thumb Geyser Basin</b> on the shore of Yellowstone Lake.",
-      },
-    ],
-    canyon: [
-      {
-        id: "c-arrive",
-        travel: true,
-        move: "of-c",
-        lodging: "canyon",
-        cityTag: "Old Faithful → Canyon",
-        sun: "19:34",
-        title: "The Grand Canyon of the Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Artist Point & the rim.",
-            detail:
-              "The Lower Falls plunging into the yellow canyon — walk the South and North Rim overlooks; Uncle Tom's stairs if they're open.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Canyon Village.",
-            detail: "",
-          },
-        ],
-      },
-      {
-        id: "c-hayden",
-        cityTag: "Canyon / Lake",
-        sun: "19:32",
-        title: "Hayden Valley wildlife & the lake",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Hayden Valley at dawn.",
-            detail:
-              "Prime bison — and maybe wolves or a grizzly — between Canyon and Lake. Pullouts, binoculars, early light.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lake Yellowstone Hotel dining room.",
-            detail: "The lakeside sunroom is the grandest space in the park.",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "West Thumb Geyser Basin — geothermal features right on the lakeshore.",
-          },
-        ],
-        fuller:
-          "Add a <b>Yellowstone Lake scenic cruise</b> from Bridge Bay (~1 hr).",
-      },
-      {
-        id: "c-extra",
-        cityTag: "Canyon / Lake",
-        sun: "19:30",
-        title: "Canyon country, unhurried",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Mount Washburn, or a slow rim morning.",
-            detail:
-              "A big-view climb (~6 mi) for the strong, or a relaxed second pass at the canyon overlooks in different light.",
-          },
-        ],
-      },
-    ],
-    mammoth: [
-      {
-        id: "m-arrive",
-        travel: true,
-        move: "c-m",
-        lodging: "mammoth",
-        cityTag: "Canyon → Mammoth",
-        sun: "19:28",
-        title: "Lamar Valley and the terraces",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Lamar Valley — the American Serengeti.",
-            detail:
-              "Drive out at dawn for wolves, bison herds, and pronghorn, then the Mammoth Hot Springs travertine terraces on the way to the hotel.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Mammoth (or in Gardiner).",
-            detail: "Elk are often out on the Fort Yellowstone lawns.",
-          },
-        ],
-        fuller:
-          "Serious about wildlife? A <b>guided Lamar safari</b> with a naturalist and spotting scopes dramatically ups the sightings.",
-        ask: "dawn wildlife means a 6am start — worth it? (It is.)",
-      },
-      {
-        id: "m-extra",
-        cityTag: "Mammoth",
-        sun: "19:26",
-        title: "A last morning up north",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Bunsen Peak, or the Roosevelt Arch.",
-            detail:
-              "A brisk climb for a final valley view, or an easy historic wander through Fort Yellowstone and the north-entrance arch.",
-          },
-        ],
-      },
-    ],
-  };
-  TRIP.itinDepart = {
-    id: "depart",
-    travel: true,
-    move: "depart",
-    sun: "19:24",
-    cityTag: "Mammoth → home",
-    title: "Drive to Bozeman and fly out",
-    rows: [
-      {
-        tag: "Move",
-        kind: "move",
-        lead: "Mammoth → Bozeman (BZN), ~1h30.",
-        detail:
-          "Return the car at the airport; build in buffer. A last stretch of Montana on the way out.",
-      },
-    ],
-    ask: "when do the flights home leave? It sets how much of the morning is a slow drive vs. a dash.",
-  };
-
+TRIP.itinPool = {
+  zion: [
+    {
+      id: "z-arrive",
+      travel: true,
+      move: "arrive",
+      lodging: "zion",
+      cityTag: "Las Vegas — arrive",
+      sun: "20:24",
+      title: "Into red rock country",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Fly into Las Vegas (LAS).",
+          detail:
+            "Pick up the rental SUV and head north on I-15; about 2h45 to Springdale. We land separately — meet at the lodge or grab a late lunch on the way.",
+        },
+        {
+          tag: "Evening",
+          kind: "soft",
+          detail:
+            "Walk into the park mouth at Canyon Junction for golden hour on the Watchman, or just settle in — tomorrow's a full day.",
+        },
+      ],
+      ask: "what time do our flights land? It decides whether tonight has a canyon-mouth sunset walk in it.",
+    },
+    {
+      id: "z-canyon",
+      cityTag: "Zion Canyon",
+      sun: "20:25",
+      title: "Angels Landing and the canyon floor",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Angels Landing (permit) or the West Rim viewpoint.",
+          detail:
+            "Shuttle to The Grotto; if the lottery permit came through, the chains section is the payoff. If not, hike to Scout Lookout for nearly the same view without the exposure.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Springdale.",
+          detail:
+            "Zion Canyon Brew Pub, or a patio table with the cliffs lit up behind you.",
+        },
+        {
+          tag: "Wildlife",
+          kind: "soft",
+          detail:
+            "Mule deer graze the meadows near Zion Lodge most evenings — an easy stop on the shuttle back.",
+        },
+      ],
+      fuller:
+        "Add a guided <b>canyoneering half-day</b> — rappelling into a slot canyon with a local outfitter, gear included.",
+      ask: "did the Angels Landing lottery come through, or are we doing the Narrows instead tomorrow?",
+    },
+    {
+      id: "z-narrows",
+      cityTag: "Zion Canyon",
+      sun: "20:26",
+      title: "Wading the Narrows",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "The Narrows, bottom-up from the Riverside Walk.",
+          detail:
+            "Rent dry bags and a trekking pole in Springdale, then wade the Virgin River between thousand-foot walls as far up as time and water levels allow.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "An easy dinner back in town.",
+          detail: "You'll want dry clothes and a burger, in that order.",
+        },
+      ],
+      fuller:
+        "Prefer to stay dry? Swap the Narrows for the <b>Kolob Canyons</b> road and the Timber Creek Overlook — a quieter corner of the park, 40 min from Springdale.",
+    },
+  ],
+  bryce: [
+    {
+      id: "b-arrive",
+      travel: true,
+      move: "z-b",
+      lodging: "bryce",
+      cityTag: "Zion → Bryce",
+      sun: "20:22",
+      title: "Up onto the plateau",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Zion → Bryce Canyon, ~1h30.",
+          detail:
+            "Highway 9 through the Zion–Mt. Carmel Tunnel, then Highway 89 north onto the Paunsaugunt Plateau — the color shifts from red to orange as you climb.",
+        },
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Sunset Point and the rim at golden hour.",
+          detail:
+            "First look at the amphitheater — thousands of hoodoos lit sideways. Walk the rim trail over to Sunrise Point for a second angle.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner at Ruby's Inn.",
+          detail:
+            "The general store and cowboy-buffet spread is part of the Bryce ritual.",
+        },
+      ],
+      fuller:
+        "Early arrival? Squeeze in the <b>Navajo Loop–Queen's Garden combo</b> (~3 mi) same afternoon instead of waiting for tomorrow's sunrise.",
+      ask: "one Bryce night is tight — worth pulling the flex night here instead of a third night in Zion?",
+    },
+    {
+      id: "b-sunrise",
+      cityTag: "Bryce Canyon",
+      sun: "20:23",
+      title: "A slower morning among the hoodoos",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Sunrise Point at first light, then the Fairyland Loop.",
+          detail:
+            "The classic sunrise, then a longer, quieter trail (~8 mi) down among the hoodoos most day-trippers never reach.",
+        },
+      ],
+      fuller:
+        "Or keep it short: the <b>Navajo Loop–Queen's Garden combo</b> covers the highlights in half the time.",
+    },
+  ],
+  grandCanyon: [
+    {
+      id: "gc-arrive",
+      travel: true,
+      move: "b-gc",
+      lodging: "grandCanyon",
+      cityTag: "Bryce → Grand Canyon",
+      sun: "19:44",
+      title: "South to the big one",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Bryce → Grand Canyon South Rim, ~4h.",
+          detail:
+            "Highway 89 south past Kanab, then US-89A through Marble Canyon and over the Navajo Bridge before climbing onto the South Rim — a full day of driving with big views.",
+        },
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "First look at the rim near Mather Point.",
+          detail:
+            "Nothing prepares you for the scale. Arrive with enough light left to watch it change color into evening.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Grand Canyon Village.",
+          detail:
+            "El Tovar's dining room if you can get a table, otherwise Bright Angel Lodge.",
+        },
+      ],
+      ask: "leave Bryce early — Navajo Bridge and the canyon overlooks are worth unhurried stops.",
+    },
+    {
+      id: "gc-rim",
+      cityTag: "Grand Canyon South Rim",
+      sun: "19:45",
+      title: "The rim, end to end",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Rim Trail — Village to Hermits Rest (shuttle).",
+          detail:
+            "A paved, mostly flat trail strung with overlooks; ride the free shuttle out and walk back, or reverse it, stopping wherever the view stops you.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Sunset at Hopi Point.",
+          detail:
+            "The classic South Rim sunset spot — get there early for a rail-side seat.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Desert View Drive east to the Watchtower is a different, less-crowded stretch of rim if you'd rather drive than walk.",
+        },
+      ],
+      fuller:
+        "Want elevation change? The <b>South Kaibab Trail</b> to Ooh Aah Point (~1.8 mi round trip) drops right off the rim for a taste of below-the-edge without the climb back from the river.",
+    },
+    {
+      id: "gc-extra",
+      cityTag: "Grand Canyon South Rim",
+      sun: "19:46",
+      title: "One more morning on the rim",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Bright Angel Trail to the 1.5-Mile Resthouse, or a slow rim morning.",
+          detail:
+            "A real taste of hiking into the canyon for the ambitious, or a relaxed second pass at the overlooks in softer morning light.",
+        },
+      ],
+    },
+  ],
+};
+TRIP.itinDepart = {
+  id: "depart",
+  travel: true,
+  move: "depart",
+  sun: "19:46",
+  cityTag: "Grand Canyon → home",
+  title: "Drive to Las Vegas and fly out",
+  rows: [
+    {
+      tag: "Move",
+      kind: "move",
+      lead: "Grand Canyon → Las Vegas (LAS), ~4h30.",
+      detail:
+        "Return the car at the airport; build in buffer for the drive and for security. One last stretch of desert on the way out.",
+    },
+  ],
+  ask: "when do the flights home leave? It sets how much of the morning is a last rim walk vs. a straight shot to the airport.",
+};
   const ITIN_POOL = TRIP.itinPool;
 
   function itinDepartDay(osakaMode) {
@@ -4175,21 +4071,20 @@
 
   // Officer-friendly, literal one-liners for the visa form (the
   // itinerary's own titles are deliberately poetic — wrong register here).
-  TRIP.visaPlan = {
-    "j-arrive": "Arrive Jackson Hole (JAC); pick up rental car.",
-    "j-tetons": "Grand Teton NP — Jenny Lake, Hidden Falls, Mormon Row.",
-    "j-cascade": "Grand Teton — Cascade Canyon hike / Snake River float.",
-    "of-arrive": "Drive into Yellowstone; Old Faithful & Upper Geyser Basin.",
-    "of-prismatic": "Grand Prismatic Spring & Midway Geyser Basin.",
-    "of-extra": "Firehole Lake Drive; Lone Star Geyser / West Thumb.",
-    "c-arrive": "Grand Canyon of the Yellowstone — Artist Point & rim.",
-    "c-hayden": "Hayden Valley wildlife; Yellowstone Lake.",
-    "c-extra": "Mount Washburn / canyon overlooks.",
-    "m-arrive": "Lamar Valley wildlife; Mammoth Hot Springs terraces.",
-    "m-extra": "Bunsen Peak / Roosevelt Arch.",
-    depart: "Drive to Bozeman (BZN); depart.",
-  };
-
+TRIP.visaPlan = {
+  "z-arrive":
+    "Arrive Las Vegas (LAS); pick up rental car; drive to Zion/Springdale.",
+  "z-canyon": "Zion Canyon — Angels Landing or Scout Lookout; canyon floor.",
+  "z-narrows": "Zion — The Narrows wade / Kolob Canyons alternative.",
+  "b-arrive": "Drive to Bryce Canyon; Sunset Point & the rim at golden hour.",
+  "b-sunrise":
+    "Bryce Canyon sunrise; Fairyland Loop or Navajo Loop–Queen's Garden.",
+  "gc-arrive": "Drive to Grand Canyon South Rim; Mather Point.",
+  "gc-rim":
+    "Grand Canyon Rim Trail — Village to Hermits Rest; Hopi Point sunset.",
+  "gc-extra": "Bright Angel Trail taste, or a slow rim morning.",
+  depart: "Drive to Las Vegas (LAS); depart.",
+};
   const VISA_PLAN = TRIP.visaPlan;
 
   function xlEsc(s) {

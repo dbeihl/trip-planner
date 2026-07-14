@@ -1,5 +1,5 @@
 <meta charset="utf-8" />
-<title>Yellowstone &amp; Grand Teton Road Trip — Budget &amp; Itinerary</title>
+<title>Thailand — Bangkok, Chiang Mai, Phuket — Budget &amp; Itinerary</title>
 <style>
   @font-face {
     font-family: "Ledger Serif";
@@ -1727,432 +1727,409 @@
   // the end of the data block — its code is otherwise unchanged.
   // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
   // ─────────────────────────────────────────────────────────────────
-  const TRIP = {
-    meta: {
-      title: "Yellowstone & Grand Teton — Sep 2026",
-      route: ["jackson", "oldFaithful", "canyon", "mammoth"],
-      optionalCities: [],
-      flexNightDefault: "jackson",
-      dates: { arrive: "2026-09-12", depart: "2026-09-20", nights: 8 },
-      travelers: {
-        count: 2,
-        note: "2 travelers; fly into Jackson Hole, out of Bozeman",
-      },
-      currency: "USD",
-      lodgingTaxBuffer: 1.12, // WY/MT lodging tax + park/resort fees
-      destLabel: "Jackson Hole", // gateway shown for an "Other airport" origin
-      ui: {
-        eyebrow:
-          'Sep 12 → Sep 20, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
-        planTitle: "Yellowstone &amp; Grand Teton Road Trip",
-        planSub:
-          "A driving loop through the Tetons and Yellowstone. Pick a lodge tier per stop; the rental car, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
-        flightsTitle: "Getting there — flights to the gateway",
-        flightsIntro:
-          "Two travelers converging on Jackson Hole. Pick a routing for each — fares fold into the grand total. Fly into Jackson Hole (JAC), out of Bozeman (BZN) to skip the backtrack.",
-        itinTitle: "Wyoming &amp; Montana, by road — nine days in the parks",
-        itinDek:
-          "A relaxed loop: Grand Teton, then the Yellowstone grand loop. One anchor a day, wildlife at dawn and dusk, and enough road time to actually see the country in between.",
-      },
+const TRIP = {
+  meta: {
+    title: "Thailand — Bangkok, Chiang Mai & Phuket — Jan 2026",
+    route: ["bangkok", "chiangMai", "phuket"],
+    optionalCities: [],
+    flexNightDefault: "phuket",
+    dates: { arrive: "2026-01-17", depart: "2026-01-26", nights: 9 },
+    travelers: {
+      count: 2,
+      note: "2 travelers; fly into Bangkok, out of Phuket",
     },
-  };
+    currency: "USD",
+    lodgingTaxBuffer: 1.1, // Thai VAT + occasional resort fee, generally light
+    destLabel: "Bangkok",
+    ui: {
+      eyebrow:
+        'Jan 17 → Jan 26, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked Thailand loop',
+      planTitle: "Thailand: Bangkok, Chiang Mai &amp; Phuket",
+      planSub:
+        "An open-jaw loop down the country — temples and street food in Bangkok, mountains and elephants in Chiang Mai, islands and beaches in Phuket. Pick a lodging tier per stop; the domestic flights fold into the total. Every figure is a researched 2026 planning estimate.",
+      flightsTitle: "Getting there — flights to Bangkok",
+      flightsIntro:
+        "Two travelers converging on Bangkok. Pick a routing for each — fares fold into the grand total. Fly into Suvarnabhumi (BKK), home from Phuket (HKT) so there's no backtrack.",
+      itinTitle:
+        "Bangkok, Chiang Mai &amp; Phuket — nine nights across Thailand",
+      itinDek:
+        "A relaxed south-bound hop: temples and canals in Bangkok, mountains and elephants around Chiang Mai, then islands and beach time in Phuket. One anchor a day, street food at every stop, and a flex day at the end for whichever city earns it.",
+    },
+  },
+};
 
-  TRIP.flights = {
-    us: {
-      label: "From the USA — David (IND)",
-      traveler: "David",
-      pax: 1,
-      preference: "Delta preferred · fewest stops",
-      options: [
-        {
-          name: "Delta via Salt Lake City",
-          route: "IND → SLC → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 480,
-          note: "Fewest stops into Jackson Hole; seasonal SLC→JAC nonstop",
-          current: true,
-        },
-        {
-          name: "Delta via Minneapolis",
-          route: "IND → MSP → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 400,
-          note: "Often the cheapest 1-stop; fly out of Bozeman",
-        },
-        {
-          name: "Delta via Atlanta",
-          route: "IND → ATL → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 510,
-          note: "Seasonal ATL→JAC nonstop",
-        },
-        {
-          name: "Delta via Detroit",
-          route: "IND → DTW → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 430,
-          note: "Backup via the DTW hub",
-        },
-      ],
-    },
-    ph: {
-      label: "From the Philippines — partner (MNL/DVO)",
-      traveler: "Partner",
-      pax: 1,
-      preference: "Fewest stops · one alliance where possible",
-      options: [
-        {
-          name: "Philippine Airlines + Delta",
-          route: "MNL → NRT → SEA → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1650,
-          note: "Long-haul to Tokyo, US carrier to Seattle + Bozeman",
-          current: true,
-        },
-        {
-          name: "Korean Air + Delta (SkyTeam)",
-          route: "MNL → ICN → SLC → JAC",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1750,
-          note: "SkyTeam via Incheon + SLC into Jackson",
-        },
-        {
-          name: "United + ANA (Star Alliance)",
-          route: "MNL → NRT → DEN → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1700,
-          note: "Alliance alternative via Tokyo + Denver",
-        },
-        {
-          name: "From Davao (add domestic hop)",
-          route: "DVO → MNL → ICN → SEA → BZN",
-          stops: 3,
-          cabin: "Economy",
-          fare: 1950,
-          note: "Extra domestic leg out of Davao",
-        },
-      ],
-    },
-    ord: {
-      label: "USA — Chicago (ORD)",
-      traveler: "Traveler",
-      pax: 1,
-      preset: true, // available in the dropdown; not part of the default split
-      preference: "Open-jaw JAC in / BZN out",
-      options: [
-        {
-          name: "United nonstop (open-jaw)",
-          route: "ORD → JAC / BZN → ORD",
-          stops: 0,
-          cabin: "Main Cabin",
-          fare: 540,
-          note: "Seasonal United nonstops both ways; book as one multi-city fare",
-          current: true,
-        },
-        {
-          name: "United via Denver",
-          route: "ORD → DEN → JAC / BZN → DEN → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 460,
-          note: "Most schedule flexibility; often cheaper than the nonstop",
-        },
-        {
-          name: "Delta via Salt Lake City",
-          route: "ORD → SLC → JAC / BZN → SLC → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 485,
-          note: "Strong SLC-hub service to both airports",
-        },
-        {
-          name: "American via Dallas/Fort Worth",
-          route: "ORD → DFW → JAC / BZN → DFW → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 565,
-          note: "DFW-hub backup; longer connections",
-        },
-      ],
-    },
-  };
-
-  TRIP.hotels = {
-    jackson: {
-      baseNights: 2,
-      label: "Grand Teton",
-      header: "Jackson / Grand Teton",
-      options: [
-        {
-          name: "Cowboy Village Resort (Jackson town)",
-          rate: 210,
-          rating: "8.0",
-          note: "Log-cabin motel near Town Square",
-          current: true,
-        },
-        {
-          name: "Colter Bay Log Cabins (in-park)",
-          rate: 250,
-          rating: "8.0",
-          note: "Classic cabins near Jackson Lake",
-        },
-        {
-          name: "Signal Mountain Lodge (lakeside)",
-          rate: 320,
-          rating: "8.2",
-          note: "On Jackson Lake, quieter",
-        },
-        {
-          name: "Jackson Lake Lodge (in-park icon)",
-          rate: 500,
-          rating: "8.4",
-          note: "60-ft windows facing the Tetons",
-        },
-        {
-          name: "Jenny Lake Lodge (all-inclusive)",
-          rate: 1400,
-          rating: "9.1",
-          note: "Base of the peaks; meals + activities included",
-        },
-      ],
-    },
-    oldFaithful: {
-      baseNights: 2,
-      label: "Old Faithful",
-      header: "Old Faithful",
-      options: [
-        {
-          name: "Old Faithful Lodge Cabin",
-          rate: 165,
-          rating: "7.8",
-          note: "Basic cabin steps from the geyser",
-          current: true,
-        },
-        {
-          name: "Old Faithful Inn — Old House",
-          rate: 260,
-          rating: "8.6",
-          note: "Iconic 1904 log lodge, shared bath",
-        },
-        {
-          name: "Old Faithful Inn — private bath",
-          rate: 400,
-          rating: "8.6",
-          note: "Historic Inn, private bath",
-        },
-        {
-          name: "Old Faithful Inn — premium/suite",
-          rate: 550,
-          rating: "8.6",
-          note: "Best rooms, geyser views",
-        },
-      ],
-    },
-    canyon: {
-      baseNights: 2,
-      label: "Canyon / Lake",
-      header: "Canyon / Yellowstone Lake",
-      options: [
-        {
-          name: "Canyon Lodge Western Cabin",
-          rate: 260,
-          rating: "8.0",
-          note: "Near the canyon rim",
-          current: true,
-        },
-        {
-          name: "Canyon Lodge — standard room",
-          rate: 370,
-          rating: "8.2",
-          note: "Rebuilt modern lodge",
-        },
-        {
-          name: "Lake Yellowstone Hotel — lake view",
-          rate: 450,
-          rating: "8.0",
-          note: "Elegant 1891 hotel on the lake",
-        },
-        {
-          name: "Canyon Lodge — premium",
-          rate: 460,
-          rating: "8.2",
-          note: "Larger updated rooms",
-        },
-      ],
-    },
-    mammoth: {
-      baseNights: 1,
-      label: "Mammoth",
-      header: "Mammoth / Lamar Valley",
-      options: [
-        {
-          name: "Mammoth Hotel — shared bath",
-          rate: 175,
-          rating: "7.8",
-          note: "By the terraces + north entrance",
-          current: true,
-        },
-        {
-          name: "Mammoth — frontier/hot-tub cabin",
-          rate: 250,
-          rating: "8.0",
-          note: "Some cabins have private hot tubs",
-        },
-        {
-          name: "Mammoth Hotel — private bath",
-          rate: 320,
-          rating: "8.0",
-          note: "Closest in-park base to Gardiner/Bozeman",
-        },
-      ],
-    },
-  };
-
-  TRIP.transport = {
-    rental: {
-      perDay: 130,
-      oneTime: 210,
-      label: "Rental SUV + fuel + park pass",
-      note: "Mid-size SUV at Jackson Hole (~$130/day) + ~$140 fuel for the loop + $70 park pass. Book early — the JAC fleet is limited in peak season.",
-    },
-    legs: [
+TRIP.flights = {
+  us: {
+    label: "From the USA — David (LAX)",
+    traveler: "David",
+    pax: 1,
+    preference: "Fewest stops · daytime arrival into BKK",
+    options: [
       {
-        id: "arrive",
-        role: "arrival",
-        routeName: "Arrive Jackson Hole (JAC) · pick up rental SUV",
-        note: "~15 min into town / Grand Teton",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "ANA via Tokyo",
+        route: "LAX → NRT → BKK",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 980,
+        note: "Modern 787 to Narita, easy connection, solid on-time record",
+        current: true,
       },
       {
-        id: "j-of",
-        from: "jackson",
-        to: "oldFaithful",
-        routeName: "Jackson → <strong>Old Faithful</strong>",
-        note: "Drive ~2h15 · 83 mi (South Entrance & West Thumb)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Asiana via Seoul",
+        route: "LAX → ICN → BKK",
+        stops: 1,
+        cabin: "Economy",
+        fare: 910,
+        note: "Usually the cheapest 1-stop; long layover options at ICN",
       },
       {
-        id: "of-c",
-        from: "oldFaithful",
-        to: "canyon",
-        routeName: "Old Faithful → <strong>Canyon</strong>",
-        note: "Drive ~50 min · 32 mi (stop at Grand Prismatic)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Cathay Pacific via Hong Kong",
+        route: "LAX → HKG → BKK",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1060,
+        note: "Reliable HKG hub, good lounge if the layover runs long",
       },
       {
-        id: "c-m",
-        from: "canyon",
-        to: "mammoth",
-        routeName: "Canyon → <strong>Mammoth</strong>",
-        note: "Drive ~2h · via Lamar Valley (wolves & bison)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
-      },
-      {
-        id: "depart",
-        role: "departure",
-        routeName: "<strong>Mammoth</strong> → Bozeman (BZN)",
-        note: "Drive ~1h30 · 80 mi · fly home",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Singapore Airlines via Singapore",
+        route: "LAX → SIN → BKK",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1290,
+        note: "Premium service, longest routing of the four",
       },
     ],
-  };
+  },
+  ph: {
+    label: "From the Philippines — partner (MNL)",
+    traveler: "Partner",
+    pax: 1,
+    preference: "Nonstop where possible · budget-friendly",
+    options: [
+      {
+        name: "Cebu Pacific nonstop",
+        route: "MNL → BKK",
+        stops: 0,
+        cabin: "Economy",
+        fare: 210,
+        note: "Cheapest nonstop on the route, ~3h30 flight",
+        current: true,
+      },
+      {
+        name: "Philippine Airlines nonstop",
+        route: "MNL → BKK",
+        stops: 0,
+        cabin: "Economy",
+        fare: 290,
+        note: "Full-service flag carrier, better baggage allowance",
+      },
+      {
+        name: "AirAsia nonstop (Don Mueang)",
+        route: "MNL → DMK",
+        stops: 0,
+        cabin: "Economy",
+        fare: 195,
+        note: "Budget carrier into Don Mueang; ~40 min transfer to BKK-side hotels",
+      },
+      {
+        name: "Thai Lion Air via Kuala Lumpur",
+        route: "MNL → KUL → BKK",
+        stops: 1,
+        cabin: "Economy",
+        fare: 240,
+        note: "Backup if the nonstops sell out around the holidays",
+      },
+    ],
+  },
+  sf: {
+    label: "From San Francisco (preset) — SFO",
+    traveler: "Guest",
+    pax: 1,
+    preset: true,
+    preference: "Fewest stops",
+    options: [
+      {
+        name: "ANA via Tokyo",
+        route: "SFO → NRT → BKK",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 1050,
+        note: "Same Tokyo connection as the LAX routing, slightly pricier",
+        current: true,
+      },
+      {
+        name: "EVA Air via Taipei",
+        route: "SFO → TPE → BKK",
+        stops: 1,
+        cabin: "Economy",
+        fare: 990,
+        note: "Taipei hub, strong reputation, good value",
+      },
+      {
+        name: "Cathay Pacific via Hong Kong",
+        route: "SFO → HKG → BKK",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1120,
+        note: "Long-haul nonstop to HKG, short hop onward",
+      },
+    ],
+  },
+};
 
-  TRIP.activities = {
-    jackson: [
+TRIP.hotels = {
+  bangkok: {
+    baseNights: 3,
+    label: "Bangkok",
+    header: "Bangkok",
+    options: [
       {
-        day: 2,
-        title: "Jenny Lake & the Tetons",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Jenny Lake loop + Hidden Falls; park entry only",
-            current: true,
-          },
-          {
-            name: "Jenny Lake shuttle boat",
-            cost: 44,
-            note: "Round-trip boat, shortens the Cascade Canyon approach",
-          },
-          {
-            name: "Snake River scenic float (guided)",
-            cost: 190,
-            note: "~3 hr guided raft, no rapids, Tetons backdrop",
-          },
-        ],
+        name: "Once Again Hostel (Sukhumvit)",
+        rate: 28,
+        rating: "8.0",
+        note: "Design hostel in lower Sukhumvit, an easy walk to the BTS",
+        current: true,
+      },
+      {
+        name: "S31 Sukhumvit",
+        rate: 62,
+        rating: "8.3",
+        note: "Spacious serviced-apartment-style rooms with a pool, Soi 31",
+      },
+      {
+        name: "Ad Lib Bangkok (Ratchaprasong)",
+        rate: 88,
+        rating: "8.5",
+        note: "Boutique design hotel, steps to Siam and Central World",
+      },
+      {
+        name: "Riva Surya Bangkok (Riverside)",
+        rate: 135,
+        rating: "8.6",
+        note: "Riverside boutique with a Chao Phraya-view pool deck",
+      },
+      {
+        name: "Mandarin Oriental Bangkok",
+        rate: 420,
+        rating: "9.2",
+        note: "The grande dame of the river, welcoming guests since 1876",
       },
     ],
-    oldFaithful: [
+  },
+  chiangMai: {
+    baseNights: 2,
+    label: "Chiang Mai",
+    header: "Chiang Mai",
+    options: [
       {
-        day: 4,
-        title: "Geyser basins",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Old Faithful + Upper Geyser Basin + Grand Prismatic",
-            current: true,
-          },
-        ],
+        name: "Anumat Premium Budget Hotel",
+        rate: 22,
+        rating: "8.0",
+        note: "Simple and clean, inside the Old City moat",
+        current: true,
+      },
+      {
+        name: "Pastell Oldtown",
+        rate: 58,
+        rating: "8.4",
+        note: "Small boutique property on foot of the Old City walls",
+      },
+      {
+        name: "Rachamankha",
+        rate: 135,
+        rating: "9.0",
+        note: "Lanna-Chinese courtyard hotel inside the moat, quiet and photogenic",
+      },
+      {
+        name: "Anantara Chiang Mai Resort",
+        rate: 260,
+        rating: "9.2",
+        note: "Colonial-era riverside resort right on the Ping River",
+      },
+      {
+        name: "Four Seasons Resort Chiang Mai",
+        rate: 650,
+        rating: "9.4",
+        note: "Rice-paddy valley resort outside town, a full retreat",
       },
     ],
-    canyon: [
+  },
+  phuket: {
+    baseNights: 3,
+    label: "Phuket",
+    header: "Phuket",
+    options: [
       {
-        day: 6,
-        title: "Canyon & wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Grand Canyon rim + Hayden Valley pullouts",
-            current: true,
-          },
-          {
-            name: "Yellowstone Lake scenic cruise",
-            cost: 50,
-            note: "~1 hr narrated cruise from Bridge Bay",
-          },
-        ],
+        name: "The Nap Patong",
+        rate: 27,
+        rating: "7.8",
+        note: "Rooftop-pool budget hotel, a few minutes' walk to Patong beach",
+        current: true,
+      },
+      {
+        name: "Kata Sea Breeze Resort",
+        rate: 58,
+        rating: "8.1",
+        note: "Quiet mid-range base a short stroll from Kata beach",
+      },
+      {
+        name: "Novotel Phuket Kata Avista Resort & Spa",
+        rate: 105,
+        rating: "8.5",
+        note: "Three pools, an easy walk down to Kata beach",
+      },
+      {
+        name: "Katathani Phuket Beach Resort",
+        rate: 290,
+        rating: "9.0",
+        note: "All-suite beachfront resort on quiet Kata Noi",
+      },
+      {
+        name: "Trisara",
+        rate: 850,
+        rating: "9.5",
+        note: "All-villa clifftop resort with private pools, Nai Thon",
       },
     ],
-    mammoth: [
-      {
-        day: 8,
-        title: "Lamar Valley wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Dawn drive through Lamar Valley + Mammoth terraces",
-            current: true,
-          },
-          {
-            name: "Guided wildlife safari",
-            cost: 550,
-            note: "Full-day naturalist tour with spotting scopes",
-          },
-        ],
-      },
-    ],
-  };
+  },
+};
 
+TRIP.transport = {
+  legs: [
+    {
+      id: "arrive",
+      role: "arrival",
+      routeName: "Arrive Bangkok (BKK) · Airport Rail Link into Sukhumvit",
+      note: "~40 min into the city on the Airport Rail Link (~$1.50pp) or a metered taxi (~$12 flat plus tolls, 30-45 min depending on traffic)",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 3, scale: "person" },
+    },
+    {
+      id: "b-cm",
+      from: "bangkok",
+      to: "chiangMai",
+      routeName: "Bangkok → <strong>Chiang Mai</strong>",
+      note: "Domestic flight ~1h20 (AirAsia / Thai / Nok Air), several departures daily",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 96, scale: "person" },
+    },
+    {
+      id: "cm-p",
+      from: "chiangMai",
+      to: "phuket",
+      routeName: "Chiang Mai → <strong>Phuket</strong>",
+      note: "Domestic flight ~2h, sometimes routed via Bangkok (Thai AirAsia / Bangkok Airways)",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 136, scale: "person" },
+    },
+    {
+      id: "depart",
+      role: "departure",
+      routeName: "<strong>Phuket</strong> (HKT) → fly home",
+      note: "No rental car to return — just build in time to reach Phuket International, longer from Patong in beach-traffic hours",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "person" },
+    },
+  ],
+};
+
+TRIP.activities = {
+  bangkok: [
+    {
+      day: 2,
+      title: "Grand Palace & the river temples",
+      options: [
+        {
+          name: "Self-guided visit",
+          cost: 15,
+          note: "Grand Palace + Wat Phra Kaew entry (500 THB); Wat Pho and Wat Arun are separately ~$3-4 each",
+          current: true,
+        },
+        {
+          name: "Guided half-day tour",
+          cost: 45,
+          note: "Small-group guide, skip-the-line entry, hotel pickup",
+        },
+      ],
+    },
+    {
+      day: 3,
+      title: "Floating market & street food",
+      options: [
+        {
+          name: "Self-guided (shared van)",
+          cost: 20,
+          note: "Damnoen Saduak or Amphawa floating market, round-trip shared transport",
+          current: true,
+        },
+        {
+          name: "Guided market + Chinatown food tour",
+          cost: 55,
+          note: "Morning market by longtail boat, evening Yaowarat street-food crawl with a guide",
+        },
+      ],
+    },
+  ],
+  chiangMai: [
+    {
+      day: 6,
+      title: "Ethical elephants & Doi Suthep",
+      options: [
+        {
+          name: "Half-day ethical sanctuary",
+          cost: 45,
+          note: "Feed, bathe, and walk with rescued elephants — no riding, hotel pickup included",
+          current: true,
+        },
+        {
+          name: "Elephant Nature Park (full day)",
+          cost: 77,
+          note: "The best-known ethical sanctuary; full-day visit with lunch",
+        },
+      ],
+    },
+  ],
+  phuket: [
+    {
+      day: 8,
+      title: "Phi Phi & Maya Bay by speedboat",
+      options: [
+        {
+          name: "Standard speedboat day tour",
+          cost: 75,
+          note: "Phi Phi, Maya Bay viewing, and Khai Island snorkeling with lunch; ~400 THB park fee paid on arrival",
+          current: true,
+        },
+        {
+          name: "Premium small-group speedboat",
+          cost: 110,
+          note: "Smaller boat, better snorkel stops, full lunch service",
+        },
+      ],
+    },
+    {
+      day: 9,
+      title: "Big Buddha & Phuket Old Town",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "Big Buddha hilltop + Wat Chalong; grab a taxi or rented scooter",
+          current: true,
+        },
+        {
+          name: "Old Town food & history walk",
+          cost: 40,
+          note: "Guided wander through the Sino-Portuguese shophouse streets with tastings",
+        },
+      ],
+    },
+  ],
+};
   // ── engine bindings: the engine reads its data from TRIP ──────────
   const FLIGHTS = TRIP.flights;
   const HOTELS = TRIP.hotels;
@@ -3448,295 +3425,343 @@
   // Narrative pools (experience only). Concrete hotel/transport/cost
   // rows are injected from __state at render time, so they always
   // reflect the Plan-tab choices. First entry per city is the travel-in day.
-  TRIP.itinPool = {
-    jackson: [
-      {
-        id: "j-arrive",
-        travel: true,
-        move: "arrive",
-        lodging: "jackson",
-        cityTag: "Jackson — arrive",
-        sun: "19:47",
-        title: "Land, grab the car, ease in",
-        rows: [
-          {
-            tag: "Move",
-            kind: "move",
-            lead: "Fly into Jackson Hole (JAC).",
-            detail:
-              "Pick up the rental SUV; ~15 min into town or the park. We land separately — meet at the lodge.",
-          },
-          {
-            tag: "Evening",
-            kind: "soft",
-            detail:
-              "Dinner in Jackson off the Town Square, or catch first light on the Tetons at dusk. Stock a cooler for the road.",
-          },
-        ],
-        ask: "what time do our flights land? It decides whether tonight has a sunset drive in it.",
-      },
-      {
-        id: "j-tetons",
-        cityTag: "Grand Teton",
-        sun: "19:45",
-        title: "Jenny Lake and the Cathedral Group",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Jenny Lake — Hidden Falls & Inspiration Point.",
-            detail:
-              "Shuttle boat across, then walk up; the Tetons rise straight out of the water. Go early for parking.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lakeside picnic, then a Jackson dinner.",
-            detail: "Grab supplies in town; dinner back on the Square.",
-          },
-          {
-            tag: "Wildlife",
-            kind: "soft",
-            detail:
-              "Dawn or dusk on Mormon Row / Antelope Flats for moose, bison, and the classic barn-and-Tetons shot.",
-          },
-        ],
-        fuller:
-          "Add the <b>Snake River scenic float</b> — a calm guided raft with the Tetons as the backdrop, ~3 hours.",
-        ask: "one big hike (Cascade Canyon, ~9 mi) or keep it easy with the float?",
-      },
-      {
-        id: "j-cascade",
-        cityTag: "Grand Teton",
-        sun: "19:43",
-        title: "A canyon under the peaks",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Cascade Canyon.",
-            detail:
-              "The signature Teton hike — boat across Jenny Lake, then up the canyon between the Grand and Mt Owen. Turn around whenever you like.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "A well-earned dinner in Jackson.",
-            detail: "",
-          },
-        ],
-        fuller:
-          "Prefer a slow day? Swap the hike for the <b>Jenny Lake scenic cruise</b> + String Lake and a lazy afternoon.",
-      },
-    ],
-    oldFaithful: [
-      {
-        id: "of-arrive",
-        travel: true,
-        move: "j-of",
-        lodging: "oldFaithful",
-        cityTag: "Jackson → Old Faithful",
-        sun: "19:40",
-        title: "North into Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Old Faithful + the Upper Geyser Basin.",
-            detail:
-              "Time an eruption, then walk the boardwalk loop past Morning Glory and the big geysers — half the world's geysers are in this basin.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at the Old Faithful Inn.",
-            detail:
-              "The great log lobby is worth a wander even if you're not staying.",
-          },
-        ],
-        ask: "leave Jackson early — the South Entrance line and wildlife stops eat the morning.",
-      },
-      {
-        id: "of-prismatic",
-        cityTag: "Old Faithful",
-        sun: "19:38",
-        title: "Grand Prismatic and the color",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Grand Prismatic Spring.",
-            detail:
-              "Walk the Midway boardwalk at ground level, then the Fairy Falls overlook spur for the aerial view of the largest hot spring in the US.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Casual dinner at the village.",
-            detail: "",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "Black Sand and Biscuit basins are quieter, colorful add-ons nearby.",
-          },
-        ],
-        fuller:
-          "Active option: <b>Fairy Falls + Twin Buttes</b> (~5.4 mi) or the <b>Mystic Falls loop</b> (~4 mi) for a real walk.",
-      },
-      {
-        id: "of-extra",
-        cityTag: "Old Faithful",
-        sun: "19:36",
-        title: "More geyser country",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Firehole Lake Drive + Lone Star Geyser.",
-            detail:
-              "An easy geyser side-road, then the flat trail to a backcountry geyser that erupts about every 3 hours.",
-          },
-        ],
-        fuller:
-          "Or drive down to <b>West Thumb Geyser Basin</b> on the shore of Yellowstone Lake.",
-      },
-    ],
-    canyon: [
-      {
-        id: "c-arrive",
-        travel: true,
-        move: "of-c",
-        lodging: "canyon",
-        cityTag: "Old Faithful → Canyon",
-        sun: "19:34",
-        title: "The Grand Canyon of the Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Artist Point & the rim.",
-            detail:
-              "The Lower Falls plunging into the yellow canyon — walk the South and North Rim overlooks; Uncle Tom's stairs if they're open.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Canyon Village.",
-            detail: "",
-          },
-        ],
-      },
-      {
-        id: "c-hayden",
-        cityTag: "Canyon / Lake",
-        sun: "19:32",
-        title: "Hayden Valley wildlife & the lake",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Hayden Valley at dawn.",
-            detail:
-              "Prime bison — and maybe wolves or a grizzly — between Canyon and Lake. Pullouts, binoculars, early light.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lake Yellowstone Hotel dining room.",
-            detail: "The lakeside sunroom is the grandest space in the park.",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "West Thumb Geyser Basin — geothermal features right on the lakeshore.",
-          },
-        ],
-        fuller:
-          "Add a <b>Yellowstone Lake scenic cruise</b> from Bridge Bay (~1 hr).",
-      },
-      {
-        id: "c-extra",
-        cityTag: "Canyon / Lake",
-        sun: "19:30",
-        title: "Canyon country, unhurried",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Mount Washburn, or a slow rim morning.",
-            detail:
-              "A big-view climb (~6 mi) for the strong, or a relaxed second pass at the canyon overlooks in different light.",
-          },
-        ],
-      },
-    ],
-    mammoth: [
-      {
-        id: "m-arrive",
-        travel: true,
-        move: "c-m",
-        lodging: "mammoth",
-        cityTag: "Canyon → Mammoth",
-        sun: "19:28",
-        title: "Lamar Valley and the terraces",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Lamar Valley — the American Serengeti.",
-            detail:
-              "Drive out at dawn for wolves, bison herds, and pronghorn, then the Mammoth Hot Springs travertine terraces on the way to the hotel.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Mammoth (or in Gardiner).",
-            detail: "Elk are often out on the Fort Yellowstone lawns.",
-          },
-        ],
-        fuller:
-          "Serious about wildlife? A <b>guided Lamar safari</b> with a naturalist and spotting scopes dramatically ups the sightings.",
-        ask: "dawn wildlife means a 6am start — worth it? (It is.)",
-      },
-      {
-        id: "m-extra",
-        cityTag: "Mammoth",
-        sun: "19:26",
-        title: "A last morning up north",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Bunsen Peak, or the Roosevelt Arch.",
-            detail:
-              "A brisk climb for a final valley view, or an easy historic wander through Fort Yellowstone and the north-entrance arch.",
-          },
-        ],
-      },
-    ],
-  };
-  TRIP.itinDepart = {
-    id: "depart",
-    travel: true,
-    move: "depart",
-    sun: "19:24",
-    cityTag: "Mammoth → home",
-    title: "Drive to Bozeman and fly out",
-    rows: [
-      {
-        tag: "Move",
-        kind: "move",
-        lead: "Mammoth → Bozeman (BZN), ~1h30.",
-        detail:
-          "Return the car at the airport; build in buffer. A last stretch of Montana on the way out.",
-      },
-    ],
-    ask: "when do the flights home leave? It sets how much of the morning is a slow drive vs. a dash.",
-  };
+TRIP.itinPool = {
+  bangkok: [
+    {
+      id: "b-arrive",
+      travel: true,
+      move: "arrive",
+      lodging: "bangkok",
+      cityTag: "Bangkok — arrive",
+      sun: "18:12",
+      title: "Land, settle into Sukhumvit",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Fly into Suvarnabhumi (BKK).",
+          detail:
+            "Airport Rail Link into Phaya Thai, then a short BTS hop into Sukhumvit — about 40 minutes door to door. We land separately; meet at the hotel.",
+        },
+        {
+          tag: "Evening",
+          kind: "soft",
+          detail:
+            "Easy first night: street-food stalls off Sukhumvit Soi 38, or a rooftop bar to watch the city light up.",
+        },
+      ],
+      ask: "what time do our flights land? It decides whether tonight is a street-food wander or a straight-to-bed night.",
+    },
+    {
+      id: "b-palace",
+      cityTag: "Bangkok",
+      sun: "18:13",
+      title: "Grand Palace, Wat Pho & the river",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Grand Palace & Wat Phra Kaew.",
+          detail:
+            "Go early — the complex gets hot and crowded by 10am. Dress code is strict: covered shoulders and knees.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Riverside lunch, then Wat Arun at golden hour.",
+          detail:
+            "Cross the Chao Phraya by cross-river ferry (a few baht) for the Temple of Dawn lit low and gold.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Wat Pho next door has the 46-metre reclining Buddha and the original Thai-massage school — worth an hour and a foot massage.",
+        },
+      ],
+      fuller:
+        "Add a sunset <b>Chao Phraya dinner cruise</b> — river breeze, skyline lights, a buffet on the water.",
+      ask: "one big hike-equivalent day (Palace + Wat Pho + Wat Arun back to back) or split it and keep the afternoon slow?",
+    },
+    {
+      id: "b-market",
+      cityTag: "Bangkok",
+      sun: "18:14",
+      title: "Floating market & old Bangkok",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Damnoen Saduak or Amphawa floating market.",
+          detail:
+            "Boats stacked with produce and noodle bowls cooked right off the hull — go early before the tour buses arrive.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Evening street-food crawl through Chinatown (Yaowarat).",
+          detail:
+            "Grilled skewers, oyster omelets, and the neon signage that makes Yaowarat Road famous after dark.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "If the dates land on a weekend, swap in Chatuchak Weekend Market — 8,000+ stalls, easily half a day.",
+        },
+      ],
+      fuller:
+        "Upgrade to a <b>longtail-boat khlong tour</b> through the back canals — a quieter, more local Bangkok than the tour-bus market stop.",
+    },
+    {
+      id: "b-lastday",
+      cityTag: "Bangkok",
+      sun: "18:15",
+      title: "A last Bangkok wander",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Jim Thompson House, or a slow shopping morning.",
+          detail:
+            "The silk merchant's teak house and garden is a calm break from temple-hopping; Terminal 21 and Icon Siam cover the shopping.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "A rooftop send-off dinner.",
+          detail:
+            "Bangkok's skyline bars are worth one splurge night before heading north.",
+        },
+      ],
+      fuller:
+        "Pack the morning tighter with a <b>Thai cooking class</b> — market visit plus a hands-on lunch, if the elephant sanctuary in Chiang Mai already covers the animal-encounter box.",
+    },
+  ],
+  chiangMai: [
+    {
+      id: "cm-arrive",
+      travel: true,
+      move: "b-cm",
+      lodging: "chiangMai",
+      cityTag: "Bangkok → Chiang Mai",
+      sun: "18:05",
+      title: "North to the mountains",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Domestic flight BKK → Chiang Mai (CNX), ~1h20.",
+          detail:
+            "Land, drop bags, and walk straight into the Old City — everything's inside the moat.",
+        },
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Wat Phra Singh & Wat Chedi Luang.",
+          detail:
+            "Two of the Old City's grandest temples, an easy walk apart — softer and quieter than Bangkok's palace crowds.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner at the Night Bazaar.",
+          detail:
+            "Khao soi, grilled skewers, and market stalls along Chang Klan Road.",
+        },
+      ],
+      ask: "leave Bangkok with enough runway before the flight — Old City traffic to the airport can run long.",
+    },
+    {
+      id: "cm-elephant",
+      cityTag: "Chiang Mai",
+      sun: "18:03",
+      title: "Ethical elephants & Doi Suthep",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Half-day ethical elephant sanctuary.",
+          detail:
+            "Feed, bathe, and walk with rescued elephants — no riding, no performances. Pickup from the hotel.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Khao soi lunch back in town.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Doi Suthep at sunset — the golden chedi and a sweeping view back down over the city.",
+        },
+      ],
+      fuller:
+        "Prefer more time with the elephants? Upgrade to <b>Elephant Nature Park's full-day visit</b>, with a river mud spa and a proper sit-down lunch.",
+      ask: "half-day sanctuary and a slow afternoon, or the full-day version and skip Doi Suthep?",
+    },
+    {
+      id: "cm-cooking",
+      cityTag: "Chiang Mai",
+      sun: "18:01",
+      title: "Cooking class & the Old City bazaar",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Thai cooking class.",
+          detail:
+            "Market visit first to pick ingredients, then a hands-on class — pad thai, curry paste from scratch, mango sticky rice.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner is whatever you just cooked.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "If it's a Sunday, the Sunday Walking Street bazaar takes over the whole Old City after dark.",
+        },
+      ],
+    },
+  ],
+  phuket: [
+    {
+      id: "p-arrive",
+      travel: true,
+      move: "cm-p",
+      lodging: "phuket",
+      cityTag: "Chiang Mai → Phuket",
+      sun: "18:30",
+      title: "South to the beaches",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Domestic flight Chiang Mai → Phuket (HKT), ~2h.",
+          detail:
+            "Sometimes routed through Bangkok — check the connection time before booking.",
+        },
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Check in, then straight to the sand.",
+          detail:
+            "First sunset on Kata or Karon beach — the whole point of coming south.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Beachside seafood dinner.",
+          detail: "Grilled catch of the day, feet in the sand.",
+        },
+      ],
+    },
+    {
+      id: "p-phiphi",
+      cityTag: "Phuket",
+      sun: "18:32",
+      title: "Phi Phi & Maya Bay by speedboat",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Full-day Phi Phi / Maya Bay / Khai Island speedboat tour.",
+          detail:
+            "Snorkeling stops, a viewing pass by Maya Bay, and lunch on board. Bring cash for the ~400 THB park fee.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Lunch is included on the boat.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Sunset drinks back at the resort — it's a full day on the water.",
+        },
+      ],
+      fuller:
+        "Want fewer crowds? A <b>premium small-group speedboat</b> hits the same stops with a smaller boat and better snorkel time.",
+    },
+    {
+      id: "p-oldtown",
+      cityTag: "Phuket",
+      sun: "18:34",
+      title: "Big Buddha & Phuket Old Town",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Big Buddha & Wat Chalong.",
+          detail:
+            "The 45-metre hilltop Buddha has the best island-wide viewpoint on Phuket.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Phuket Old Town.",
+          detail:
+            "Sino-Portuguese shophouse streets, and some of the island's best food away from the beach strip.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Lard Yai Sunday walking street if the dates line up, or the Chillva night market any night.",
+        },
+      ],
+    },
+    {
+      id: "p-flex",
+      cityTag: "Phuket",
+      sun: "18:35",
+      title: "A slow beach day (flex)",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Nothing scheduled — a real beach day.",
+          detail:
+            "Kata or Karon, a paperback, and no plan. This is the buffer night in the trip.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "If restless, Phang Nga Bay's James Bond Island makes a good half-day boat trip instead.",
+        },
+      ],
+      ask: "keep this a true do-nothing day, or swap in the Phang Nga Bay boat trip?",
+    },
+  ],
+};
 
+TRIP.itinDepart = {
+  id: "depart",
+  travel: true,
+  move: "depart",
+  sun: "18:36",
+  cityTag: "Phuket → home",
+  title: "Fly home from Phuket",
+  rows: [
+    {
+      tag: "Move",
+      kind: "move",
+      lead: "Phuket (HKT) → home.",
+      detail:
+        "No car to return this time — just build in buffer for beach-town traffic on the way to the airport.",
+    },
+  ],
+  ask: "when do the flights home leave? It sets how much of the last morning is beach time vs. a dash to HKT.",
+};
   const ITIN_POOL = TRIP.itinPool;
 
   function itinDepartDay(osakaMode) {
@@ -4175,21 +4200,22 @@
 
   // Officer-friendly, literal one-liners for the visa form (the
   // itinerary's own titles are deliberately poetic — wrong register here).
-  TRIP.visaPlan = {
-    "j-arrive": "Arrive Jackson Hole (JAC); pick up rental car.",
-    "j-tetons": "Grand Teton NP — Jenny Lake, Hidden Falls, Mormon Row.",
-    "j-cascade": "Grand Teton — Cascade Canyon hike / Snake River float.",
-    "of-arrive": "Drive into Yellowstone; Old Faithful & Upper Geyser Basin.",
-    "of-prismatic": "Grand Prismatic Spring & Midway Geyser Basin.",
-    "of-extra": "Firehole Lake Drive; Lone Star Geyser / West Thumb.",
-    "c-arrive": "Grand Canyon of the Yellowstone — Artist Point & rim.",
-    "c-hayden": "Hayden Valley wildlife; Yellowstone Lake.",
-    "c-extra": "Mount Washburn / canyon overlooks.",
-    "m-arrive": "Lamar Valley wildlife; Mammoth Hot Springs terraces.",
-    "m-extra": "Bunsen Peak / Roosevelt Arch.",
-    depart: "Drive to Bozeman (BZN); depart.",
-  };
-
+TRIP.visaPlan = {
+  "b-arrive": "Arrive Bangkok (BKK); Airport Rail Link into Sukhumvit.",
+  "b-palace": "Grand Palace, Wat Phra Kaew, Wat Pho & Wat Arun.",
+  "b-market":
+    "Floating market (Damnoen Saduak / Amphawa); Chinatown street food.",
+  "b-lastday": "Jim Thompson House / shopping; rooftop dinner.",
+  "cm-arrive":
+    "Fly to Chiang Mai; Wat Phra Singh, Wat Chedi Luang, Night Bazaar.",
+  "cm-elephant": "Ethical elephant sanctuary; Doi Suthep at sunset.",
+  "cm-cooking": "Thai cooking class; Old City bazaar.",
+  "p-arrive": "Fly to Phuket; first sunset on Kata / Karon beach.",
+  "p-phiphi": "Phi Phi & Maya Bay speedboat tour with snorkeling.",
+  "p-oldtown": "Big Buddha, Wat Chalong & Phuket Old Town.",
+  "p-flex": "Flex beach day — or Phang Nga Bay boat trip.",
+  depart: "Depart Phuket (HKT); fly home.",
+};
   const VISA_PLAN = TRIP.visaPlan;
 
   function xlEsc(s) {

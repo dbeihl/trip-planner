@@ -1,5 +1,5 @@
 <meta charset="utf-8" />
-<title>Yellowstone &amp; Grand Teton Road Trip — Budget &amp; Itinerary</title>
+<title>Hawaii — Oahu &amp; Maui — Budget &amp; Itinerary</title>
 <style>
   @font-face {
     font-family: "Ledger Serif";
@@ -1727,432 +1727,357 @@
   // the end of the data block — its code is otherwise unchanged.
   // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
   // ─────────────────────────────────────────────────────────────────
-  const TRIP = {
-    meta: {
-      title: "Yellowstone & Grand Teton — Sep 2026",
-      route: ["jackson", "oldFaithful", "canyon", "mammoth"],
-      optionalCities: [],
-      flexNightDefault: "jackson",
-      dates: { arrive: "2026-09-12", depart: "2026-09-20", nights: 8 },
-      travelers: {
-        count: 2,
-        note: "2 travelers; fly into Jackson Hole, out of Bozeman",
-      },
-      currency: "USD",
-      lodgingTaxBuffer: 1.12, // WY/MT lodging tax + park/resort fees
-      destLabel: "Jackson Hole", // gateway shown for an "Other airport" origin
-      ui: {
-        eyebrow:
-          'Sep 12 → Sep 20, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
-        planTitle: "Yellowstone &amp; Grand Teton Road Trip",
-        planSub:
-          "A driving loop through the Tetons and Yellowstone. Pick a lodge tier per stop; the rental car, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
-        flightsTitle: "Getting there — flights to the gateway",
-        flightsIntro:
-          "Two travelers converging on Jackson Hole. Pick a routing for each — fares fold into the grand total. Fly into Jackson Hole (JAC), out of Bozeman (BZN) to skip the backtrack.",
-        itinTitle: "Wyoming &amp; Montana, by road — nine days in the parks",
-        itinDek:
-          "A relaxed loop: Grand Teton, then the Yellowstone grand loop. One anchor a day, wildlife at dawn and dusk, and enough road time to actually see the country in between.",
-      },
+const TRIP = {
+  meta: {
+    title: "Oʻahu & Maui Island-Hop — Feb 2026",
+    route: ["oahu", "maui"],
+    optionalCities: [],
+    flexNightDefault: "maui",
+    dates: { arrive: "2026-02-07", depart: "2026-02-15", nights: 8 },
+    travelers: {
+      count: 2,
+      note: "2 travelers; fly into Honolulu, open-jaw home from Kahului (Maui)",
     },
-  };
+    currency: "USD",
+    lodgingTaxBuffer: 1.18, // HI transient accommodations tax + resort fees run steep
+    destLabel: "Honolulu",
+    ui: {
+      eyebrow:
+        'Feb 7 → Feb 15, 2026 · <span class="traveler-count-lbl">2</span> travelers · two-island self-drive',
+      planTitle: "Oʻahu &amp; Maui Island-Hop",
+      planSub:
+        "Honolulu first, then a short inter-island hop to Maui — open-jaw home from Kahului so there's no backtrack. Pick a lodging tier per island; the rental cars, the inter-island flight, and Hawaii's transient accommodations tax fold into the total. Every figure is a researched 2026 planning estimate.",
+      flightsTitle: "Getting there — flights to Honolulu",
+      flightsIntro:
+        "Two travelers converging on Oʻahu. Pick a routing for each — fares fold into the grand total. Fly into Honolulu (HNL); the Oʻahu→Maui leg and the flight home from Kahului (OGG) are handled separately in the itinerary.",
+      itinTitle: "Oʻahu &amp; Maui, island to island — eight nights",
+      itinDek:
+        "Three nights in Waikiki, then a 40-minute hop to Maui for four more. Pearl Harbor and Diamond Head on Oʻahu; the Road to Hana and a Haleakala sunrise on Maui. One anchor a day, plenty of beach in between.",
+    },
+  },
+};
 
-  TRIP.flights = {
-    us: {
-      label: "From the USA — David (IND)",
-      traveler: "David",
-      pax: 1,
-      preference: "Delta preferred · fewest stops",
-      options: [
-        {
-          name: "Delta via Salt Lake City",
-          route: "IND → SLC → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 480,
-          note: "Fewest stops into Jackson Hole; seasonal SLC→JAC nonstop",
-          current: true,
-        },
-        {
-          name: "Delta via Minneapolis",
-          route: "IND → MSP → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 400,
-          note: "Often the cheapest 1-stop; fly out of Bozeman",
-        },
-        {
-          name: "Delta via Atlanta",
-          route: "IND → ATL → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 510,
-          note: "Seasonal ATL→JAC nonstop",
-        },
-        {
-          name: "Delta via Detroit",
-          route: "IND → DTW → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 430,
-          note: "Backup via the DTW hub",
-        },
-      ],
-    },
-    ph: {
-      label: "From the Philippines — partner (MNL/DVO)",
-      traveler: "Partner",
-      pax: 1,
-      preference: "Fewest stops · one alliance where possible",
-      options: [
-        {
-          name: "Philippine Airlines + Delta",
-          route: "MNL → NRT → SEA → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1650,
-          note: "Long-haul to Tokyo, US carrier to Seattle + Bozeman",
-          current: true,
-        },
-        {
-          name: "Korean Air + Delta (SkyTeam)",
-          route: "MNL → ICN → SLC → JAC",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1750,
-          note: "SkyTeam via Incheon + SLC into Jackson",
-        },
-        {
-          name: "United + ANA (Star Alliance)",
-          route: "MNL → NRT → DEN → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1700,
-          note: "Alliance alternative via Tokyo + Denver",
-        },
-        {
-          name: "From Davao (add domestic hop)",
-          route: "DVO → MNL → ICN → SEA → BZN",
-          stops: 3,
-          cabin: "Economy",
-          fare: 1950,
-          note: "Extra domestic leg out of Davao",
-        },
-      ],
-    },
-    ord: {
-      label: "USA — Chicago (ORD)",
-      traveler: "Traveler",
-      pax: 1,
-      preset: true, // available in the dropdown; not part of the default split
-      preference: "Open-jaw JAC in / BZN out",
-      options: [
-        {
-          name: "United nonstop (open-jaw)",
-          route: "ORD → JAC / BZN → ORD",
-          stops: 0,
-          cabin: "Main Cabin",
-          fare: 540,
-          note: "Seasonal United nonstops both ways; book as one multi-city fare",
-          current: true,
-        },
-        {
-          name: "United via Denver",
-          route: "ORD → DEN → JAC / BZN → DEN → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 460,
-          note: "Most schedule flexibility; often cheaper than the nonstop",
-        },
-        {
-          name: "Delta via Salt Lake City",
-          route: "ORD → SLC → JAC / BZN → SLC → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 485,
-          note: "Strong SLC-hub service to both airports",
-        },
-        {
-          name: "American via Dallas/Fort Worth",
-          route: "ORD → DFW → JAC / BZN → DFW → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 565,
-          note: "DFW-hub backup; longer connections",
-        },
-      ],
-    },
-  };
-
-  TRIP.hotels = {
-    jackson: {
-      baseNights: 2,
-      label: "Grand Teton",
-      header: "Jackson / Grand Teton",
-      options: [
-        {
-          name: "Cowboy Village Resort (Jackson town)",
-          rate: 210,
-          rating: "8.0",
-          note: "Log-cabin motel near Town Square",
-          current: true,
-        },
-        {
-          name: "Colter Bay Log Cabins (in-park)",
-          rate: 250,
-          rating: "8.0",
-          note: "Classic cabins near Jackson Lake",
-        },
-        {
-          name: "Signal Mountain Lodge (lakeside)",
-          rate: 320,
-          rating: "8.2",
-          note: "On Jackson Lake, quieter",
-        },
-        {
-          name: "Jackson Lake Lodge (in-park icon)",
-          rate: 500,
-          rating: "8.4",
-          note: "60-ft windows facing the Tetons",
-        },
-        {
-          name: "Jenny Lake Lodge (all-inclusive)",
-          rate: 1400,
-          rating: "9.1",
-          note: "Base of the peaks; meals + activities included",
-        },
-      ],
-    },
-    oldFaithful: {
-      baseNights: 2,
-      label: "Old Faithful",
-      header: "Old Faithful",
-      options: [
-        {
-          name: "Old Faithful Lodge Cabin",
-          rate: 165,
-          rating: "7.8",
-          note: "Basic cabin steps from the geyser",
-          current: true,
-        },
-        {
-          name: "Old Faithful Inn — Old House",
-          rate: 260,
-          rating: "8.6",
-          note: "Iconic 1904 log lodge, shared bath",
-        },
-        {
-          name: "Old Faithful Inn — private bath",
-          rate: 400,
-          rating: "8.6",
-          note: "Historic Inn, private bath",
-        },
-        {
-          name: "Old Faithful Inn — premium/suite",
-          rate: 550,
-          rating: "8.6",
-          note: "Best rooms, geyser views",
-        },
-      ],
-    },
-    canyon: {
-      baseNights: 2,
-      label: "Canyon / Lake",
-      header: "Canyon / Yellowstone Lake",
-      options: [
-        {
-          name: "Canyon Lodge Western Cabin",
-          rate: 260,
-          rating: "8.0",
-          note: "Near the canyon rim",
-          current: true,
-        },
-        {
-          name: "Canyon Lodge — standard room",
-          rate: 370,
-          rating: "8.2",
-          note: "Rebuilt modern lodge",
-        },
-        {
-          name: "Lake Yellowstone Hotel — lake view",
-          rate: 450,
-          rating: "8.0",
-          note: "Elegant 1891 hotel on the lake",
-        },
-        {
-          name: "Canyon Lodge — premium",
-          rate: 460,
-          rating: "8.2",
-          note: "Larger updated rooms",
-        },
-      ],
-    },
-    mammoth: {
-      baseNights: 1,
-      label: "Mammoth",
-      header: "Mammoth / Lamar Valley",
-      options: [
-        {
-          name: "Mammoth Hotel — shared bath",
-          rate: 175,
-          rating: "7.8",
-          note: "By the terraces + north entrance",
-          current: true,
-        },
-        {
-          name: "Mammoth — frontier/hot-tub cabin",
-          rate: 250,
-          rating: "8.0",
-          note: "Some cabins have private hot tubs",
-        },
-        {
-          name: "Mammoth Hotel — private bath",
-          rate: 320,
-          rating: "8.0",
-          note: "Closest in-park base to Gardiner/Bozeman",
-        },
-      ],
-    },
-  };
-
-  TRIP.transport = {
-    rental: {
-      perDay: 130,
-      oneTime: 210,
-      label: "Rental SUV + fuel + park pass",
-      note: "Mid-size SUV at Jackson Hole (~$130/day) + ~$140 fuel for the loop + $70 park pass. Book early — the JAC fleet is limited in peak season.",
-    },
-    legs: [
+TRIP.flights = {
+  us: {
+    label: "From the USA — David (LAX)",
+    traveler: "David",
+    pax: 1,
+    preference: "Nonstop preferred · fewest stops",
+    options: [
       {
-        id: "arrive",
-        role: "arrival",
-        routeName: "Arrive Jackson Hole (JAC) · pick up rental SUV",
-        note: "~15 min into town / Grand Teton",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Hawaiian Airlines nonstop",
+        route: "LAX → HNL",
+        stops: 0,
+        cabin: "Main Cabin",
+        fare: 420,
+        note: "Widebody nonstop, ~5h45; Hawaiian's biggest mainland gateway",
+        current: true,
       },
       {
-        id: "j-of",
-        from: "jackson",
-        to: "oldFaithful",
-        routeName: "Jackson → <strong>Old Faithful</strong>",
-        note: "Drive ~2h15 · 83 mi (South Entrance & West Thumb)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Southwest nonstop",
+        route: "LAX → HNL",
+        stops: 0,
+        cabin: "Economy",
+        fare: 360,
+        note: "Two free checked bags — handy for snorkel gear",
       },
       {
-        id: "of-c",
-        from: "oldFaithful",
-        to: "canyon",
-        routeName: "Old Faithful → <strong>Canyon</strong>",
-        note: "Drive ~50 min · 32 mi (stop at Grand Prismatic)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "United nonstop",
+        route: "LAX → HNL",
+        stops: 0,
+        cabin: "Economy",
+        fare: 440,
+        note: "Frequent daily nonstops, easy MileagePlus upgrades",
       },
       {
-        id: "c-m",
-        from: "canyon",
-        to: "mammoth",
-        routeName: "Canyon → <strong>Mammoth</strong>",
-        note: "Drive ~2h · via Lamar Valley (wolves & bison)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
-      },
-      {
-        id: "depart",
-        role: "departure",
-        routeName: "<strong>Mammoth</strong> → Bozeman (BZN)",
-        note: "Drive ~1h30 · 80 mi · fly home",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Delta via Seattle",
+        route: "LAX → SEA → HNL",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 390,
+        note: "Backup 1-stop if nonstop fares spike closer to Feb",
       },
     ],
-  };
+  },
+  sf: {
+    label: "From the USA — preset — San Francisco (SFO)",
+    traveler: "Preset",
+    pax: 1,
+    preference: "Nonstop preferred",
+    preset: true,
+    options: [
+      {
+        name: "United nonstop",
+        route: "SFO → HNL",
+        stops: 0,
+        cabin: "Economy",
+        fare: 380,
+        note: "Multiple daily nonstops from the Bay Area",
+        current: true,
+      },
+      {
+        name: "Alaska Airlines nonstop",
+        route: "SFO → HNL",
+        stops: 0,
+        cabin: "Economy",
+        fare: 400,
+        note: "Alaska's Hawaii gateway, strong mileage program",
+      },
+      {
+        name: "Hawaiian Airlines nonstop",
+        route: "SFO → HNL",
+        stops: 0,
+        cabin: "Economy",
+        fare: 410,
+        note: "Direct into HNL, easy connection to the inter-island terminal",
+      },
+    ],
+  },
+  ph: {
+    label: "From the Philippines — partner (MNL)",
+    traveler: "Partner",
+    pax: 1,
+    preference: "Fewest stops · one alliance where possible",
+    options: [
+      {
+        name: "Japan Airlines via Tokyo",
+        route: "MNL → NRT → HNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 950,
+        note: "Oneworld routing via Narita, roomy 787 across the Pacific",
+        current: true,
+      },
+      {
+        name: "ANA via Tokyo",
+        route: "MNL → HND → HNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 980,
+        note: "Star Alliance via Haneda, tight but workable connection",
+      },
+      {
+        name: "United via Guam",
+        route: "MNL → GUM → HNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 890,
+        note: "Single-carrier option via United's Guam hub",
+      },
+      {
+        name: "Korean Air via Seoul",
+        route: "MNL → ICN → HNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1050,
+        note: "SkyTeam via Incheon, longer layover but a reliable schedule",
+      },
+    ],
+  },
+};
 
-  TRIP.activities = {
-    jackson: [
+TRIP.hotels = {
+  oahu: {
+    baseNights: 3,
+    label: "Oʻahu",
+    header: "Waikiki, Honolulu",
+    options: [
       {
-        day: 2,
-        title: "Jenny Lake & the Tetons",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Jenny Lake loop + Hidden Falls; park entry only",
-            current: true,
-          },
-          {
-            name: "Jenny Lake shuttle boat",
-            cost: 44,
-            note: "Round-trip boat, shortens the Cascade Canyon approach",
-          },
-          {
-            name: "Snake River scenic float (guided)",
-            cost: 190,
-            note: "~3 hr guided raft, no rapids, Tetons backdrop",
-          },
-        ],
+        name: "Aqua Aloha Surf Waikiki",
+        rate: 165,
+        rating: "7.6",
+        note: "Budget studio-style rooms two blocks off the beach",
+        current: true,
+      },
+      {
+        name: "Aston Waikiki Beach Tower",
+        rate: 320,
+        rating: "8.6",
+        note: "Full-kitchen condo-hotel, oceanfront on the sand",
+      },
+      {
+        name: "Outrigger Reef Waikiki Beach Resort",
+        rate: 420,
+        rating: "8.4",
+        note: "Beachfront resort, steps from Duke's and the zoo",
+      },
+      {
+        name: "Halekulani",
+        rate: 950,
+        rating: "9.3",
+        note: "Legendary luxury beachfront, no resort fee, the orchid pool",
       },
     ],
-    oldFaithful: [
+  },
+  maui: {
+    baseNights: 4,
+    label: "Maui",
+    header: "Kīhei / Wailea (Lahaina still rebuilding)",
+    options: [
       {
-        day: 4,
-        title: "Geyser basins",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Old Faithful + Upper Geyser Basin + Grand Prismatic",
-            current: true,
-          },
-        ],
+        name: "Maui Vista (Kīhei condo)",
+        rate: 195,
+        rating: "7.8",
+        note: "Condo-style studio across from Kamaole Beach II",
+        current: true,
+      },
+      {
+        name: "Mana Kai Maui",
+        rate: 265,
+        rating: "8.0",
+        note: "Oceanfront condo-hotel on Keawakapu Beach, quiet south Kīhei",
+      },
+      {
+        name: "Wailea Beach Resort — Marriott, Maui",
+        rate: 620,
+        rating: "8.7",
+        note: "Full resort on Mokapu Beach, lazy river pool",
+      },
+      {
+        name: "Grand Wailea, A Waldorf Astoria Resort",
+        rate: 950,
+        rating: "9.1",
+        note: "Maui's most elaborate resort — nine pools, waterslides",
       },
     ],
-    canyon: [
-      {
-        day: 6,
-        title: "Canyon & wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Grand Canyon rim + Hayden Valley pullouts",
-            current: true,
-          },
-          {
-            name: "Yellowstone Lake scenic cruise",
-            cost: 50,
-            note: "~1 hr narrated cruise from Bridge Bay",
-          },
-        ],
-      },
-    ],
-    mammoth: [
-      {
-        day: 8,
-        title: "Lamar Valley wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Dawn drive through Lamar Valley + Mammoth terraces",
-            current: true,
-          },
-          {
-            name: "Guided wildlife safari",
-            cost: 550,
-            note: "Full-day naturalist tour with spotting scopes",
-          },
-        ],
-      },
-    ],
-  };
+  },
+};
 
+TRIP.transport = {
+  rental: {
+    perDay: 75,
+    oneTime: 90,
+    label: "Rental car (both islands) + fuel",
+    note: "A separate compact/midsize pickup on each island — Oʻahu (~$50-60/day) and Maui (~$60-80/day) — since it's a different counter and drop-off each time. Figures blend to a per-day average; the one-time line covers fuel across both islands plus Hawaii's mandatory $5/day state surcharge.",
+  },
+  legs: [
+    {
+      id: "arrive",
+      role: "arrival",
+      routeName: "Arrive Honolulu (HNL) · pick up rental car",
+      note: "~20 min into Waikiki",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "vehicle" },
+    },
+    {
+      id: "o-m",
+      from: "oahu",
+      to: "maui",
+      routeName: "Honolulu → <strong>Maui</strong> (inter-island flight)",
+      note: "~40 min hop on Hawaiian or Southwest · book ahead, fares climb close-in",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 160, scale: "person" },
+    },
+    {
+      id: "depart",
+      role: "departure",
+      routeName: "<strong>Maui</strong> (OGG) → home",
+      note: "Return the second rental car at Kahului; fly home",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 0, scale: "vehicle" },
+    },
+  ],
+};
+
+TRIP.activities = {
+  oahu: [
+    {
+      day: 2,
+      title: "Pearl Harbor & USS Arizona Memorial",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "NPS timed boat ticket — a small recreation fee applies; reserve weeks out",
+          current: true,
+        },
+        {
+          name: "Battleship Missouri & Aviation Museum add-on",
+          cost: 65,
+          note: "Guided half-day extension onto Ford Island",
+        },
+      ],
+    },
+    {
+      day: 3,
+      title: "Diamond Head & Hanauma Bay",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "Diamond Head crater hike (reserve online) + afternoon at Hanauma Bay",
+          current: true,
+        },
+        {
+          name: "Hanauma Bay entry only",
+          cost: 25,
+          note: "State park admission, reserve ahead — closed Tue/Wed",
+        },
+        {
+          name: "Guided snorkel & reef tour",
+          cost: 95,
+          note: "Small-group guided snorkel with gear included",
+        },
+      ],
+    },
+  ],
+  maui: [
+    {
+      day: 5,
+      title: "Road to Hana",
+      options: [
+        {
+          name: "Self-guided (free)",
+          cost: 0,
+          note: "Just gas and the rental — Twin Falls, Waiʻanapanapa, Hana town",
+          current: true,
+        },
+        {
+          name: "Guided Road to Hana van tour",
+          cost: 180,
+          note: "Someone else drives the 600+ curves; narrated stops",
+        },
+      ],
+    },
+    {
+      day: 6,
+      title: "Haleakalā sunrise",
+      options: [
+        {
+          name: "Self-guided sunrise drive (free + reservation)",
+          cost: 30,
+          note: "$1 timed-entry reservation plus the park's vehicle fee",
+          current: true,
+        },
+        {
+          name: "Guided sunrise + bike descent",
+          cost: 220,
+          note: "Van up for sunrise, bike back down from the summit",
+        },
+      ],
+    },
+    {
+      day: 7,
+      title: "Molokini snorkel & Lahaina",
+      options: [
+        {
+          name: "Self-guided shore snorkel (free)",
+          cost: 0,
+          note: "Kamaole beaches or Ahihi-Kīnau; Lahaina Front St. remains closed post-fire",
+          current: true,
+        },
+        {
+          name: "Molokini Crater snorkel cruise",
+          cost: 160,
+          note: "Half-day boat trip to the crescent volcanic islet",
+        },
+      ],
+    },
+  ],
+};
   // ── engine bindings: the engine reads its data from TRIP ──────────
   const FLIGHTS = TRIP.flights;
   const HOTELS = TRIP.hotels;
@@ -3448,295 +3373,275 @@
   // Narrative pools (experience only). Concrete hotel/transport/cost
   // rows are injected from __state at render time, so they always
   // reflect the Plan-tab choices. First entry per city is the travel-in day.
-  TRIP.itinPool = {
-    jackson: [
-      {
-        id: "j-arrive",
-        travel: true,
-        move: "arrive",
-        lodging: "jackson",
-        cityTag: "Jackson — arrive",
-        sun: "19:47",
-        title: "Land, grab the car, ease in",
-        rows: [
-          {
-            tag: "Move",
-            kind: "move",
-            lead: "Fly into Jackson Hole (JAC).",
-            detail:
-              "Pick up the rental SUV; ~15 min into town or the park. We land separately — meet at the lodge.",
-          },
-          {
-            tag: "Evening",
-            kind: "soft",
-            detail:
-              "Dinner in Jackson off the Town Square, or catch first light on the Tetons at dusk. Stock a cooler for the road.",
-          },
-        ],
-        ask: "what time do our flights land? It decides whether tonight has a sunset drive in it.",
-      },
-      {
-        id: "j-tetons",
-        cityTag: "Grand Teton",
-        sun: "19:45",
-        title: "Jenny Lake and the Cathedral Group",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Jenny Lake — Hidden Falls & Inspiration Point.",
-            detail:
-              "Shuttle boat across, then walk up; the Tetons rise straight out of the water. Go early for parking.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lakeside picnic, then a Jackson dinner.",
-            detail: "Grab supplies in town; dinner back on the Square.",
-          },
-          {
-            tag: "Wildlife",
-            kind: "soft",
-            detail:
-              "Dawn or dusk on Mormon Row / Antelope Flats for moose, bison, and the classic barn-and-Tetons shot.",
-          },
-        ],
-        fuller:
-          "Add the <b>Snake River scenic float</b> — a calm guided raft with the Tetons as the backdrop, ~3 hours.",
-        ask: "one big hike (Cascade Canyon, ~9 mi) or keep it easy with the float?",
-      },
-      {
-        id: "j-cascade",
-        cityTag: "Grand Teton",
-        sun: "19:43",
-        title: "A canyon under the peaks",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Cascade Canyon.",
-            detail:
-              "The signature Teton hike — boat across Jenny Lake, then up the canyon between the Grand and Mt Owen. Turn around whenever you like.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "A well-earned dinner in Jackson.",
-            detail: "",
-          },
-        ],
-        fuller:
-          "Prefer a slow day? Swap the hike for the <b>Jenny Lake scenic cruise</b> + String Lake and a lazy afternoon.",
-      },
-    ],
-    oldFaithful: [
-      {
-        id: "of-arrive",
-        travel: true,
-        move: "j-of",
-        lodging: "oldFaithful",
-        cityTag: "Jackson → Old Faithful",
-        sun: "19:40",
-        title: "North into Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Old Faithful + the Upper Geyser Basin.",
-            detail:
-              "Time an eruption, then walk the boardwalk loop past Morning Glory and the big geysers — half the world's geysers are in this basin.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at the Old Faithful Inn.",
-            detail:
-              "The great log lobby is worth a wander even if you're not staying.",
-          },
-        ],
-        ask: "leave Jackson early — the South Entrance line and wildlife stops eat the morning.",
-      },
-      {
-        id: "of-prismatic",
-        cityTag: "Old Faithful",
-        sun: "19:38",
-        title: "Grand Prismatic and the color",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Grand Prismatic Spring.",
-            detail:
-              "Walk the Midway boardwalk at ground level, then the Fairy Falls overlook spur for the aerial view of the largest hot spring in the US.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Casual dinner at the village.",
-            detail: "",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "Black Sand and Biscuit basins are quieter, colorful add-ons nearby.",
-          },
-        ],
-        fuller:
-          "Active option: <b>Fairy Falls + Twin Buttes</b> (~5.4 mi) or the <b>Mystic Falls loop</b> (~4 mi) for a real walk.",
-      },
-      {
-        id: "of-extra",
-        cityTag: "Old Faithful",
-        sun: "19:36",
-        title: "More geyser country",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Firehole Lake Drive + Lone Star Geyser.",
-            detail:
-              "An easy geyser side-road, then the flat trail to a backcountry geyser that erupts about every 3 hours.",
-          },
-        ],
-        fuller:
-          "Or drive down to <b>West Thumb Geyser Basin</b> on the shore of Yellowstone Lake.",
-      },
-    ],
-    canyon: [
-      {
-        id: "c-arrive",
-        travel: true,
-        move: "of-c",
-        lodging: "canyon",
-        cityTag: "Old Faithful → Canyon",
-        sun: "19:34",
-        title: "The Grand Canyon of the Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Artist Point & the rim.",
-            detail:
-              "The Lower Falls plunging into the yellow canyon — walk the South and North Rim overlooks; Uncle Tom's stairs if they're open.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Canyon Village.",
-            detail: "",
-          },
-        ],
-      },
-      {
-        id: "c-hayden",
-        cityTag: "Canyon / Lake",
-        sun: "19:32",
-        title: "Hayden Valley wildlife & the lake",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Hayden Valley at dawn.",
-            detail:
-              "Prime bison — and maybe wolves or a grizzly — between Canyon and Lake. Pullouts, binoculars, early light.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lake Yellowstone Hotel dining room.",
-            detail: "The lakeside sunroom is the grandest space in the park.",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "West Thumb Geyser Basin — geothermal features right on the lakeshore.",
-          },
-        ],
-        fuller:
-          "Add a <b>Yellowstone Lake scenic cruise</b> from Bridge Bay (~1 hr).",
-      },
-      {
-        id: "c-extra",
-        cityTag: "Canyon / Lake",
-        sun: "19:30",
-        title: "Canyon country, unhurried",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Mount Washburn, or a slow rim morning.",
-            detail:
-              "A big-view climb (~6 mi) for the strong, or a relaxed second pass at the canyon overlooks in different light.",
-          },
-        ],
-      },
-    ],
-    mammoth: [
-      {
-        id: "m-arrive",
-        travel: true,
-        move: "c-m",
-        lodging: "mammoth",
-        cityTag: "Canyon → Mammoth",
-        sun: "19:28",
-        title: "Lamar Valley and the terraces",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Lamar Valley — the American Serengeti.",
-            detail:
-              "Drive out at dawn for wolves, bison herds, and pronghorn, then the Mammoth Hot Springs travertine terraces on the way to the hotel.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Mammoth (or in Gardiner).",
-            detail: "Elk are often out on the Fort Yellowstone lawns.",
-          },
-        ],
-        fuller:
-          "Serious about wildlife? A <b>guided Lamar safari</b> with a naturalist and spotting scopes dramatically ups the sightings.",
-        ask: "dawn wildlife means a 6am start — worth it? (It is.)",
-      },
-      {
-        id: "m-extra",
-        cityTag: "Mammoth",
-        sun: "19:26",
-        title: "A last morning up north",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Bunsen Peak, or the Roosevelt Arch.",
-            detail:
-              "A brisk climb for a final valley view, or an easy historic wander through Fort Yellowstone and the north-entrance arch.",
-          },
-        ],
-      },
-    ],
-  };
-  TRIP.itinDepart = {
-    id: "depart",
-    travel: true,
-    move: "depart",
-    sun: "19:24",
-    cityTag: "Mammoth → home",
-    title: "Drive to Bozeman and fly out",
-    rows: [
-      {
-        tag: "Move",
-        kind: "move",
-        lead: "Mammoth → Bozeman (BZN), ~1h30.",
-        detail:
-          "Return the car at the airport; build in buffer. A last stretch of Montana on the way out.",
-      },
-    ],
-    ask: "when do the flights home leave? It sets how much of the morning is a slow drive vs. a dash.",
-  };
-
+TRIP.itinPool = {
+  oahu: [
+    {
+      id: "o-arrive",
+      travel: true,
+      move: "arrive",
+      lodging: "oahu",
+      cityTag: "Honolulu — arrive",
+      sun: "18:07",
+      title: "Land, grab the car, ease into Waikiki",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Fly into Honolulu (HNL).",
+          detail:
+            "Pick up the rental car; ~20 min into Waikiki. We land separately — meet at the hotel.",
+        },
+        {
+          tag: "Evening",
+          kind: "soft",
+          detail:
+            "Sunset walk on Waikiki Beach past the Duke Kahanamoku statue, then a casual dinner along Kalākaua Ave.",
+        },
+      ],
+      ask: "what time do our flights land? It decides whether tonight has a sunset swim in it.",
+    },
+    {
+      id: "o-pearl",
+      cityTag: "Oʻahu — Pearl Harbor",
+      sun: "18:09",
+      title: "Pearl Harbor and the USS Arizona",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Pearl Harbor & USS Arizona Memorial.",
+          detail:
+            "Timed NPS boat tickets — reserve the moment dates lock, the free slots go weeks out. Arrive by 7am for the best availability.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Chinatown or downtown Honolulu.",
+          detail: "Walkable historic district, close to the harbor.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail: "ʻIolani Palace and the Aloha Tower are easy add-ons nearby.",
+        },
+      ],
+      fuller:
+        "Add the <b>Battleship Missouri & Pacific Aviation Museum</b> — a half-day extension out on Ford Island.",
+      ask: "book Pearl Harbor tickets as soon as dates are locked — they're the one hard reservation on Oʻahu.",
+    },
+    {
+      id: "o-diamond",
+      cityTag: "Oʻahu — Diamond Head & Hanauma Bay",
+      sun: "18:11",
+      title: "A crater hike and the reef",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Diamond Head Crater hike.",
+          detail:
+            "~1.6 mi round trip up the old volcanic tuff cone; reserve a parking or entry slot online, go early to beat both heat and crowds.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Poke bowls or plate lunch near Kapahulu.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Hanauma Bay snorkel in the afternoon — reserve entry online, closed Tue/Wed for the reef's rest days.",
+        },
+      ],
+      fuller:
+        "Prefer a driving day instead? Swap this for the North Shore — Waimea Bay and shrimp trucks in Haleiwa.",
+    },
+    {
+      id: "o-northshore",
+      cityTag: "Oʻahu — North Shore (optional)",
+      sun: "18:12",
+      title: "A day up north",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Circle-island drive to the North Shore.",
+          detail:
+            "Waimea Bay, Sunset Beach, and the Ehukai overlook above Pipeline — winter is peak surf season if the swell cooperates.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Giovanni's shrimp truck and Matsumoto shave ice in Haleʻiwa.",
+          detail: "",
+        },
+      ],
+      fuller:
+        "This is the flex day — swap it in for Diamond Head/Hanauma Bay if a driving day sounds better than a hike.",
+    },
+  ],
+  maui: [
+    {
+      id: "m-arrive",
+      travel: true,
+      move: "o-m",
+      lodging: "maui",
+      cityTag: "Oʻahu → Maui",
+      sun: "18:13",
+      title: "Island-hop to Maui, settle into Kīhei",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Short inter-island flight, HNL → OGG.",
+          detail:
+            "~40 min on Hawaiian or Southwest. Pick up the second rental car at Kahului; a different counter than Oʻahu's.",
+        },
+        {
+          tag: "Evening",
+          kind: "soft",
+          detail:
+            "Sunset at Kamaole Beach, then a casual dinner in Kīhei to settle in.",
+        },
+      ],
+      ask: "morning or afternoon inter-island hop? An early flight buys back a full Maui afternoon.",
+    },
+    {
+      id: "m-hana",
+      cityTag: "Maui — Road to Hana",
+      sun: "18:15",
+      title: "The Road to Hana, waterfall to waterfall",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Road to Hana.",
+          detail:
+            "Twin Falls, Waiʻanapanapa black-sand beach, and Hana town at the end of 600-plus curves. Start by 7am — it's a long day.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Banana bread stands and malasadas in Paʻia on the way out.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Pull over often — the roadside pools and lookouts are the point.",
+        },
+      ],
+      fuller:
+        "Stay overnight in Hana instead of driving back same-day to slow the whole thing down.",
+      ask: "full loop back through Kaupo, or return the way we came? The back road is rougher on the rental.",
+    },
+    {
+      id: "m-haleakala",
+      cityTag: "Maui — Haleakalā",
+      sun: "18:16",
+      title: "Sunrise above the clouds",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Haleakalā sunrise.",
+          detail:
+            "Reserve the $1 timed sunrise entry online months out. ~10,000 ft summit — dress warm, it's cold up there.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Upcountry brunch in Kula on the way back down.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail: "Afternoon off — the 3am wake-up earns a slow one.",
+        },
+      ],
+      fuller:
+        "Add the guided sunrise bike descent for a different way down the mountain.",
+      ask: "sunrise (3am wake-up) or trade it for a mellower sunset visit instead?",
+    },
+    {
+      id: "m-molokini",
+      cityTag: "Maui — Molokini & Lahaina",
+      sun: "18:18",
+      title: "Crater snorkeling and a walk through Lahaina",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Molokini Crater snorkel cruise.",
+          detail:
+            "Half-day boat out to the crescent volcanic islet — some of the clearest water in Hawaii.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner back in Kīhei or Wailea.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Lahaina is still rebuilding after the 2023 wildfire — Front Street remains closed, but Kāʻanapali just north is open; visit respectfully if at all.",
+        },
+      ],
+      fuller:
+        "Skip the boat and snorkel Ahihi-Kīnau or Black Rock instead — both good from shore, no charter needed.",
+    },
+    {
+      id: "m-extra",
+      cityTag: "Maui — a last easy day",
+      sun: "18:19",
+      title: "Beach time before flying home",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Wailea beach path.",
+          detail:
+            "An easy paved walk linking Ulua, Mokapu, and Wailea beaches — no plan required.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "A last sunset dinner in Wailea or Kīhei.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail: "Last-minute shopping at Whalers Village in Kāʻanapali.",
+        },
+      ],
+    },
+  ],
+};
+TRIP.itinDepart = {
+  id: "depart",
+  travel: true,
+  move: "depart",
+  sun: "18:20",
+  cityTag: "Maui → home",
+  title: "Fly home from Kahului",
+  rows: [
+    {
+      tag: "Move",
+      kind: "move",
+      lead: "Return the rental car at OGG and fly home.",
+      detail:
+        "Build in buffer for Hawaii's TSA lines and the drive back from Wailea or Kīhei.",
+    },
+  ],
+  ask: "what time does the flight home leave? It sets how much of the morning is beach vs. airport.",
+};
   const ITIN_POOL = TRIP.itinPool;
 
   function itinDepartDay(osakaMode) {
@@ -4175,21 +4080,18 @@
 
   // Officer-friendly, literal one-liners for the visa form (the
   // itinerary's own titles are deliberately poetic — wrong register here).
-  TRIP.visaPlan = {
-    "j-arrive": "Arrive Jackson Hole (JAC); pick up rental car.",
-    "j-tetons": "Grand Teton NP — Jenny Lake, Hidden Falls, Mormon Row.",
-    "j-cascade": "Grand Teton — Cascade Canyon hike / Snake River float.",
-    "of-arrive": "Drive into Yellowstone; Old Faithful & Upper Geyser Basin.",
-    "of-prismatic": "Grand Prismatic Spring & Midway Geyser Basin.",
-    "of-extra": "Firehole Lake Drive; Lone Star Geyser / West Thumb.",
-    "c-arrive": "Grand Canyon of the Yellowstone — Artist Point & rim.",
-    "c-hayden": "Hayden Valley wildlife; Yellowstone Lake.",
-    "c-extra": "Mount Washburn / canyon overlooks.",
-    "m-arrive": "Lamar Valley wildlife; Mammoth Hot Springs terraces.",
-    "m-extra": "Bunsen Peak / Roosevelt Arch.",
-    depart: "Drive to Bozeman (BZN); depart.",
-  };
-
+TRIP.visaPlan = {
+  "o-arrive": "Arrive Honolulu (HNL); pick up rental car.",
+  "o-pearl": "Pearl Harbor & USS Arizona Memorial; Chinatown/downtown dinner.",
+  "o-diamond": "Diamond Head hike; Hanauma Bay snorkel in the afternoon.",
+  "o-northshore": "North Shore day trip — Waimea Bay, Sunset Beach, Haleʻiwa.",
+  "m-arrive": "Inter-island flight to Maui (OGG); pick up second rental car.",
+  "m-hana": "Road to Hana — waterfalls, black-sand beach, Hana town.",
+  "m-haleakala": "Haleakalā sunrise; Upcountry brunch.",
+  "m-molokini": "Molokini Crater snorkel cruise; Lahaina (post-fire status).",
+  "m-extra": "Wailea beach path; last-minute Kāʻanapali shopping.",
+  depart: "Return rental car at Kahului (OGG); fly home.",
+};
   const VISA_PLAN = TRIP.visaPlan;
 
   function xlEsc(s) {

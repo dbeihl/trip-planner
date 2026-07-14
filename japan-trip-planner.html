@@ -3177,6 +3177,7 @@
       N,
       rooms,
       arriveMode,
+      renting,
       origins,
       flightsCost,
       fuelCost,
@@ -4079,6 +4080,36 @@
             .replace(/&[a-z]+\d*;/g, " ")
             .replace(/\s+/g, " ")
             .trim();
+        // getting-there legs follow the fly/drive + rental choice
+        if (leg.role === "arrival" || leg.role === "departure") {
+          const gw = TRIP.meta.destLabel || "the gateway";
+          if (s.arriveMode === "drive") {
+            const days = s.enrouteNights / 2 + 1;
+            const multi =
+              s.enrouteNights > 0 ? ` (${days}-day drive each way)` : "";
+            if (leg.role === "arrival")
+              return {
+                lead: "Drive to " + gw + multi,
+                detail: s.renting
+                  ? "Self-drive in; grab a rental if you flew part-way"
+                  : "Your own car for the whole trip",
+                cost: 0,
+              };
+            return {
+              lead: "Drive home" + multi,
+              detail: "The long road back",
+              cost: 0,
+            };
+          }
+          // flying: keep the authored route text; drop the rental mention if not renting
+          let lead = strip(leg.routeName || "");
+          if (!s.renting) lead = lead.replace(/\s*·\s*pick up[^·]*/i, "");
+          return {
+            lead,
+            detail: strip(leg.note || ""),
+            cost: (s.legCosts && s.legCosts[move]) || 0,
+          };
+        }
         const m = leg.modes ? selectedValue(leg.modeControl) : null;
         return {
           lead: strip(leg.routeName || ""),
@@ -4145,7 +4176,15 @@
             "</span></span></div>";
         }
 
-        rows += d.rows
+        // when driving, the arrival/departure day's fly-assuming narrative
+        // "Move" rows are replaced by the state-driven move row above
+        let dayRows = d.rows;
+        if (d.move && s.arriveMode === "drive") {
+          const lg = TRIP.transport.legs.find((l) => l.id === d.move);
+          if (lg && (lg.role === "arrival" || lg.role === "departure"))
+            dayRows = d.rows.filter((r) => r.kind !== "move");
+        }
+        rows += dayRows
           .map((r) => {
             const flag = r.flag
               ? '<span class="flag">' + r.flag + "</span>"
@@ -4874,6 +4913,7 @@
       t === "plan" ? "" : "none";
     document.getElementById("itinPane").style.display =
       t === "itin" ? "" : "none";
+    if (t === "itin") renderItinerary(); // always reflect the latest Plan choices
     window.scrollTo(0, 0);
   }
 

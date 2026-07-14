@@ -1,5 +1,5 @@
 <meta charset="utf-8" />
-<title>Yellowstone &amp; Grand Teton Road Trip — Budget &amp; Itinerary</title>
+<title>Italy by Rail — Rome, Florence, Venice — Budget &amp; Itinerary</title>
 <style>
   @font-face {
     font-family: "Ledger Serif";
@@ -1727,432 +1727,445 @@
   // the end of the data block — its code is otherwise unchanged.
   // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
   // ─────────────────────────────────────────────────────────────────
-  const TRIP = {
-    meta: {
-      title: "Yellowstone & Grand Teton — Sep 2026",
-      route: ["jackson", "oldFaithful", "canyon", "mammoth"],
-      optionalCities: [],
-      flexNightDefault: "jackson",
-      dates: { arrive: "2026-09-12", depart: "2026-09-20", nights: 8 },
-      travelers: {
-        count: 2,
-        note: "2 travelers; fly into Jackson Hole, out of Bozeman",
-      },
-      currency: "USD",
-      lodgingTaxBuffer: 1.12, // WY/MT lodging tax + park/resort fees
-      destLabel: "Jackson Hole", // gateway shown for an "Other airport" origin
-      ui: {
-        eyebrow:
-          'Sep 12 → Sep 20, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
-        planTitle: "Yellowstone &amp; Grand Teton Road Trip",
-        planSub:
-          "A driving loop through the Tetons and Yellowstone. Pick a lodge tier per stop; the rental car, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
-        flightsTitle: "Getting there — flights to the gateway",
-        flightsIntro:
-          "Two travelers converging on Jackson Hole. Pick a routing for each — fares fold into the grand total. Fly into Jackson Hole (JAC), out of Bozeman (BZN) to skip the backtrack.",
-        itinTitle: "Wyoming &amp; Montana, by road — nine days in the parks",
-        itinDek:
-          "A relaxed loop: Grand Teton, then the Yellowstone grand loop. One anchor a day, wildlife at dawn and dusk, and enough road time to actually see the country in between.",
-      },
+const TRIP = {
+  meta: {
+    title: "Classic Italy by Rail — Sep 2026",
+    route: ["rome", "florence", "venice"],
+    optionalCities: [],
+    flexNightDefault: "rome",
+    dates: { arrive: "2026-09-19", depart: "2026-09-27", nights: 8 },
+    travelers: {
+      count: 2,
+      note: "2 travelers; fly into Rome (FCO), out of Venice (VCE) — open jaw, no rental car",
     },
-  };
+    currency: "USD",
+    lodgingTaxBuffer: 1.15, // Italian city/lodging tax + tourist tax buffer
+    destLabel: "Rome",
+    ui: {
+      eyebrow:
+        'Sep 19 → Sep 27, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
+      planTitle: "Classic Italy by High-Speed Rail",
+      planSub:
+        "Rome, Florence &amp; Venice on the Frecciarossa — an open-jaw into Fiumicino and home from Marco Polo, no rental car needed. Pick a hotel tier per stop; train fares and transfers fold into the grand total. Every figure is a researched 2026 planning estimate.",
+      flightsTitle: "Getting there — flights to Rome, home from Venice",
+      flightsIntro:
+        "Two travelers converging on Rome. Pick a routing for each — fares fold into the grand total. Fly into Fiumicino (FCO), out of Venice Marco Polo (VCE) so the whole trip moves in one direction, city to city, by train.",
+      itinTitle: "Rome, Florence &amp; Venice — eight nights by rail",
+      itinDek:
+        "A relaxed sweep down the boot in reverse: ancient Rome, Renaissance Florence, and the Venetian lagoon. One anchor sight a day, real trattoria time, and just enough breathing room to get lost on purpose.",
+    },
+  },
+};
 
-  TRIP.flights = {
-    us: {
-      label: "From the USA — David (IND)",
-      traveler: "David",
-      pax: 1,
-      preference: "Delta preferred · fewest stops",
-      options: [
-        {
-          name: "Delta via Salt Lake City",
-          route: "IND → SLC → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 480,
-          note: "Fewest stops into Jackson Hole; seasonal SLC→JAC nonstop",
-          current: true,
-        },
-        {
-          name: "Delta via Minneapolis",
-          route: "IND → MSP → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 400,
-          note: "Often the cheapest 1-stop; fly out of Bozeman",
-        },
-        {
-          name: "Delta via Atlanta",
-          route: "IND → ATL → JAC",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 510,
-          note: "Seasonal ATL→JAC nonstop",
-        },
-        {
-          name: "Delta via Detroit",
-          route: "IND → DTW → BZN",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 430,
-          note: "Backup via the DTW hub",
-        },
-      ],
-    },
-    ph: {
-      label: "From the Philippines — partner (MNL/DVO)",
-      traveler: "Partner",
-      pax: 1,
-      preference: "Fewest stops · one alliance where possible",
-      options: [
-        {
-          name: "Philippine Airlines + Delta",
-          route: "MNL → NRT → SEA → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1650,
-          note: "Long-haul to Tokyo, US carrier to Seattle + Bozeman",
-          current: true,
-        },
-        {
-          name: "Korean Air + Delta (SkyTeam)",
-          route: "MNL → ICN → SLC → JAC",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1750,
-          note: "SkyTeam via Incheon + SLC into Jackson",
-        },
-        {
-          name: "United + ANA (Star Alliance)",
-          route: "MNL → NRT → DEN → BZN",
-          stops: 2,
-          cabin: "Economy",
-          fare: 1700,
-          note: "Alliance alternative via Tokyo + Denver",
-        },
-        {
-          name: "From Davao (add domestic hop)",
-          route: "DVO → MNL → ICN → SEA → BZN",
-          stops: 3,
-          cabin: "Economy",
-          fare: 1950,
-          note: "Extra domestic leg out of Davao",
-        },
-      ],
-    },
-    ord: {
-      label: "USA — Chicago (ORD)",
-      traveler: "Traveler",
-      pax: 1,
-      preset: true, // available in the dropdown; not part of the default split
-      preference: "Open-jaw JAC in / BZN out",
-      options: [
-        {
-          name: "United nonstop (open-jaw)",
-          route: "ORD → JAC / BZN → ORD",
-          stops: 0,
-          cabin: "Main Cabin",
-          fare: 540,
-          note: "Seasonal United nonstops both ways; book as one multi-city fare",
-          current: true,
-        },
-        {
-          name: "United via Denver",
-          route: "ORD → DEN → JAC / BZN → DEN → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 460,
-          note: "Most schedule flexibility; often cheaper than the nonstop",
-        },
-        {
-          name: "Delta via Salt Lake City",
-          route: "ORD → SLC → JAC / BZN → SLC → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 485,
-          note: "Strong SLC-hub service to both airports",
-        },
-        {
-          name: "American via Dallas/Fort Worth",
-          route: "ORD → DFW → JAC / BZN → DFW → ORD",
-          stops: 1,
-          cabin: "Main Cabin",
-          fare: 565,
-          note: "DFW-hub backup; longer connections",
-        },
-      ],
-    },
-  };
-
-  TRIP.hotels = {
-    jackson: {
-      baseNights: 2,
-      label: "Grand Teton",
-      header: "Jackson / Grand Teton",
-      options: [
-        {
-          name: "Cowboy Village Resort (Jackson town)",
-          rate: 210,
-          rating: "8.0",
-          note: "Log-cabin motel near Town Square",
-          current: true,
-        },
-        {
-          name: "Colter Bay Log Cabins (in-park)",
-          rate: 250,
-          rating: "8.0",
-          note: "Classic cabins near Jackson Lake",
-        },
-        {
-          name: "Signal Mountain Lodge (lakeside)",
-          rate: 320,
-          rating: "8.2",
-          note: "On Jackson Lake, quieter",
-        },
-        {
-          name: "Jackson Lake Lodge (in-park icon)",
-          rate: 500,
-          rating: "8.4",
-          note: "60-ft windows facing the Tetons",
-        },
-        {
-          name: "Jenny Lake Lodge (all-inclusive)",
-          rate: 1400,
-          rating: "9.1",
-          note: "Base of the peaks; meals + activities included",
-        },
-      ],
-    },
-    oldFaithful: {
-      baseNights: 2,
-      label: "Old Faithful",
-      header: "Old Faithful",
-      options: [
-        {
-          name: "Old Faithful Lodge Cabin",
-          rate: 165,
-          rating: "7.8",
-          note: "Basic cabin steps from the geyser",
-          current: true,
-        },
-        {
-          name: "Old Faithful Inn — Old House",
-          rate: 260,
-          rating: "8.6",
-          note: "Iconic 1904 log lodge, shared bath",
-        },
-        {
-          name: "Old Faithful Inn — private bath",
-          rate: 400,
-          rating: "8.6",
-          note: "Historic Inn, private bath",
-        },
-        {
-          name: "Old Faithful Inn — premium/suite",
-          rate: 550,
-          rating: "8.6",
-          note: "Best rooms, geyser views",
-        },
-      ],
-    },
-    canyon: {
-      baseNights: 2,
-      label: "Canyon / Lake",
-      header: "Canyon / Yellowstone Lake",
-      options: [
-        {
-          name: "Canyon Lodge Western Cabin",
-          rate: 260,
-          rating: "8.0",
-          note: "Near the canyon rim",
-          current: true,
-        },
-        {
-          name: "Canyon Lodge — standard room",
-          rate: 370,
-          rating: "8.2",
-          note: "Rebuilt modern lodge",
-        },
-        {
-          name: "Lake Yellowstone Hotel — lake view",
-          rate: 450,
-          rating: "8.0",
-          note: "Elegant 1891 hotel on the lake",
-        },
-        {
-          name: "Canyon Lodge — premium",
-          rate: 460,
-          rating: "8.2",
-          note: "Larger updated rooms",
-        },
-      ],
-    },
-    mammoth: {
-      baseNights: 1,
-      label: "Mammoth",
-      header: "Mammoth / Lamar Valley",
-      options: [
-        {
-          name: "Mammoth Hotel — shared bath",
-          rate: 175,
-          rating: "7.8",
-          note: "By the terraces + north entrance",
-          current: true,
-        },
-        {
-          name: "Mammoth — frontier/hot-tub cabin",
-          rate: 250,
-          rating: "8.0",
-          note: "Some cabins have private hot tubs",
-        },
-        {
-          name: "Mammoth Hotel — private bath",
-          rate: 320,
-          rating: "8.0",
-          note: "Closest in-park base to Gardiner/Bozeman",
-        },
-      ],
-    },
-  };
-
-  TRIP.transport = {
-    rental: {
-      perDay: 130,
-      oneTime: 210,
-      label: "Rental SUV + fuel + park pass",
-      note: "Mid-size SUV at Jackson Hole (~$130/day) + ~$140 fuel for the loop + $70 park pass. Book early — the JAC fleet is limited in peak season.",
-    },
-    legs: [
+TRIP.flights = {
+  us: {
+    label: "From the USA — David (JFK)",
+    traveler: "David",
+    pax: 1,
+    preference: "Nonstop preferred · open jaw FCO in / VCE out",
+    options: [
       {
-        id: "arrive",
-        role: "arrival",
-        routeName: "Arrive Jackson Hole (JAC) · pick up rental SUV",
-        note: "~15 min into town / Grand Teton",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "ITA Airways / Delta — nonstop open jaw",
+        route: "JFK → FCO nonstop · VCE → JFK nonstop",
+        stops: 0,
+        cabin: "Main Cabin",
+        fare: 860,
+        note: "Nonstop each way, no connections in either direction",
+        current: true,
       },
       {
-        id: "j-of",
-        from: "jackson",
-        to: "oldFaithful",
-        routeName: "Jackson → <strong>Old Faithful</strong>",
-        note: "Drive ~2h15 · 83 mi (South Entrance & West Thumb)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "American via Philadelphia",
+        route: "JFK → PHL → FCO · VCE → PHL → JFK",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 720,
+        note: "Cheapest 1-stop; longer connection on the way home",
       },
       {
-        id: "of-c",
-        from: "oldFaithful",
-        to: "canyon",
-        routeName: "Old Faithful → <strong>Canyon</strong>",
-        note: "Drive ~50 min · 32 mi (stop at Grand Prismatic)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Lufthansa via Frankfurt",
+        route: "JFK → FRA → FCO · VCE → FRA → JFK",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 790,
+        note: "Star Alliance, reliable FRA connection window",
       },
       {
-        id: "c-m",
-        from: "canyon",
-        to: "mammoth",
-        routeName: "Canyon → <strong>Mammoth</strong>",
-        note: "Drive ~2h · via Lamar Valley (wolves & bison)",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
-      },
-      {
-        id: "depart",
-        role: "departure",
-        routeName: "<strong>Mammoth</strong> → Bozeman (BZN)",
-        note: "Drive ~1h30 · 80 mi · fly home",
-        toggles: [],
-        routeDetail: false,
-        flat: { cost: 0, scale: "vehicle" },
+        name: "Delta / KLM via Amsterdam",
+        route: "JFK → AMS → FCO · VCE → AMS → JFK",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 810,
+        note: "SkyTeam alternative via Amsterdam",
       },
     ],
-  };
+  },
+  ph: {
+    label: "From the Philippines — partner (MNL)",
+    traveler: "Partner",
+    pax: 1,
+    preference: "Fewest stops · Gulf or EU hub",
+    options: [
+      {
+        name: "Qatar Airways via Doha",
+        route: "MNL → DOH → FCO · VCE → DOH → MNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1180,
+        note: "One-stop via Doha, strong connection times",
+        current: true,
+      },
+      {
+        name: "Emirates via Dubai",
+        route: "MNL → DXB → FCO · VCE → DXB → MNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1240,
+        note: "Reliable DXB hub, wide seat selection",
+      },
+      {
+        name: "Turkish Airlines via Istanbul",
+        route: "MNL → IST → FCO · VCE → IST → MNL",
+        stops: 1,
+        cabin: "Economy",
+        fare: 1095,
+        note: "Usually the cheapest Gulf/EU-hub option",
+      },
+      {
+        name: "ANA + Lufthansa via Tokyo & Frankfurt",
+        route: "MNL → NRT → FRA → FCO · VCE → FRA → NRT → MNL",
+        stops: 2,
+        cabin: "Economy",
+        fare: 1450,
+        note: "Star Alliance alternative via Tokyo and Frankfurt",
+      },
+    ],
+  },
+  chi: {
+    label: "From Chicago (ORD) — preset option",
+    traveler: "Preset",
+    pax: 1,
+    preset: true,
+    preference: "United/Star Alliance preferred",
+    options: [
+      {
+        name: "United / Lufthansa via Munich",
+        route: "ORD → MUC → FCO · VCE → MUC → ORD",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 720,
+        note: "Single connection each way via Munich",
+        current: true,
+      },
+      {
+        name: "American via London Heathrow",
+        route: "ORD → LHR → FCO · VCE → LHR → ORD",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 760,
+        note: "Oneworld alternative via LHR",
+      },
+      {
+        name: "Delta via Amsterdam",
+        route: "ORD → AMS → FCO · VCE → AMS → ORD",
+        stops: 1,
+        cabin: "Main Cabin",
+        fare: 740,
+        note: "SkyTeam alternative via Amsterdam",
+      },
+    ],
+  },
+};
 
-  TRIP.activities = {
-    jackson: [
+TRIP.hotels = {
+  rome: {
+    baseNights: 3,
+    label: "Rome",
+    header: "Rome",
+    options: [
       {
-        day: 2,
-        title: "Jenny Lake & the Tetons",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Jenny Lake loop + Hidden Falls; park entry only",
-            current: true,
-          },
-          {
-            name: "Jenny Lake shuttle boat",
-            cost: 44,
-            note: "Round-trip boat, shortens the Cascade Canyon approach",
-          },
-          {
-            name: "Snake River scenic float (guided)",
-            cost: 190,
-            note: "~3 hr guided raft, no rapids, Tetons backdrop",
-          },
-        ],
+        name: "The Beehive (Monti)",
+        rate: 95,
+        rating: "7.9",
+        note: "Budget-friendly, walkable to Termini and the centro",
+      },
+      {
+        name: "Hotel Trastevere",
+        rate: 130,
+        rating: "8.0",
+        note: "Small family-run hotel in the heart of Trastevere",
+      },
+      {
+        name: "Hotel Modigliani",
+        rate: 150,
+        rating: "8.4",
+        note: "Quiet courtyard near Via Veneto, easy walk to the centro",
+        current: true,
+      },
+      {
+        name: "Hotel Indigo Rome — St. George",
+        rate: 270,
+        rating: "8.8",
+        note: "Boutique 5-star in Monti, rooftop bar over the rooftops",
+      },
+      {
+        name: "Villa Spalletti Trombelli",
+        rate: 540,
+        rating: "9.2",
+        note: "Intimate 12-room villa near the Quirinale, all-inclusive rates",
       },
     ],
-    oldFaithful: [
+  },
+  florence: {
+    baseNights: 2,
+    label: "Florence",
+    header: "Florence",
+    options: [
       {
-        day: 4,
-        title: "Geyser basins",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Old Faithful + Upper Geyser Basin + Grand Prismatic",
-            current: true,
-          },
-        ],
+        name: "Soggiorno Battistero",
+        rate: 110,
+        rating: "8.2",
+        note: "Budget pick with a Duomo-view breakfast terrace",
+      },
+      {
+        name: "Hotel Alessandra",
+        rate: 140,
+        rating: "8.0",
+        note: "Steps from Ponte Vecchio, old-Florence charm",
+      },
+      {
+        name: "Hotel Brunelleschi",
+        rate: 230,
+        rating: "8.6",
+        note: "Built into a Byzantine tower two blocks from the Duomo",
+        current: true,
+      },
+      {
+        name: "Portrait Firenze",
+        rate: 650,
+        rating: "9.3",
+        note: "Ferragamo-family boutique on the Arno in the Oltrarno",
       },
     ],
-    canyon: [
+  },
+  venice: {
+    baseNights: 2,
+    label: "Venice",
+    header: "Venice",
+    options: [
       {
-        day: 6,
-        title: "Canyon & wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Grand Canyon rim + Hayden Valley pullouts",
-            current: true,
-          },
-          {
-            name: "Yellowstone Lake scenic cruise",
-            cost: 50,
-            note: "~1 hr narrated cruise from Bridge Bay",
-          },
-        ],
+        name: "Hotel Abbazia",
+        rate: 150,
+        rating: "8.1",
+        note: "Converted abbey in quiet Cannaregio, garden courtyard",
+      },
+      {
+        name: "Hotel Flora",
+        rate: 230,
+        rating: "8.7",
+        note: "Hidden garden a few steps off St. Mark's Square",
+        current: true,
+      },
+      {
+        name: "Hotel Ai Reali",
+        rate: 320,
+        rating: "8.9",
+        note: "Near Rialto Bridge, canal-view rooms and spa",
+      },
+      {
+        name: "The Gritti Palace",
+        rate: 1100,
+        rating: "9.4",
+        note: "15th-century palazzo on the Grand Canal, San Marco",
       },
     ],
-    mammoth: [
-      {
-        day: 8,
-        title: "Lamar Valley wildlife",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Dawn drive through Lamar Valley + Mammoth terraces",
-            current: true,
-          },
-          {
-            name: "Guided wildlife safari",
-            cost: 550,
-            note: "Full-day naturalist tour with spotting scopes",
-          },
-        ],
-      },
-    ],
-  };
+  },
+};
 
+TRIP.transport = {
+  legs: [
+    {
+      id: "arrive",
+      role: "arrival",
+      routeName: "Arrive Fiumicino (FCO) · Leonardo Express into Rome",
+      note: "~32 min nonstop to Roma Termini, trains every 15 min",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 32, scale: "person" },
+    },
+    {
+      id: "r-f",
+      from: "rome",
+      to: "florence",
+      routeName: "Rome → <strong>Florence</strong>",
+      note: "Frecciarossa high-speed train, ~1h35",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 90, scale: "person" },
+    },
+    {
+      id: "f-v",
+      from: "florence",
+      to: "venice",
+      routeName: "Florence → <strong>Venice</strong>",
+      note: "Frecciarossa high-speed train, ~2h05",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 100, scale: "person" },
+    },
+    {
+      id: "depart",
+      role: "departure",
+      routeName: "<strong>Venice</strong> → Marco Polo (VCE) · fly home",
+      note: "Alilaguna water bus or land shuttle, ~1h to the airport",
+      toggles: [],
+      routeDetail: false,
+      flat: { cost: 28, scale: "person" },
+    },
+  ],
+};
+
+TRIP.activities = {
+  rome: [
+    {
+      day: 2,
+      title: "Colosseum, Forum & Palatine Hill",
+      options: [
+        {
+          name: "Self-guided with skip-the-line ticket",
+          cost: 22,
+          note: "Timed Colosseum + Forum + Palatine combo ticket, explore at your own pace",
+          current: true,
+        },
+        {
+          name: "Colosseum, Forum & Palatine guided tour",
+          cost: 75,
+          note: "3-hr small-group tour with arena-floor access",
+        },
+        {
+          name: "Colosseum Underground + Arena Floor tour",
+          cost: 95,
+          note: "Access to the gladiator tunnels and the arena floor",
+        },
+      ],
+    },
+    {
+      day: 3,
+      title: "Vatican Museums & Sistine Chapel",
+      options: [
+        {
+          name: "Timed-entry ticket, self-guided",
+          cost: 35,
+          note: "Vatican Museums + Sistine Chapel + St. Peter's Basilica",
+          current: true,
+        },
+        {
+          name: "Early-access guided tour (before opening)",
+          cost: 89,
+          note: "In before the public crowds, small group, skip-the-line",
+        },
+      ],
+    },
+    {
+      day: 4,
+      title: "Trastevere & the historic centro",
+      options: [
+        {
+          name: "Self-guided walk (free)",
+          cost: 0,
+          note: "Pantheon, Piazza Navona, Campo de' Fiori, Trastevere at dusk",
+          current: true,
+        },
+        {
+          name: "Rome by night food tour",
+          cost: 95,
+          note: "Guided tastings through Trastevere's trattorias and wine bars",
+        },
+      ],
+    },
+  ],
+  florence: [
+    {
+      day: 5,
+      title: "Uffizi Gallery",
+      options: [
+        {
+          name: "Timed-entry ticket, self-guided",
+          cost: 30,
+          note: "Botticelli, Caravaggio, the Renaissance in one building — book the timed slot ahead",
+          current: true,
+        },
+        {
+          name: "Uffizi skip-the-line guided tour",
+          cost: 79,
+          note: "2-hr small-group tour with an art historian",
+        },
+      ],
+    },
+    {
+      day: 6,
+      title: "Duomo, Ponte Vecchio & the Oltrarno",
+      options: [
+        {
+          name: "Self-guided walk (free)",
+          cost: 0,
+          note: "Duomo exterior, Ponte Vecchio, artisan workshops in the Oltrarno",
+          current: true,
+        },
+        {
+          name: "Accademia (David) timed entry",
+          cost: 24,
+          note: "See Michelangelo's David without the standby line",
+        },
+        {
+          name: "Brunelleschi's Dome climb",
+          cost: 30,
+          note: "463 steps inside the cupola for the rooftop skyline view",
+        },
+      ],
+    },
+  ],
+  venice: [
+    {
+      day: 7,
+      title: "St. Mark's Square & the Doge's Palace",
+      options: [
+        {
+          name: "Self-guided walk (free)",
+          cost: 0,
+          note: "St. Mark's Basilica exterior, the Piazza, the Bridge of Sighs from outside",
+          current: true,
+        },
+        {
+          name: "Doge's Palace timed entry",
+          cost: 30,
+          note: "Secret Itineraries guided add-on available",
+        },
+        {
+          name: "Gondola ride (shared)",
+          cost: 45,
+          note: "~30 min shared gondola; golden-hour departures sell out",
+        },
+      ],
+    },
+    {
+      day: 8,
+      title: "Murano & Burano islands",
+      options: [
+        {
+          name: "Self-guided vaporetto day (transit pass)",
+          cost: 25,
+          note: "ACTV day pass, hop the lagoon islands at your own pace",
+          current: true,
+        },
+        {
+          name: "Guided Murano glass-blowing + Burano tour",
+          cost: 65,
+          note: "Small-boat tour including a glass-blowing demonstration",
+        },
+      ],
+    },
+  ],
+};
   // ── engine bindings: the engine reads its data from TRIP ──────────
   const FLIGHTS = TRIP.flights;
   const HOTELS = TRIP.hotels;
@@ -3448,295 +3461,314 @@
   // Narrative pools (experience only). Concrete hotel/transport/cost
   // rows are injected from __state at render time, so they always
   // reflect the Plan-tab choices. First entry per city is the travel-in day.
-  TRIP.itinPool = {
-    jackson: [
-      {
-        id: "j-arrive",
-        travel: true,
-        move: "arrive",
-        lodging: "jackson",
-        cityTag: "Jackson — arrive",
-        sun: "19:47",
-        title: "Land, grab the car, ease in",
-        rows: [
-          {
-            tag: "Move",
-            kind: "move",
-            lead: "Fly into Jackson Hole (JAC).",
-            detail:
-              "Pick up the rental SUV; ~15 min into town or the park. We land separately — meet at the lodge.",
-          },
-          {
-            tag: "Evening",
-            kind: "soft",
-            detail:
-              "Dinner in Jackson off the Town Square, or catch first light on the Tetons at dusk. Stock a cooler for the road.",
-          },
-        ],
-        ask: "what time do our flights land? It decides whether tonight has a sunset drive in it.",
-      },
-      {
-        id: "j-tetons",
-        cityTag: "Grand Teton",
-        sun: "19:45",
-        title: "Jenny Lake and the Cathedral Group",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Jenny Lake — Hidden Falls & Inspiration Point.",
-            detail:
-              "Shuttle boat across, then walk up; the Tetons rise straight out of the water. Go early for parking.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lakeside picnic, then a Jackson dinner.",
-            detail: "Grab supplies in town; dinner back on the Square.",
-          },
-          {
-            tag: "Wildlife",
-            kind: "soft",
-            detail:
-              "Dawn or dusk on Mormon Row / Antelope Flats for moose, bison, and the classic barn-and-Tetons shot.",
-          },
-        ],
-        fuller:
-          "Add the <b>Snake River scenic float</b> — a calm guided raft with the Tetons as the backdrop, ~3 hours.",
-        ask: "one big hike (Cascade Canyon, ~9 mi) or keep it easy with the float?",
-      },
-      {
-        id: "j-cascade",
-        cityTag: "Grand Teton",
-        sun: "19:43",
-        title: "A canyon under the peaks",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Cascade Canyon.",
-            detail:
-              "The signature Teton hike — boat across Jenny Lake, then up the canyon between the Grand and Mt Owen. Turn around whenever you like.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "A well-earned dinner in Jackson.",
-            detail: "",
-          },
-        ],
-        fuller:
-          "Prefer a slow day? Swap the hike for the <b>Jenny Lake scenic cruise</b> + String Lake and a lazy afternoon.",
-      },
-    ],
-    oldFaithful: [
-      {
-        id: "of-arrive",
-        travel: true,
-        move: "j-of",
-        lodging: "oldFaithful",
-        cityTag: "Jackson → Old Faithful",
-        sun: "19:40",
-        title: "North into Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Old Faithful + the Upper Geyser Basin.",
-            detail:
-              "Time an eruption, then walk the boardwalk loop past Morning Glory and the big geysers — half the world's geysers are in this basin.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at the Old Faithful Inn.",
-            detail:
-              "The great log lobby is worth a wander even if you're not staying.",
-          },
-        ],
-        ask: "leave Jackson early — the South Entrance line and wildlife stops eat the morning.",
-      },
-      {
-        id: "of-prismatic",
-        cityTag: "Old Faithful",
-        sun: "19:38",
-        title: "Grand Prismatic and the color",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Grand Prismatic Spring.",
-            detail:
-              "Walk the Midway boardwalk at ground level, then the Fairy Falls overlook spur for the aerial view of the largest hot spring in the US.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Casual dinner at the village.",
-            detail: "",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "Black Sand and Biscuit basins are quieter, colorful add-ons nearby.",
-          },
-        ],
-        fuller:
-          "Active option: <b>Fairy Falls + Twin Buttes</b> (~5.4 mi) or the <b>Mystic Falls loop</b> (~4 mi) for a real walk.",
-      },
-      {
-        id: "of-extra",
-        cityTag: "Old Faithful",
-        sun: "19:36",
-        title: "More geyser country",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Firehole Lake Drive + Lone Star Geyser.",
-            detail:
-              "An easy geyser side-road, then the flat trail to a backcountry geyser that erupts about every 3 hours.",
-          },
-        ],
-        fuller:
-          "Or drive down to <b>West Thumb Geyser Basin</b> on the shore of Yellowstone Lake.",
-      },
-    ],
-    canyon: [
-      {
-        id: "c-arrive",
-        travel: true,
-        move: "of-c",
-        lodging: "canyon",
-        cityTag: "Old Faithful → Canyon",
-        sun: "19:34",
-        title: "The Grand Canyon of the Yellowstone",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Artist Point & the rim.",
-            detail:
-              "The Lower Falls plunging into the yellow canyon — walk the South and North Rim overlooks; Uncle Tom's stairs if they're open.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Canyon Village.",
-            detail: "",
-          },
-        ],
-      },
-      {
-        id: "c-hayden",
-        cityTag: "Canyon / Lake",
-        sun: "19:32",
-        title: "Hayden Valley wildlife & the lake",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Hayden Valley at dawn.",
-            detail:
-              "Prime bison — and maybe wolves or a grizzly — between Canyon and Lake. Pullouts, binoculars, early light.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lake Yellowstone Hotel dining room.",
-            detail: "The lakeside sunroom is the grandest space in the park.",
-          },
-          {
-            tag: "Do",
-            kind: "soft",
-            detail:
-              "West Thumb Geyser Basin — geothermal features right on the lakeshore.",
-          },
-        ],
-        fuller:
-          "Add a <b>Yellowstone Lake scenic cruise</b> from Bridge Bay (~1 hr).",
-      },
-      {
-        id: "c-extra",
-        cityTag: "Canyon / Lake",
-        sun: "19:30",
-        title: "Canyon country, unhurried",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Mount Washburn, or a slow rim morning.",
-            detail:
-              "A big-view climb (~6 mi) for the strong, or a relaxed second pass at the canyon overlooks in different light.",
-          },
-        ],
-      },
-    ],
-    mammoth: [
-      {
-        id: "m-arrive",
-        travel: true,
-        move: "c-m",
-        lodging: "mammoth",
-        cityTag: "Canyon → Mammoth",
-        sun: "19:28",
-        title: "Lamar Valley and the terraces",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Lamar Valley — the American Serengeti.",
-            detail:
-              "Drive out at dawn for wolves, bison herds, and pronghorn, then the Mammoth Hot Springs travertine terraces on the way to the hotel.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Dinner at Mammoth (or in Gardiner).",
-            detail: "Elk are often out on the Fort Yellowstone lawns.",
-          },
-        ],
-        fuller:
-          "Serious about wildlife? A <b>guided Lamar safari</b> with a naturalist and spotting scopes dramatically ups the sightings.",
-        ask: "dawn wildlife means a 6am start — worth it? (It is.)",
-      },
-      {
-        id: "m-extra",
-        cityTag: "Mammoth",
-        sun: "19:26",
-        title: "A last morning up north",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Bunsen Peak, or the Roosevelt Arch.",
-            detail:
-              "A brisk climb for a final valley view, or an easy historic wander through Fort Yellowstone and the north-entrance arch.",
-          },
-        ],
-      },
-    ],
-  };
-  TRIP.itinDepart = {
-    id: "depart",
-    travel: true,
-    move: "depart",
-    sun: "19:24",
-    cityTag: "Mammoth → home",
-    title: "Drive to Bozeman and fly out",
-    rows: [
-      {
-        tag: "Move",
-        kind: "move",
-        lead: "Mammoth → Bozeman (BZN), ~1h30.",
-        detail:
-          "Return the car at the airport; build in buffer. A last stretch of Montana on the way out.",
-      },
-    ],
-    ask: "when do the flights home leave? It sets how much of the morning is a slow drive vs. a dash.",
-  };
-
+TRIP.itinPool = {
+  rome: [
+    {
+      id: "r-arrive",
+      travel: true,
+      move: "arrive",
+      lodging: "rome",
+      cityTag: "Rome — arrive",
+      sun: "19:12",
+      title: "Land, settle in, first taste of Rome",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Fly into Fiumicino (FCO); Leonardo Express into Roma Termini.",
+          detail:
+            "~32 min nonstop into Termini, then a short walk or cab to the hotel. We land separately — meet at the hotel.",
+        },
+        {
+          tag: "Evening",
+          kind: "soft",
+          detail:
+            "An easy first dinner in Trastevere or Monti — no agenda tonight beyond getting oriented and staying awake past 9pm.",
+        },
+      ],
+      ask: "what time do our flights land? It decides whether tonight is a real dinner or a nap-first evening.",
+    },
+    {
+      id: "r-colosseum",
+      cityTag: "Rome — Ancient Rome",
+      sun: "19:10",
+      title: "Colosseum, Forum, and the Palatine",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Colosseum, Roman Forum & Palatine Hill.",
+          detail:
+            "One combo ticket covers all three — go early, the Forum is brutal in midday sun even in September.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Monti.",
+          detail: "Quieter than the touristy blocks right by the Colosseum.",
+        },
+        {
+          tag: "Wildlife",
+          kind: "soft",
+          detail:
+            "Walk it off with a loop past the Circus Maximus and up to the Aventine keyhole view of St. Peter's dome.",
+        },
+      ],
+      fuller:
+        "Add the <b>Colosseum Underground + Arena Floor tour</b> to stand where the gladiators actually stood.",
+      ask: "guided tour or self-guided with the combo ticket and an audio app?",
+    },
+    {
+      id: "r-vatican",
+      cityTag: "Rome — Vatican",
+      sun: "19:08",
+      title: "Vatican Museums, Sistine Chapel, St. Peter's",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Vatican Museums & the Sistine Chapel.",
+          detail:
+            "The Raphael Rooms build to the Chapel ceiling — worth the crowd. St. Peter's Basilica right after, dome optional.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Prati or Borgo.",
+          detail: "Just outside the Vatican walls, fewer tourist-menu traps.",
+        },
+      ],
+      fuller:
+        "Book the <b>early-access guided tour</b> — in before the public gates open, the Sistine Chapel nearly empty.",
+      ask: "climb the dome (551 steps, no elevator the last stretch) or save the legs for Florence?",
+    },
+    {
+      id: "r-trastevere",
+      cityTag: "Rome",
+      sun: "19:06",
+      title: "Trastevere, the Pantheon, and a flex day",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Pantheon, Piazza Navona, Campo de' Fiori.",
+          detail:
+            "The old centro on foot — the Pantheon's oculus, Bernini's fountains, the morning market at Campo de' Fiori.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Trastevere.",
+          detail: "Cobblestones, ivy, and the best trattoria density in Rome.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "This is the flex night — a second Vatican pass, a day trip to Ostia Antica, or just more Rome.",
+        },
+      ],
+      fuller:
+        "Trade it for a half-day trip to <b>Ostia Antica</b> — a Pompeii-level ruin 30 min by train, a fraction of the crowds.",
+      ask: "keep the flex night here in Rome, or push the extra night to Florence or Venice?",
+    },
+  ],
+  florence: [
+    {
+      id: "f-arrive",
+      travel: true,
+      move: "r-f",
+      lodging: "florence",
+      cityTag: "Rome → Florence",
+      sun: "19:04",
+      title: "High-speed to the Renaissance",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Frecciarossa Rome → Florence, ~1h35.",
+          detail:
+            "Roma Termini to Firenze Santa Maria Novella, city center to city center — no airport in between.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner near the Duomo.",
+          detail: "First look at the cupola lit up at night.",
+        },
+      ],
+      ask: "which train time — a morning departure buys a full first afternoon in Florence.",
+    },
+    {
+      id: "f-uffizi",
+      cityTag: "Florence",
+      sun: "19:02",
+      title: "Uffizi and the Renaissance masters",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Uffizi Gallery.",
+          detail:
+            "Botticelli's Birth of Venus, Caravaggio, room after room of it — book the timed slot well ahead, this sells out.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in the Oltrarno.",
+          detail: "Across the river, fewer tour groups, better bistecca.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Ponte Vecchio at golden hour — the gold shops glow and the crowd thins after the day-trippers leave.",
+        },
+      ],
+      fuller:
+        "Add the <b>Uffizi skip-the-line guided tour</b> — a 2-hr walk with an art historian who makes the paintings click.",
+    },
+    {
+      id: "f-oltrarno",
+      cityTag: "Florence",
+      sun: "19:00",
+      title: "Accademia's David and the Oltrarno",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Accademia Gallery — Michelangelo's David.",
+          detail:
+            "Book the timed entry; the standby line regularly runs 2+ hours in September.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "A slow last dinner in Florence.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Boboli Gardens or a wander through the leather and paper artisan shops in the Oltrarno backstreets.",
+        },
+      ],
+      fuller:
+        "Strong legs? Climb <b>Brunelleschi's Dome</b> — 463 steps for the best skyline view in Tuscany.",
+    },
+  ],
+  venice: [
+    {
+      id: "v-arrive",
+      travel: true,
+      move: "f-v",
+      lodging: "venice",
+      cityTag: "Florence → Venice",
+      sun: "18:58",
+      title: "Into the lagoon",
+      rows: [
+        {
+          tag: "Move",
+          kind: "move",
+          lead: "Frecciarossa Florence → Venice, ~2h05.",
+          detail:
+            "Santa Maria Novella to Venezia Santa Lucia — the station opens straight onto the Grand Canal.",
+        },
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "First walk to St. Mark's Square.",
+          detail:
+            "No cars, no bikes — just the canals. Let the walk to St. Mark's be the whole itinerary tonight.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner near the Rialto.",
+          detail: "",
+        },
+      ],
+    },
+    {
+      id: "v-canals",
+      cityTag: "Venice",
+      sun: "18:56",
+      title: "St. Mark's, the Doge's Palace, and the canals",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Doge's Palace & St. Mark's Basilica.",
+          detail:
+            "The seat of the Venetian Republic — the Bridge of Sighs, the armory, the gilded Basilica interior.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "Dinner in Cannaregio.",
+          detail: "Quieter canals, away from the San Marco crowds.",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "A shared gondola at golden hour — book ahead, the best departure slots sell out by afternoon.",
+        },
+      ],
+      fuller:
+        "Upgrade to the <b>Secret Itineraries</b> tour of the Doge's Palace — the hidden prison cells and back corridors.",
+    },
+    {
+      id: "v-murano",
+      cityTag: "Venice",
+      sun: "18:54",
+      title: "Murano, Burano, or a slow Venice morning",
+      rows: [
+        {
+          tag: "Anchor",
+          kind: "anchor",
+          lead: "Murano glass & Burano's painted houses.",
+          detail:
+            "A vaporetto day out on the lagoon — glass furnaces on Murano, the candy-colored canals of Burano.",
+        },
+        {
+          tag: "Table",
+          kind: "table",
+          lead: "A farewell dinner back in San Marco.",
+          detail: "",
+        },
+        {
+          tag: "Do",
+          kind: "soft",
+          detail:
+            "Prefer to stay put? Dorsoduro and the Accademia Bridge make for a slower, emptier last day.",
+        },
+      ],
+      fuller:
+        "Add the <b>guided Murano glass-blowing + Burano</b> small-boat tour if you want the furnace demonstration.",
+      ask: "islands out on the lagoon, or a slow last morning in Dorsoduro?",
+    },
+  ],
+};
+TRIP.itinDepart = {
+  id: "depart",
+  travel: true,
+  move: "depart",
+  sun: "18:52",
+  cityTag: "Venice → home",
+  title: "Vaporetto to the airport and fly home",
+  rows: [
+    {
+      tag: "Move",
+      kind: "move",
+      lead: "Venice → Marco Polo (VCE), ~1h.",
+      detail:
+        "Alilaguna water bus or a land shuttle to the airport; build in buffer for the water crossing. One last look at the lagoon on the way out.",
+    },
+  ],
+  ask: "when do the flights home leave? It sets how much of the morning is a slow canal walk vs. a dash for the boat.",
+};
   const ITIN_POOL = TRIP.itinPool;
 
   function itinDepartDay(osakaMode) {
@@ -4175,21 +4207,19 @@
 
   // Officer-friendly, literal one-liners for the visa form (the
   // itinerary's own titles are deliberately poetic — wrong register here).
-  TRIP.visaPlan = {
-    "j-arrive": "Arrive Jackson Hole (JAC); pick up rental car.",
-    "j-tetons": "Grand Teton NP — Jenny Lake, Hidden Falls, Mormon Row.",
-    "j-cascade": "Grand Teton — Cascade Canyon hike / Snake River float.",
-    "of-arrive": "Drive into Yellowstone; Old Faithful & Upper Geyser Basin.",
-    "of-prismatic": "Grand Prismatic Spring & Midway Geyser Basin.",
-    "of-extra": "Firehole Lake Drive; Lone Star Geyser / West Thumb.",
-    "c-arrive": "Grand Canyon of the Yellowstone — Artist Point & rim.",
-    "c-hayden": "Hayden Valley wildlife; Yellowstone Lake.",
-    "c-extra": "Mount Washburn / canyon overlooks.",
-    "m-arrive": "Lamar Valley wildlife; Mammoth Hot Springs terraces.",
-    "m-extra": "Bunsen Peak / Roosevelt Arch.",
-    depart: "Drive to Bozeman (BZN); depart.",
-  };
-
+TRIP.visaPlan = {
+  "r-arrive": "Arrive Fiumicino (FCO); Leonardo Express into Roma Termini.",
+  "r-colosseum": "Colosseum, Roman Forum & Palatine Hill.",
+  "r-vatican": "Vatican Museums, Sistine Chapel & St. Peter's Basilica.",
+  "r-trastevere": "Pantheon, Piazza Navona, Trastevere — flex day in Rome.",
+  "f-arrive": "Frecciarossa to Florence; Duomo at night.",
+  "f-uffizi": "Uffizi Gallery & the Ponte Vecchio.",
+  "f-oltrarno": "Accademia's David; Oltrarno artisan streets.",
+  "v-arrive": "Frecciarossa to Venice; first walk to St. Mark's.",
+  "v-canals": "Doge's Palace, St. Mark's Basilica, canals by gondola.",
+  "v-murano": "Murano & Burano islands, or a slow Dorsoduro morning.",
+  depart: "Vaporetto/shuttle to Marco Polo (VCE); depart.",
+};
   const VISA_PLAN = TRIP.visaPlan;
 
   function xlEsc(s) {
