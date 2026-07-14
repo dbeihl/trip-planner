@@ -2550,69 +2550,12 @@
     ];
 
     // legs are iterated from data; these helpers read a leg by id + scale a fare
-    const legOf = (id) => TRIP.transport.legs.find((l) => l.id === id);
     const scaleOf = (scale) =>
       scale === "vehicle" ? vehicleFactor : personFactor;
 
-    const airportLeg = legOf("airport");
-    const airport = selectedValue("airport");
-    const airportMode = selectedValue("airportmode");
-    const airportCost =
-      airportLeg.cost[airport][airportMode] *
-      scaleOf(airportLeg.modes[airportMode].scale);
-
-    // set each leg toggle's two labels from its mode labels + costs
-    const setLegLabels = (id, prefix, costObj) => {
-      const l = legOf(id);
-      document.getElementById(prefix + "-public-lbl").textContent =
-        l.modes.public.label + " $" + costObj.public;
-      document.getElementById(prefix + "-private-lbl").textContent =
-        l.modes.private.label + " $" + costObj.private;
-    };
-    setLegLabels("airport", "air", airportLeg.cost[airport]);
-    setLegLabels("th", "th", legOf("th").cost);
-    setLegLabels("hk", "hk", legOf("hk").cost);
-    setLegLabels("final", "final", legOf("final").cost);
-
-    renderRouteDetail("rd-airport", ROUTE_DETAIL.airport[airport]);
-    renderRouteDetail(
-      "rd-final",
-      osakaMode ? ROUTE_DETAIL.final.osaka : ROUTE_DETAIL.final.direct,
-    );
-
-    const thLeg = legOf("th");
-    const thMode = selectedValue("thmode");
-    const thCost = thLeg.cost[thMode] * scaleOf(thLeg.modes[thMode].scale);
-
-    const hkLeg = legOf("hk");
-    const hkMode = selectedValue("hkmode");
-    const hkBookendCost =
-      hkLeg.cost[hkMode] * scaleOf(hkLeg.modes[hkMode].scale);
-    const shinkansenCost = hkLeg.fixed.cost * scaleOf(hkLeg.fixed.scale);
-    const hkCost = hkBookendCost + shinkansenCost;
-
-    let finalCost, kyotoOsakaCost, osakaAirportCost;
-    const finalMode = osakaMode ? null : selectedValue("finalmode");
-    if (osakaMode) {
-      const ko = legOf("kyotoOsaka").flat;
-      const oa = legOf("osakaAirport").flat;
-      kyotoOsakaCost = ko.cost * scaleOf(ko.scale);
-      osakaAirportCost = oa.cost * scaleOf(oa.scale);
-      finalCost = kyotoOsakaCost + osakaAirportCost;
-    } else {
-      const finalLeg = legOf("final");
-      finalCost =
-        finalLeg.cost[finalMode] * scaleOf(finalLeg.modes[finalMode].scale);
-    }
-
-    const usFlight = FLIGHTS.us.options[selectedIndex("usFlight")];
-    const phFlight = FLIGHTS.ph.options[selectedIndex("phFlight")];
-    const flightsCost =
-      usFlight.fare * FLIGHTS.us.pax + phFlight.fare * FLIGHTS.ph.pax;
-
-    // generic transport total: sum every active leg by its shape, so any leg
-    // — a per-vehicle drive leg, a per-person rail segment — is included, not
-    // just the Japan four. `when` gates the optional-detour legs.
+    // Per-leg cost, computed generically by leg shape (2D terminal, mode
+    // toggle, flat, or fixed add-on). `when` gates the optional-detour legs,
+    // so a per-vehicle drive leg or per-person rail segment sums the same way.
     const legCost = (leg) => {
       if (leg.when === "osaka" && !osakaMode) return 0;
       if (leg.when === "noOsaka" && osakaMode) return 0;
@@ -2630,6 +2573,58 @@
       if (leg.fixed) c += leg.fixed.cost * scaleOf(leg.fixed.scale);
       return c;
     };
+    const legCosts = {};
+    TRIP.transport.legs.forEach((l) => {
+      legCosts[l.id] = legCost(l);
+    });
+
+    // set each toggle's two labels from its mode labels + costs — any leg
+    // with a mode choice, not just the Japan four.
+    TRIP.transport.legs.forEach((l) => {
+      if (!l.modes) return;
+      const prefix = l.ctrlPrefix || l.id;
+      const costObj = l.terminals
+        ? l.cost[selectedValue(l.terminalControl)]
+        : l.cost;
+      const pub = document.getElementById(prefix + "-public-lbl");
+      const pri = document.getElementById(prefix + "-private-lbl");
+      if (pub) pub.textContent = l.modes.public.label + " $" + costObj.public;
+      if (pri) pri.textContent = l.modes.private.label + " $" + costObj.private;
+    });
+
+    // route-detail step breakdowns are Japan-specific; render only if present
+    const airport = selectedValue("airport");
+    if (ROUTE_DETAIL && ROUTE_DETAIL.airport)
+      renderRouteDetail("rd-airport", ROUTE_DETAIL.airport[airport]);
+    if (ROUTE_DETAIL && ROUTE_DETAIL.final)
+      renderRouteDetail(
+        "rd-final",
+        osakaMode ? ROUTE_DETAIL.final.osaka : ROUTE_DETAIL.final.direct,
+      );
+
+    // named leg values the itinerary/breakdown still read (Japan legs);
+    // undefined for other trips, which use the generic paths downstream.
+    const airportMode = selectedValue("airportmode");
+    const thMode = selectedValue("thmode");
+    const hkMode = selectedValue("hkmode");
+    const finalMode = osakaMode ? null : selectedValue("finalmode");
+    const airportCost = legCosts.airport;
+    const thCost = legCosts.th;
+    const hkCost = legCosts.hk;
+    let finalCost, kyotoOsakaCost, osakaAirportCost;
+    if (osakaMode) {
+      kyotoOsakaCost = legCosts.kyotoOsaka;
+      osakaAirportCost = legCosts.osakaAirport;
+      finalCost = kyotoOsakaCost + osakaAirportCost;
+    } else {
+      finalCost = legCosts.final;
+    }
+
+    const usFlight = FLIGHTS.us.options[selectedIndex("usFlight")];
+    const phFlight = FLIGHTS.ph.options[selectedIndex("phFlight")];
+    const flightsCost =
+      usFlight.fare * FLIGHTS.us.pax + phFlight.fare * FLIGHTS.ph.pax;
+
     // optional rental car (road trips): perDay × total nights × vehicles.
     const totalNights = Object.values(nights).reduce((a, b) => a + b, 0);
     const rentalCost = TRIP.transport.rental
@@ -2638,7 +2633,7 @@
         vehicleFactor
       : 0;
     const transportTotal =
-      TRIP.transport.legs.reduce((s, leg) => s + legCost(leg), 0) + rentalCost;
+      Object.values(legCosts).reduce((s, c) => s + c, 0) + rentalCost;
     const hotelSubtotal =
       hotelCost.tokyo + hotelCost.hakone + hotelCost.kyoto + hotelCost.osaka;
     const lodgingBuffer = hotelSubtotal * (LODGING_TAX_BUFFER - 1);
