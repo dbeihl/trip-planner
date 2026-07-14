@@ -1254,12 +1254,12 @@
 
 <div class="wrap pane" id="planPane">
   <header class="masthead">
-    <div class="eyebrow">
+    <div class="eyebrow" id="planEyebrow">
       Nov 14 → Nov 22, 2026 ·
       <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)
     </div>
-    <h1>Japan Trip Cost Ledger</h1>
-    <p class="sub">
+    <h1 id="planTitle">Japan Trip Cost Ledger</h1>
+    <p class="sub" id="planSub">
       Pick a hotel tier per stop and a transport mode per leg. Every figure is a
       live-researched market rate for these exact dates — not an estimate. The
       total updates as you go.
@@ -1271,10 +1271,10 @@
     <div class="stop flights-section">
       <div class="stop-marker"></div>
       <div class="stop-head">
-        <h2>Getting there — International flights</h2>
+        <h2 id="flightsTitle">Getting there — International flights</h2>
         <span class="nights">2 origins · round trip</span>
       </div>
-      <p class="flights-intro">
+      <p class="flights-intro" id="flightsIntro">
         Two travelers converging in Tokyo from different origins. Pick a routing
         for each — fares fold into the grand total. This block is data-driven:
         edit the <code>FLIGHTS</code> object to add travelers, routings, or
@@ -1409,12 +1409,12 @@
 
 <div class="itinwrap pane" id="itinPane" style="display: none">
   <header class="masthead">
-    <div class="eyebrow">
+    <div class="eyebrow" id="itinEyebrow">
       Nov 14 → Nov 22, 2026 ·
       <span class="traveler-count-lbl">2</span> travelers · self-booked
     </div>
-    <h1>Your itinerary</h1>
-    <p class="sub">
+    <h1 id="itinTitle">Your itinerary</h1>
+    <p class="sub" id="itinDek">
       The day-by-day, built from your choices on the Plan tab — the hotels you
       picked, the transport modes, your flights. Set the pace, choose whether to
       show prices, then send it.
@@ -3505,6 +3505,8 @@
   const ITIN_POOL = TRIP.itinPool;
 
   function itinDepartDay(osakaMode) {
+    // trips can supply their own departure day; Japan uses the built-in below
+    if (TRIP.itinDepart) return TRIP.itinDepart;
     return {
       id: "depart",
       travel: true,
@@ -4437,6 +4439,22 @@
     if (TRIP.meta.reference && TRIP.meta.reference.blurb)
       rn.innerHTML = TRIP.meta.reference.blurb;
     else rn.style.display = "none";
+    // override the masthead/flights chrome from meta.ui where provided
+    // (absent for Japan → its hardcoded HTML text stays, byte-identical).
+    const ui = TRIP.meta.ui || {};
+    const setHtml = (id, v) => {
+      if (v == null) return;
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = v;
+    };
+    setHtml("planTitle", ui.planTitle);
+    setHtml("planSub", ui.planSub);
+    setHtml("planEyebrow", ui.eyebrow);
+    setHtml("flightsTitle", ui.flightsTitle);
+    setHtml("flightsIntro", ui.flightsIntro);
+    setHtml("itinEyebrow", ui.eyebrow);
+    setHtml("itinTitle", ui.itinTitle);
+    setHtml("itinDek", ui.itinDek);
     themeInit();
     document
       .querySelectorAll(".tab")
