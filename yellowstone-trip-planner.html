@@ -1464,6 +1464,21 @@
     </div>
 
     <div class="trip-settings">
+      <div class="setting" id="rentalSetting">
+        <label>Renting a car?</label>
+        <div class="quiz-toggle" id="rentalSeg">
+          <label
+            ><input type="radio" name="renting" value="yes" checked /><span
+              >Yes</span
+            ></label
+          >
+          <label
+            ><input type="radio" name="renting" value="no" /><span
+              >No</span
+            ></label
+          >
+        </div>
+      </div>
       <div class="setting">
         <label for="minRating">Min. hotel rating</label>
         <input
@@ -2346,6 +2361,10 @@
   }
 
   applyArriveMode();
+  // the rental question only applies to trips that define a rental
+  const rentalSetting = document.getElementById("rentalSetting");
+  if (rentalSetting && !TRIP.transport.rental)
+    rentalSetting.style.display = "none";
   document.getElementById("flightsCaveat").textContent =
     "Fares are researched representative round-trip prices for Nov 2026 — not date-locked quotes like the hotel rates. Ask to lock exact fares (Google Flights, exact dates) when the browser connection is available.";
 
@@ -2756,11 +2775,16 @@
 
     // optional rental car (road trips): perDay × total nights × vehicles.
     const totalNights = Object.values(nights).reduce((a, b) => a + b, 0);
-    const rentalCost = TRIP.transport.rental
-      ? (TRIP.transport.rental.perDay * totalNights +
-          (TRIP.transport.rental.oneTime || 0)) *
-        vehicleFactor
-      : 0;
+    const renting =
+      !!TRIP.transport.rental &&
+      (document.querySelector('input[name="renting"]:checked') || {}).value !==
+        "no";
+    const rentalCost =
+      renting && TRIP.transport.rental
+        ? (TRIP.transport.rental.perDay * totalNights +
+            (TRIP.transport.rental.oneTime || 0)) *
+          vehicleFactor
+        : 0;
     const transportTotal =
       Object.values(legCosts).reduce((s, c) => s + c, 0) + rentalCost;
     const hotelSubtotal = Object.values(hotelCost).reduce((s, v) => s + v, 0);
