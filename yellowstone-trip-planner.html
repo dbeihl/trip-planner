@@ -1334,6 +1334,56 @@
     background: var(--paper);
     color: var(--ink);
   }
+
+  /* --- site nav: back to the trip picker --- */
+  .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem clamp(1rem, 4vw, 1.5rem);
+    background: var(--paper-raised);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-wordmark {
+    font-family: "Ledger Serif", Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .site-wordmark .star {
+    color: var(--shu);
+  }
+  .site-wordmark:hover {
+    color: var(--indigo);
+  }
+  .site-change {
+    margin-left: auto;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    color: var(--indigo);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    transition:
+      background 0.12s,
+      border-color 0.12s;
+  }
+  .site-change:hover {
+    border-color: var(--indigo);
+    background: var(--paper);
+  }
 </style>
 
 <script>
@@ -1343,6 +1393,13 @@
     if (_saved) document.documentElement.setAttribute("data-theme", _saved);
   } catch (e) {}
 </script>
+
+<header class="site-nav no-print">
+  <a class="site-wordmark" href="index.html"
+    ><span class="star">✦</span> Trip Planner</a
+  >
+  <a class="site-change" href="index.html">↺ Change trip</a>
+</header>
 
 <div class="tabs no-print">
   <button class="tab active" data-tab="plan" type="button">
