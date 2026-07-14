@@ -1362,12 +1362,16 @@
   .site-wordmark:hover {
     color: var(--indigo);
   }
-  .site-change {
+  .site-changewrap {
     margin-left: auto;
+    position: relative;
+  }
+  .site-change {
     font-family: ui-monospace, "SF Mono", Consolas, monospace;
     font-size: 0.74rem;
     letter-spacing: 0.05em;
     color: var(--indigo);
+    background: transparent;
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     padding: 0.4rem 0.85rem;
@@ -1376,6 +1380,7 @@
     align-items: center;
     gap: 0.4rem;
     white-space: nowrap;
+    cursor: pointer;
     transition:
       background 0.12s,
       border-color 0.12s;
@@ -1383,6 +1388,45 @@
   .site-change:hover {
     border-color: var(--indigo);
     background: var(--paper);
+  }
+  .trip-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 232px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+    z-index: 60;
+  }
+  .trip-menu[hidden] {
+    display: none;
+  }
+  .trip-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 0.9rem;
+  }
+  .trip-menu a:hover {
+    background: var(--indigo-wash);
+    color: var(--indigo-deep);
+  }
+  .trip-menu a[aria-current="page"] {
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+  .trip-menu .tm-emoji {
+    font-size: 1rem;
   }
 </style>
 
@@ -1398,7 +1442,18 @@
   <a class="site-wordmark" href="index.html"
     ><span class="star">✦</span> Trip Planner</a
   >
-  <a class="site-change" href="index.html">↺ Change trip</a>
+  <div class="site-changewrap">
+    <button
+      class="site-change"
+      id="changeTripBtn"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      ↺ Change trip ▾
+    </button>
+    <div class="trip-menu" id="tripMenu" role="menu" hidden></div>
+  </div>
 </header>
 
 <div class="tabs no-print">
@@ -2045,6 +2100,7 @@ TRIP.transport = {
     perDay: 95,
     oneTime: 155,
     label: "Rental SUV + fuel + park pass",
+    ownCarLabel: "Fuel + park entry (own car)",
     note: "Mid-size SUV picked up at LAS (~$95/day) + ~$120 fuel for the full loop + $35 park entry (or upgrade to the $80 America the Beautiful annual pass if you'll use it again).",
   },
   legs: [
@@ -2811,7 +2867,11 @@ TRIP.activities = {
       const dco = document.getElementById("driveCostOut");
       if (dco) dco.textContent = "$" + fuelCost.toLocaleString("en-US");
       const dso = document.getElementById("driveStopsOut");
-      if (dso) dso.textContent = String(enrouteNights);
+      if (dso)
+        dso.textContent =
+          enrouteNights === 0
+            ? "0"
+            : enrouteNights + " (" + enrouteNights / 2 + " each way)";
     } else {
       origins = computeActiveOrigins(N, sameAirport);
       flightsCost = origins.reduce((s, o) => s + o.sel.fare * o.pax, 0);
@@ -2829,12 +2889,18 @@ TRIP.activities = {
       !!TRIP.transport.rental &&
       (document.querySelector('input[name="renting"]:checked') || {}).value !==
         "no";
-    const rentalCost =
-      renting && TRIP.transport.rental
-        ? (TRIP.transport.rental.perDay * totalNights +
-            (TRIP.transport.rental.oneTime || 0)) *
-          vehicleFactor
-        : 0;
+    // Not renting still keeps the one-time extras (fuel + park pass) — you
+    // drove your own car; only the per-day rental drops.
+    const R = TRIP.transport.rental;
+    const rentalCost = R
+      ? (renting ? R.perDay * totalNights + (R.oneTime || 0) : R.oneTime || 0) *
+        vehicleFactor
+      : 0;
+    const rentalLabel = R
+      ? renting
+        ? R.label
+        : R.ownCarLabel || "Fuel + park pass (own car)"
+      : "";
     const transportTotal =
       Object.values(legCosts).reduce((s, c) => s + c, 0) + rentalCost;
     const hotelSubtotal = Object.values(hotelCost).reduce((s, v) => s + v, 0);
@@ -2919,11 +2985,7 @@ TRIP.activities = {
           ]);
       });
     }
-    if (rentalCost > 0)
-      rows.push([
-        (TRIP.transport.rental && TRIP.transport.rental.label) || "Rental car",
-        rentalCost,
-      ]);
+    if (rentalCost > 0) rows.push([rentalLabel, rentalCost]);
     if (activitiesCost > 0)
       rows.push(["Activities (optional)", activitiesCost]);
 
@@ -2944,6 +3006,8 @@ TRIP.activities = {
       rooms,
       arriveMode,
       renting,
+      rentalCost,
+      rentalLabel,
       origins,
       flightsCost,
       fuelCost,
@@ -3330,6 +3394,14 @@ TRIP.activities = {
       "Applied to lodging subtotal only",
       Math.round(s.lodgingBuffer),
     ]);
+    if (s.rentalCost > 0)
+      out.push([
+        "",
+        "Transport",
+        s.rentalLabel,
+        "Whole trip",
+        Math.round(s.rentalCost),
+      ]);
     out.push([]);
     out.push(["", "", "", "TOTAL", Math.round(s.grand)]);
     if (TRIP.meta.reference) {
@@ -3878,7 +3950,9 @@ TRIP.itinDepart = {
         // when driving, the arrival/departure day's fly-assuming narrative
         // "Move" rows are replaced by the state-driven move row above
         let dayRows = d.rows;
-        if (d.move && s.arriveMode === "drive") {
+        const gettingThereChanged =
+          s.arriveMode === "drive" || (TRIP.transport.rental && !s.renting);
+        if (d.move && gettingThereChanged) {
           const lg = TRIP.transport.legs.find((l) => l.id === d.move);
           if (lg && (lg.role === "arrival" || lg.role === "departure"))
             dayRows = d.rows.filter((r) => r.kind !== "move");
@@ -4690,6 +4764,61 @@ TRIP.visaPlan = {
       .forEach((t) =>
         t.addEventListener("click", () => showTab(t.dataset.tab)),
       );
+    // "Change trip" dropdown → jump straight to another planner or the hub
+    (function () {
+      const SITE_TRIPS = [
+        { file: "index.html", emoji: "✦", label: "All trips" },
+        { file: "japan-trip-planner.html", emoji: "🗼", label: "Japan" },
+        {
+          file: "yellowstone-trip-planner.html",
+          emoji: "🏔️",
+          label: "Yellowstone & Grand Teton",
+        },
+        { file: "sw-trip-planner.html", emoji: "🏜️", label: "Southwest Parks" },
+        {
+          file: "italy-trip-planner.html",
+          emoji: "🏛️",
+          label: "Italy by Rail",
+        },
+        { file: "hawaii-trip-planner.html", emoji: "🌺", label: "Hawaii" },
+        { file: "thailand-trip-planner.html", emoji: "🛕", label: "Thailand" },
+      ];
+      const btn = document.getElementById("changeTripBtn");
+      const menu = document.getElementById("tripMenu");
+      if (!btn || !menu) return;
+      const here = location.pathname.split("/").pop() || "index.html";
+      menu.innerHTML = SITE_TRIPS.map((t) => {
+        const cur = t.file === here;
+        return (
+          '<a role="menuitem" href="' +
+          t.file +
+          '"' +
+          (cur ? ' aria-current="page"' : "") +
+          '><span class="tm-emoji">' +
+          t.emoji +
+          "</span> " +
+          t.label +
+          "</a>"
+        );
+      }).join("");
+      const close = () => {
+        menu.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+      };
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = menu.hidden;
+        menu.hidden = !willOpen;
+        btn.setAttribute("aria-expanded", String(willOpen));
+      });
+      document.addEventListener("click", (e) => {
+        if (!menu.hidden && !menu.contains(e.target) && e.target !== btn)
+          close();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") close();
+      });
+    })();
     document.getElementById("itinPaceSeg").addEventListener("change", (e) => {
       ITIN_PACE = e.target.value;
       renderItinerary();
