@@ -1228,6 +1228,112 @@
       font-size: 2rem;
     }
   }
+
+  /* --- origins questionnaire --- */
+  .origin-quiz {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper-raised);
+  }
+  .quiz-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .quiz-row > label,
+  .quiz-q {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .quiz-row input[type="number"] {
+    width: 4rem;
+  }
+  .quiz-toggle {
+    display: inline-flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .quiz-toggle label {
+    position: relative;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    background: var(--paper);
+    transition:
+      background 0.12s,
+      color 0.12s,
+      border-color 0.12s;
+  }
+  .quiz-toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .quiz-toggle label:has(input:checked) {
+    background: var(--indigo);
+    border-color: var(--indigo);
+    color: var(--paper);
+  }
+  .quiz-toggle label:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .origin-block {
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .origin-block:first-child {
+    border-top: 0;
+    padding-top: 0.2rem;
+  }
+  .origin-select {
+    font-size: 0.85rem;
+    padding: 0.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    max-width: 100%;
+  }
+  .origin-pax {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .origin-pax input {
+    width: 3.4rem;
+  }
+  .other-airport {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0 0.2rem;
+  }
+  .other-airport label {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .other-airport input {
+    padding: 0.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+  }
 </style>
 
 <script>
@@ -1272,7 +1378,7 @@
       <div class="stop-marker"></div>
       <div class="stop-head">
         <h2 id="flightsTitle">Getting there — International flights</h2>
-        <span class="nights">2 origins · round trip</span>
+        <span class="nights" id="flightsCount">round trip</span>
       </div>
       <p class="flights-intro" id="flightsIntro">
         Two travelers converging in Tokyo from different origins. Pick a routing
@@ -1280,23 +1386,39 @@
         edit the <code>FLIGHTS</code> object to add travelers, routings, or
         fares.
       </p>
-      <div id="usFlights" class="flight-journey"></div>
-      <div id="phFlights" class="flight-journey"></div>
+      <div class="origin-quiz" id="originQuiz">
+        <div class="quiz-row">
+          <label for="travelerCount">How many travelers?</label>
+          <input
+            type="number"
+            id="travelerCount"
+            min="1"
+            max="8"
+            value="2"
+            inputmode="numeric"
+          />
+        </div>
+        <div class="quiz-row">
+          <span class="quiz-q">Is everyone flying from the same airport?</span>
+          <div class="quiz-toggle" id="sameAirportSeg">
+            <label
+              ><input type="radio" name="sameAirport" value="no" checked /><span
+                >No — different airports</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="sameAirport" value="yes" /><span
+                >Yes — same airport</span
+              ></label
+            >
+          </div>
+        </div>
+      </div>
+      <div id="originsContainer" class="flight-journey"></div>
       <p class="flights-caveat" id="flightsCaveat"></p>
     </div>
 
     <div class="trip-settings">
-      <div class="setting">
-        <label for="travelerCount">Travelers</label>
-        <input
-          type="number"
-          id="travelerCount"
-          min="1"
-          max="6"
-          value="2"
-          inputmode="numeric"
-        />
-      </div>
       <div class="setting">
         <label for="minRating">Min. hotel rating</label>
         <input
@@ -1533,6 +1655,7 @@
       },
       currency: "USD",
       lodgingTaxBuffer: 1.12, // WY/MT lodging tax + park/resort fees
+      destLabel: "Jackson Hole", // gateway shown for an "Other airport" origin
       ui: {
         eyebrow:
           'Sep 12 → Sep 20, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
@@ -1629,6 +1752,48 @@
           cabin: "Economy",
           fare: 1950,
           note: "Extra domestic leg out of Davao",
+        },
+      ],
+    },
+    ord: {
+      label: "USA — Chicago (ORD)",
+      traveler: "Traveler",
+      pax: 1,
+      preset: true, // available in the dropdown; not part of the default split
+      preference: "Open-jaw JAC in / BZN out",
+      options: [
+        {
+          name: "United nonstop (open-jaw)",
+          route: "ORD → JAC / BZN → ORD",
+          stops: 0,
+          cabin: "Main Cabin",
+          fare: 540,
+          note: "Seasonal United nonstops both ways; book as one multi-city fare",
+          current: true,
+        },
+        {
+          name: "United via Denver",
+          route: "ORD → DEN → JAC / BZN → DEN → ORD",
+          stops: 1,
+          cabin: "Main Cabin",
+          fare: 460,
+          note: "Most schedule flexibility; often cheaper than the nonstop",
+        },
+        {
+          name: "Delta via Salt Lake City",
+          route: "ORD → SLC → JAC / BZN → SLC → ORD",
+          stops: 1,
+          cabin: "Main Cabin",
+          fare: 485,
+          note: "Strong SLC-hub service to both airports",
+        },
+        {
+          name: "American via Dallas/Fort Worth",
+          route: "ORD → DFW → JAC / BZN → DFW → ORD",
+          stops: 1,
+          cabin: "Main Cabin",
+          fare: 565,
+          note: "DFW-hub backup; longer connections",
         },
       ],
     },
@@ -1953,31 +2118,152 @@
   `;
   }
 
-  function renderFlights(containerId, journeyKey) {
-    const el = document.getElementById(containerId);
+  // ── origins questionnaire ────────────────────────────────────────
+  // FLIGHTS keys are selectable origin presets. Presets flagged
+  // `preset:true` are offered in the dropdown but are NOT part of the
+  // default split, so adding one never changes the default trip cost.
+  const ALL_ORIGINS = Object.keys(FLIGHTS);
+  const DEFAULT_ORIGINS = ALL_ORIGINS.filter((k) => !FLIGHTS[k].preset);
+  const DEST_LABEL = TRIP.meta.destLabel || "destination";
+  const originChoice = {
+    solo: DEFAULT_ORIGINS[0],
+    slots: DEFAULT_ORIGINS.slice(),
+    pax: DEFAULT_ORIGINS.map((k) => FLIGHTS[k].pax),
+  };
+  const sameAirportOn = () =>
+    (document.querySelector('input[name="sameAirport"]:checked') || {})
+      .value === "yes";
+  const travelerCount = () =>
+    Math.max(
+      1,
+      parseInt(document.getElementById("travelerCount").value, 10) || 2,
+    );
+
+  function flightOptionsHtml(journeyKey, radioName) {
     const j = FLIGHTS[journeyKey];
-    el.innerHTML = `
-    <div class="journey-head">
-      <span class="journey-label">${j.label}</span>
-      <span class="journey-pref">${j.preference}</span>
-    </div>
-    <div class="tier-list">
+    return `<div class="tier-list">
       ${j.options
         .map(
           (opt, i) => `
         <label class="tier">
-          <input type="radio" name="${journeyKey}Flight" value="${i}" ${opt.current ? "checked" : ""}>
+          <input type="radio" name="${radioName}" value="${i}" ${opt.current ? "checked" : ""}>
           <div>
             <div class="tier-name">${opt.name}${opt.current ? '<span class="badge">preferred</span>' : ""}</div>
             <div class="tier-meta">${opt.route} · ${opt.stops} stop${opt.stops > 1 ? "s" : ""} · ${opt.cabin} · ${opt.note}</div>
           </div>
           <div class="tier-price">$${opt.fare.toLocaleString("en-US")}<small>per person, RT</small></div>
-        </label>
-      `,
+        </label>`,
         )
         .join("")}
-    </div>
-  `;
+    </div>`;
+  }
+
+  function originSelectHtml(slot, selectedKey) {
+    const opts = ALL_ORIGINS.map(
+      (k) =>
+        `<option value="${k}" ${k === selectedKey ? "selected" : ""}>${FLIGHTS[k].label}</option>`,
+    ).join("");
+    return `<select class="origin-select" data-slot="${slot}">${opts}<option value="__other" ${selectedKey === "__other" ? "selected" : ""}>Other airport…</option></select>`;
+  }
+
+  function originBlockHtml(slot, key, pax, showPax) {
+    const radioName = `origin${slot}Flight`;
+    const body =
+      key === "__other"
+        ? `<div class="other-airport">
+            <label>Airport code <input class="other-code" data-slot="${slot}" maxlength="4" value="ORD" /></label>
+            <label>Est. round-trip fare / person <input type="number" class="other-fare" data-slot="${slot}" min="0" value="700" inputmode="numeric" /></label>
+          </div>`
+        : flightOptionsHtml(key, radioName);
+    const pref =
+      key !== "__other" && FLIGHTS[key] && FLIGHTS[key].preference
+        ? `<span class="journey-pref">${FLIGHTS[key].preference}</span>`
+        : "";
+    const paxCtl = showPax
+      ? `<label class="origin-pax">Travelers <input type="number" class="origin-pax-input" data-slot="${slot}" min="0" max="8" value="${pax}" inputmode="numeric" /></label>`
+      : "";
+    return `<div class="origin-block" data-slot="${slot}">
+        <div class="journey-head">
+          ${originSelectHtml(slot, key)}
+          ${pref}
+          ${paxCtl}
+        </div>
+        ${body}
+      </div>`;
+  }
+
+  function renderOrigins() {
+    const c = document.getElementById("originsContainer");
+    if (sameAirportOn()) {
+      c.innerHTML = originBlockHtml(
+        0,
+        originChoice.solo,
+        travelerCount(),
+        false,
+      );
+    } else {
+      c.innerHTML = DEFAULT_ORIGINS.map((k, i) =>
+        originBlockHtml(i, originChoice.slots[i], originChoice.pax[i], true),
+      ).join("");
+    }
+  }
+
+  function syncOriginChoice() {
+    const c = document.getElementById("originsContainer");
+    if (sameAirportOn()) {
+      const sel = c.querySelector(".origin-select");
+      if (sel) originChoice.solo = sel.value;
+    } else {
+      c.querySelectorAll(".origin-block").forEach((b) => {
+        const i = +b.dataset.slot;
+        const sel = b.querySelector(".origin-select");
+        const pax = b.querySelector(".origin-pax-input");
+        if (sel) originChoice.slots[i] = sel.value;
+        if (pax)
+          originChoice.pax[i] = Math.max(0, parseInt(pax.value, 10) || 0);
+      });
+    }
+  }
+
+  // active origins with the selected routing + pax, from live DOM
+  function computeActiveOrigins(N, same) {
+    const c = document.getElementById("originsContainer");
+    const out = [];
+    c.querySelectorAll(".origin-block").forEach((b) => {
+      const slot = +b.dataset.slot;
+      const key = b.querySelector(".origin-select").value;
+      const paxEl = b.querySelector(".origin-pax-input");
+      const pax = same
+        ? N
+        : Math.max(0, parseInt((paxEl || {}).value, 10) || 0);
+      if (pax <= 0) return;
+      let sel, traveler, label;
+      if (key === "__other") {
+        const code = (
+          (b.querySelector(".other-code") || {}).value || "Other"
+        ).toUpperCase();
+        const fare = Math.max(
+          0,
+          parseInt((b.querySelector(".other-fare") || {}).value, 10) || 0,
+        );
+        sel = {
+          name: `From ${code}`,
+          route: `${code} → ${DEST_LABEL}`,
+          cabin: "Economy",
+          stops: 1,
+          fare,
+        };
+        traveler = code;
+        label = `From ${code}`;
+      } else {
+        const g = FLIGHTS[key];
+        sel = g.options[selectedIndex(`origin${slot}Flight`)] || g.options[0];
+        traveler = g.traveler;
+        label = g.label;
+      }
+      out.push({ key, pax, sel, traveler, label });
+    });
+    return out;
   }
 
   function renderTiers(containerId, cityKey) {
@@ -1999,8 +2285,7 @@
       .join("");
   }
 
-  renderFlights("usFlights", "us");
-  renderFlights("phFlights", "ph");
+  renderOrigins();
   document.getElementById("flightsCaveat").textContent =
     "Fares are researched representative round-trip prices for Nov 2026 — not date-locked quotes like the hotel rates. Ask to lock exact fares (Google Flights, exact dates) when the browser connection is available.";
 
@@ -2377,10 +2662,13 @@
       finalCost = legCosts.final;
     }
 
-    const usFlight = FLIGHTS.us.options[selectedIndex("usFlight")];
-    const phFlight = FLIGHTS.ph.options[selectedIndex("phFlight")];
-    const flightsCost =
-      usFlight.fare * FLIGHTS.us.pax + phFlight.fare * FLIGHTS.ph.pax;
+    const sameAirport = sameAirportOn();
+    const origins = computeActiveOrigins(N, sameAirport);
+    const flightsCost = origins.reduce((s, o) => s + o.sel.fare * o.pax, 0);
+    const originsLabel =
+      origins.length === 1 ? "1 origin" : origins.length + " origins";
+    const fc = document.getElementById("flightsCount");
+    if (fc) fc.textContent = originsLabel + " · round trip";
 
     // optional rental car (road trips): perDay × total nights × vehicles.
     const totalNights = Object.values(nights).reduce((a, b) => a + b, 0);
@@ -2426,7 +2714,9 @@
     }
 
     const roomsSuffix = rooms > 1 ? ` (${rooms} rooms)` : "";
-    const rows = [["Flights — getting there (2 origins)", flightsCost]];
+    const rows = [
+      ["Flights — getting there (" + originsLabel + ")", flightsCost],
+    ];
     TRIP.meta.route.forEach((c) => {
       rows.push([HOTELS[c].label + " lodging" + roomsSuffix, hotelCost[c]]);
     });
@@ -2482,8 +2772,7 @@
       nights,
       N,
       rooms,
-      usFlight,
-      phFlight,
+      origins,
       flightsCost,
       airport,
       airportMode,
@@ -2550,11 +2839,10 @@
     lines.push("");
 
     lines.push("GETTING THERE (international flights, round trip)");
-    lines.push(
-      `  ${FLIGHTS.us.traveler}: ${s.usFlight.name} — ${s.usFlight.route}, ${s.usFlight.cabin} ($${fmt2(s.usFlight.fare * FLIGHTS.us.pax)})`,
-    );
-    lines.push(
-      `  ${FLIGHTS.ph.traveler}: ${s.phFlight.name} — ${s.phFlight.route}, ${s.phFlight.cabin} ($${fmt2(s.phFlight.fare * FLIGHTS.ph.pax)})`,
+    s.origins.forEach((o) =>
+      lines.push(
+        `  ${o.traveler}: ${o.sel.name} — ${o.sel.route}, ${o.sel.cabin} ($${fmt2(o.sel.fare * o.pax)})`,
+      ),
     );
     lines.push("");
 
@@ -2698,17 +2986,13 @@
 
     const roomNote = `${s.rooms} room${s.rooms > 1 ? "s" : ""}`;
 
-    add(
-      "Flight",
-      `${FLIGHTS.us.traveler} — ${s.usFlight.name}`,
-      `${s.usFlight.route}, ${s.usFlight.cabin}, round trip`,
-      s.usFlight.fare * FLIGHTS.us.pax,
-    );
-    add(
-      "Flight",
-      `${FLIGHTS.ph.traveler} — ${s.phFlight.name}`,
-      `${s.phFlight.route}, ${s.phFlight.cabin}, round trip`,
-      s.phFlight.fare * FLIGHTS.ph.pax,
+    s.origins.forEach((o) =>
+      add(
+        "Flight",
+        `${o.traveler} — ${o.sel.name}`,
+        `${o.sel.route}, ${o.sel.cabin}, round trip`,
+        o.sel.fare * o.pax,
+      ),
     );
 
     add(
@@ -2933,6 +3217,22 @@
     }, 1600);
   });
 
+  // structural re-renders for the origins questionnaire (run before the
+  // document-level recalc via bubbling, so recalc sees fresh DOM)
+  document.getElementById("originQuiz").addEventListener("change", (e) => {
+    if (e.target.name === "sameAirport") {
+      syncOriginChoice();
+      renderOrigins();
+    }
+  });
+  document
+    .getElementById("originsContainer")
+    .addEventListener("change", (e) => {
+      if (e.target.classList.contains("origin-select")) {
+        syncOriginChoice();
+        renderOrigins();
+      }
+    });
   document.addEventListener("change", recalc);
   document.getElementById("travelerCount").addEventListener("input", recalc);
   document.getElementById("minRating").addEventListener("input", recalc);
