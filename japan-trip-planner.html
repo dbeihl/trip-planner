@@ -2693,10 +2693,27 @@
       `Lodging taxes/fees buffer (+${Math.round((LODGING_TAX_BUFFER - 1) * 100)}%)`,
       lodgingBuffer,
     ]);
-    rows.push(["Airport transfer", airportCost]);
-    rows.push(["Tokyo↔Hakone", thCost]);
-    rows.push(["Hakone↔Kyoto (+Shinkansen)", hkCost]);
-    rows.push([osakaMode ? "Kyoto↔Osaka↔Airport" : "Kyoto↔Airport", finalCost]);
+    if (legCosts.airport !== undefined && legCosts.th !== undefined) {
+      // Japan grouping (combined hk+Shinkansen and osaka legs), kept exactly
+      rows.push(["Airport transfer", airportCost]);
+      rows.push(["Tokyo↔Hakone", thCost]);
+      rows.push(["Hakone↔Kyoto (+Shinkansen)", hkCost]);
+      rows.push([
+        osakaMode ? "Kyoto↔Osaka↔Airport" : "Kyoto↔Airport",
+        finalCost,
+      ]);
+    } else {
+      // generic: one row per active leg, labeled from leg data
+      TRIP.transport.legs.forEach((l) => {
+        if (l.role === "cost") return; // folded into another leg's row
+        const c = legCosts[l.id];
+        if (c > 0)
+          rows.push([
+            l.breakdownLabel || l.routeName.replace(/<[^>]+>/g, ""),
+            c,
+          ]);
+      });
+    }
     if (rentalCost > 0)
       rows.push([
         (TRIP.transport.rental && TRIP.transport.rental.label) || "Rental car",
@@ -2723,10 +2740,6 @@
       usFlight,
       phFlight,
       flightsCost,
-      tokyo: HOTELS.tokyo.options[selectedIndex("tokyoTier")],
-      hakone: HOTELS.hakone.options[selectedIndex("hakoneTier")],
-      kyoto: HOTELS.kyoto.options[selectedIndex("kyotoTier")],
-      osaka: HOTELS.osaka.options[selectedIndex("osakaTier")],
       airport,
       airportMode,
       airportCost,
@@ -2738,6 +2751,7 @@
       finalCost,
       kyotoOsakaCost,
       osakaAirportCost,
+      legCosts,
       activitiesCost,
       chosenActivities,
       hotelSubtotal,
@@ -2745,6 +2759,11 @@
       hotelTotal,
       grand,
     };
+    // stash each city's chosen hotel by city key (route + optional) so the
+    // itinerary/exports read s[cityKey] for any trip, not just Japan's four.
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
+      window.__state[c] = HOTELS[c].options[selectedIndex(c + "Tier")];
+    });
   }
 
   function toDate(iso) {
@@ -3559,13 +3578,30 @@
           detail: s.finalMode === "public" ? "JR Haruka" : "private car",
           cost: s.finalCost,
         };
-      default:
-        return { lead: "", detail: "", cost: 0 };
+      default: {
+        // generic fallback for any non-Japan leg: derive from leg data + the
+        // cost map stashed on __state.
+        const leg = TRIP.transport.legs.find((l) => l.id === move);
+        if (!leg) return { lead: "", detail: "", cost: 0 };
+        const strip = (x) =>
+          String(x)
+            .replace(/<[^>]+>/g, "")
+            .replace(/&[a-z]+\d*;/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        const m = leg.modes ? selectedValue(leg.modeControl) : null;
+        return {
+          lead: strip(leg.routeName || ""),
+          detail: m ? leg.modes[m].label : strip(leg.note || ""),
+          cost: (s.legCosts && s.legCosts[move]) || 0,
+        };
+      }
     }
   }
 
   function chosenActsByCity() {
-    const res = { tokyo: [], hakone: [], kyoto: [] };
+    const res = {};
+    TRIP.meta.route.forEach((c) => (res[c] = []));
     Object.keys(res).forEach((city) => {
       (ACTIVITIES[city] || []).forEach((act, ai) => {
         const opt = act.options[selectedIndex(city + "Act" + ai)];
@@ -3578,8 +3614,8 @@
 
   function assembleItinDays(s) {
     const days = [];
-    ["tokyo", "hakone", "kyoto", "osaka"].forEach((city) => {
-      ITIN_POOL[city]
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((city) => {
+      (ITIN_POOL[city] || [])
         .slice(0, s.nights[city] || 0)
         .forEach((d, idx) =>
           days.push(
