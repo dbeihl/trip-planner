@@ -1337,13 +1337,7 @@
 
     <div class="breakdown" id="breakdown"></div>
 
-    <div class="reference-note">
-      Kensington Tours quoted <b>$9,644</b> for this same route — but for
-      placeholder dates (Nov 7–14) that predate locking in the real Nov 14–22
-      travel window. Treat it as a rough order-of-magnitude reference, not an
-      apples-to-apples baseline: a Kensington re-quote for the actual dates
-      would run higher given the season.
-    </div>
+    <div class="reference-note" id="referenceNote"></div>
 
     <div class="btn-row">
       <button class="generate-btn" id="generateBtn" type="button">
@@ -1539,6 +1533,8 @@
         total: 9644,
         label: "Kensington Tours quote",
         caveat: "Placeholder dates Nov 7–14; not apples-to-apples.",
+        blurb:
+          "Kensington Tours quoted <b>$9,644</b> for this same route — but for placeholder dates (Nov 7–14) that predate locking in the real Nov 14–22 travel window. Treat it as a rough order-of-magnitude reference, not an apples-to-apples baseline: a Kensington re-quote for the actual dates would run higher given the season.",
       },
       lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
     },
@@ -1858,7 +1854,7 @@
   };
 
   // Scalars now live in TRIP.meta (the buffer note is there); bound for the engine:
-  const REFERENCE_TOTAL = TRIP.meta.reference.total;
+  const REFERENCE_TOTAL = TRIP.meta.reference ? TRIP.meta.reference.total : 0;
   const LODGING_TAX_BUFFER = TRIP.meta.lodgingTaxBuffer;
 
   // All costs below are researched 2-adult totals (scaled by personFactor at calc time),
@@ -2351,8 +2347,11 @@
 
   TRIP.meta.route.forEach((c) => renderActivities(c + "Activities", c));
 
-  renderRouteDetail("rd-th", ROUTE_DETAIL.th);
-  renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
+  // route-detail step breakdowns are optional per trip (Japan has them)
+  if (ROUTE_DETAIL && ROUTE_DETAIL.th)
+    renderRouteDetail("rd-th", ROUTE_DETAIL.th);
+  if (ROUTE_DETAIL && ROUTE_DETAIL.hk)
+    renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
 
   // ── generate the transport toggles from TRIP.transport.legs ───────
   // Builds the same radios/labels the engine expects (ids by ctrl prefix),
@@ -2634,7 +2633,9 @@
     // optional rental car (road trips): perDay × total nights × vehicles.
     const totalNights = Object.values(nights).reduce((a, b) => a + b, 0);
     const rentalCost = TRIP.transport.rental
-      ? TRIP.transport.rental.perDay * totalNights * vehicleFactor
+      ? (TRIP.transport.rental.perDay * totalNights +
+          (TRIP.transport.rental.oneTime || 0)) *
+        vehicleFactor
       : 0;
     const transportTotal =
       TRIP.transport.legs.reduce((s, leg) => s + legCost(leg), 0) + rentalCost;
@@ -2647,28 +2648,29 @@
 
     document.getElementById("grandTotal").textContent = fmt(grand);
 
-    // Kensington's quote was ground + tour only (no international airfare), so the
-    // reference delta compares ground-only to keep it apples-to-apples.
-    const scaledReference = REFERENCE_TOTAL * personFactor;
-    const delta = groundTotal - scaledReference;
+    // Optional reference comparison (a packaged quote). DIY trips with no
+    // quote omit meta.reference, and the delta line stays empty.
     const deltaEl = document.getElementById("deltaLine");
-    const refLabel =
-      N === 2
-        ? "$9,644"
-        : fmt(scaledReference) + " (scaled from Kensington's 2-traveler quote)";
-    if (delta < 0) {
+    if (TRIP.meta.reference) {
+      // The quote was ground + tour only (no airfare), so the delta compares
+      // ground-only to keep it apples-to-apples.
+      const scaledReference = REFERENCE_TOTAL * personFactor;
+      const delta = groundTotal - scaledReference;
+      const refLabel =
+        N === 2
+          ? fmt(REFERENCE_TOTAL)
+          : fmt(scaledReference) +
+            " (scaled from the 2-traveler " +
+            TRIP.meta.reference.label +
+            ")";
       deltaEl.textContent =
         fmt(Math.abs(delta)) +
-        " under the " +
+        (delta < 0 ? " under the " : " over the ") +
         refLabel +
         " reference (ground only; flights extra)";
-      deltaEl.className = "delta save";
+      deltaEl.className = delta < 0 ? "delta save" : "delta";
     } else {
-      deltaEl.textContent =
-        fmt(delta) +
-        " over the " +
-        refLabel +
-        " reference (ground only; flights extra)";
+      deltaEl.textContent = "";
       deltaEl.className = "delta";
     }
 
@@ -2908,12 +2910,14 @@
       `  TOTAL                 $${Math.round(s.grand).toLocaleString("en-US")}`,
     );
     lines.push("");
-    lines.push(
-      s.N === 2
-        ? `Reference: Kensington Tours quoted $9,644 for this route (placeholder Nov 7–14 dates, not the actual Nov 14–22 travel window).`
-        : `Reference: Kensington Tours quoted $9,644 for 2 travelers on this route (placeholder Nov 7–14 dates) — scaled linearly to $${fmt2((REFERENCE_TOTAL * s.N) / 2)} for ${s.N} travelers as a rough comparison, not a real quote.`,
-    );
-    lines.push("");
+    if (TRIP.meta.reference) {
+      lines.push(
+        s.N === 2
+          ? `Reference: Kensington Tours quoted $9,644 for this route (placeholder Nov 7–14 dates, not the actual Nov 14–22 travel window).`
+          : `Reference: Kensington Tours quoted $9,644 for 2 travelers on this route (placeholder Nov 7–14 dates) — scaled linearly to $${fmt2((REFERENCE_TOTAL * s.N) / 2)} for ${s.N} travelers as a rough comparison, not a real quote.`,
+      );
+      lines.push("");
+    }
     lines.push(
       "Flights ARE included above (researched representative Nov-2026 round-trip fares, not date-locked quotes). Excludes: ~10% Japan accommodation tax, meals beyond included breakfasts, and entrance/admission fees for self-guided activities (paid activity upgrades above ARE included in the total).",
     );
@@ -3081,21 +3085,23 @@
     ]);
     out.push([]);
     out.push(["", "", "", "TOTAL", Math.round(s.grand)]);
-    out.push([
-      "",
-      "",
-      "",
-      `Kensington reference (2 travelers, placeholder Nov 7–14 dates)`,
-      REFERENCE_TOTAL,
-    ]);
-    if (s.N !== 2)
+    if (TRIP.meta.reference) {
       out.push([
         "",
         "",
         "",
-        `Kensington reference scaled to ${s.N} travelers (rough, not a real quote)`,
-        Math.round((REFERENCE_TOTAL * s.N) / 2),
+        `Kensington reference (2 travelers, placeholder Nov 7–14 dates)`,
+        REFERENCE_TOTAL,
       ]);
+      if (s.N !== 2)
+        out.push([
+          "",
+          "",
+          "",
+          `Kensington reference scaled to ${s.N} travelers (rough, not a real quote)`,
+          Math.round((REFERENCE_TOTAL * s.N) / 2),
+        ]);
+    }
     return "﻿" + out.map((row) => row.map(csvEscape).join(",")).join("\r\n");
   }
 
@@ -4395,6 +4401,11 @@
         problems.join("\n• ");
       document.body.insertBefore(banner, document.body.firstChild);
     }
+    // optional packaged-quote comparison note (hidden for DIY trips)
+    const rn = document.getElementById("referenceNote");
+    if (TRIP.meta.reference && TRIP.meta.reference.blurb)
+      rn.innerHTML = TRIP.meta.reference.blurb;
+    else rn.style.display = "none";
     themeInit();
     document
       .querySelectorAll(".tab")
