@@ -1,5 +1,5 @@
 <meta charset="utf-8" />
-<title>Japan Trip Planner — Budget &amp; Itinerary</title>
+<title>Yellowstone &amp; Grand Teton Road Trip — Budget &amp; Itinerary</title>
 <style>
   @font-face {
     font-family: "Ledger Serif";
@@ -1399,6 +1399,21 @@
           />
         </div>
         <div class="quiz-row">
+          <span class="quiz-q">How are you getting there?</span>
+          <div class="quiz-toggle" id="arriveModeSeg">
+            <label
+              ><input type="radio" name="arriveMode" value="fly" checked /><span
+                >Flying</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="arriveMode" value="drive" /><span
+                >Driving</span
+              ></label
+            >
+          </div>
+        </div>
+        <div class="quiz-row" id="flyOnly">
           <span class="quiz-q">Is everyone flying from the same airport?</span>
           <div class="quiz-toggle" id="sameAirportSeg">
             <label
@@ -1415,6 +1430,36 @@
         </div>
       </div>
       <div id="originsContainer" class="flight-journey"></div>
+      <div id="driveBlock" class="flight-journey" style="display: none">
+        <p class="flights-caveat">
+          Driving to the start — no airfare in the total. Enter the one-way
+          distance and we estimate premium fuel for the round trip (+15% for
+          real-world detours, about $5/gal). Leave miles at 0 to skip it.
+        </p>
+        <div class="quiz-row">
+          <label class="origin-pax"
+            >One-way distance (miles)
+            <input
+              type="number"
+              id="driveMiles"
+              min="0"
+              value="0"
+              inputmode="numeric"
+          /></label>
+          <label class="origin-pax"
+            >Your vehicle MPG
+            <input
+              type="number"
+              id="driveMpg"
+              min="1"
+              value="25"
+              inputmode="numeric"
+          /></label>
+          <span class="origin-pax"
+            >Est. fuel: <strong id="driveCostOut">$0</strong></span
+          >
+        </div>
+      </div>
       <p class="flights-caveat" id="flightsCaveat"></p>
     </div>
 
@@ -2125,6 +2170,8 @@
   const ALL_ORIGINS = Object.keys(FLIGHTS);
   const DEFAULT_ORIGINS = ALL_ORIGINS.filter((k) => !FLIGHTS[k].preset);
   const DEST_LABEL = TRIP.meta.destLabel || "destination";
+  const FUEL_PRICE = 5; // premium fuel, top-end $/gal
+  const DRIVE_PAD = 1.15; // +15% over route miles for real-world detours
   const originChoice = {
     solo: DEFAULT_ORIGINS[0],
     slots: DEFAULT_ORIGINS.slice(),
@@ -2208,6 +2255,19 @@
     }
   }
 
+  // flying vs driving: show the flight questionnaire or the drive block
+  function applyArriveMode() {
+    const drive =
+      (document.querySelector('input[name="arriveMode"]:checked') || {})
+        .value === "drive";
+    document.getElementById("flyOnly").style.display = drive ? "none" : "";
+    document.getElementById("originsContainer").style.display = drive
+      ? "none"
+      : "";
+    document.getElementById("driveBlock").style.display = drive ? "" : "none";
+    if (!drive) renderOrigins();
+  }
+
   function syncOriginChoice() {
     const c = document.getElementById("originsContainer");
     if (sameAirportOn()) {
@@ -2285,7 +2345,7 @@
       .join("");
   }
 
-  renderOrigins();
+  applyArriveMode();
   document.getElementById("flightsCaveat").textContent =
     "Fares are researched representative round-trip prices for Nov 2026 — not date-locked quotes like the hotel rates. Ask to lock exact fares (Google Flights, exact dates) when the browser connection is available.";
 
@@ -2662,13 +2722,37 @@
       finalCost = legCosts.final;
     }
 
+    const arriveMode =
+      (document.querySelector('input[name="arriveMode"]:checked') || {})
+        .value === "drive"
+        ? "drive"
+        : "fly";
     const sameAirport = sameAirportOn();
-    const origins = computeActiveOrigins(N, sameAirport);
-    const flightsCost = origins.reduce((s, o) => s + o.sel.fare * o.pax, 0);
+    let origins, flightsCost;
+    if (arriveMode === "drive") {
+      origins = [];
+      const miles = Math.max(
+        0,
+        parseFloat((document.getElementById("driveMiles") || {}).value) || 0,
+      );
+      const mpg = Math.max(
+        1,
+        parseFloat((document.getElementById("driveMpg") || {}).value) || 25,
+      );
+      const gallons = (miles * 2 * DRIVE_PAD) / mpg; // round trip + detour padding
+      flightsCost = Math.round(gallons * FUEL_PRICE);
+      const dco = document.getElementById("driveCostOut");
+      if (dco) dco.textContent = "$" + flightsCost.toLocaleString("en-US");
+    } else {
+      origins = computeActiveOrigins(N, sameAirport);
+      flightsCost = origins.reduce((s, o) => s + o.sel.fare * o.pax, 0);
+    }
     const originsLabel =
       origins.length === 1 ? "1 origin" : origins.length + " origins";
     const fc = document.getElementById("flightsCount");
-    if (fc) fc.textContent = originsLabel + " · round trip";
+    if (fc)
+      fc.textContent =
+        arriveMode === "drive" ? "self-drive" : originsLabel + " · round trip";
 
     // optional rental car (road trips): perDay × total nights × vehicles.
     const totalNights = Object.values(nights).reduce((a, b) => a + b, 0);
@@ -2714,9 +2798,16 @@
     }
 
     const roomsSuffix = rooms > 1 ? ` (${rooms} rooms)` : "";
-    const rows = [
-      ["Flights — getting there (" + originsLabel + ")", flightsCost],
-    ];
+    const rows = [];
+    if (arriveMode === "drive") {
+      if (flightsCost > 0)
+        rows.push(["Getting there — driving (est. fuel)", flightsCost]);
+    } else {
+      rows.push([
+        "Flights — getting there (" + originsLabel + ")",
+        flightsCost,
+      ]);
+    }
     TRIP.meta.route.forEach((c) => {
       rows.push([HOTELS[c].label + " lodging" + roomsSuffix, hotelCost[c]]);
     });
@@ -2772,6 +2863,7 @@
       nights,
       N,
       rooms,
+      arriveMode,
       origins,
       flightsCost,
       airport,
@@ -2838,12 +2930,18 @@
     );
     lines.push("");
 
-    lines.push("GETTING THERE (international flights, round trip)");
-    s.origins.forEach((o) =>
-      lines.push(
-        `  ${o.traveler}: ${o.sel.name} — ${o.sel.route}, ${o.sel.cabin} ($${fmt2(o.sel.fare * o.pax)})`,
-      ),
-    );
+    if (s.arriveMode === "drive") {
+      lines.push("GETTING THERE (driving)");
+      if (s.flightsCost > 0)
+        lines.push(`  Drive to the start ($${fmt2(s.flightsCost)})`);
+    } else {
+      lines.push("GETTING THERE (international flights, round trip)");
+      s.origins.forEach((o) =>
+        lines.push(
+          `  ${o.traveler}: ${o.sel.name} — ${o.sel.route}, ${o.sel.cabin} ($${fmt2(o.sel.fare * o.pax)})`,
+        ),
+      );
+    }
     lines.push("");
 
     const tokyoNightCost = s.tokyo.rate * s.rooms;
@@ -2986,14 +3084,24 @@
 
     const roomNote = `${s.rooms} room${s.rooms > 1 ? "s" : ""}`;
 
-    s.origins.forEach((o) =>
-      add(
-        "Flight",
-        `${o.traveler} — ${o.sel.name}`,
-        `${o.sel.route}, ${o.sel.cabin}, round trip`,
-        o.sel.fare * o.pax,
-      ),
-    );
+    if (s.arriveMode === "drive") {
+      if (s.flightsCost > 0)
+        add(
+          "Getting there",
+          "Drive to the start",
+          "Estimated premium fuel, round trip (+15%)",
+          s.flightsCost,
+        );
+    } else {
+      s.origins.forEach((o) =>
+        add(
+          "Flight",
+          `${o.traveler} — ${o.sel.name}`,
+          `${o.sel.route}, ${o.sel.cabin}, round trip`,
+          o.sel.fare * o.pax,
+        ),
+      );
+    }
 
     add(
       "Transport",
@@ -3220,7 +3328,9 @@
   // structural re-renders for the origins questionnaire (run before the
   // document-level recalc via bubbling, so recalc sees fresh DOM)
   document.getElementById("originQuiz").addEventListener("change", (e) => {
-    if (e.target.name === "sameAirport") {
+    if (e.target.name === "arriveMode") {
+      applyArriveMode();
+    } else if (e.target.name === "sameAirport") {
       syncOriginChoice();
       renderOrigins();
     }
@@ -3236,6 +3346,10 @@
   document.addEventListener("change", recalc);
   document.getElementById("travelerCount").addEventListener("input", recalc);
   document.getElementById("minRating").addEventListener("input", recalc);
+  ["driveMiles", "driveMpg"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", recalc);
+  });
   recalc();
 
   /* ============================================================
