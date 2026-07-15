@@ -12,14 +12,17 @@ A **"pick a destination → get a planner"** tool, live at `https://dbeihl.githu
 
 The site is an **Astro project**: one shared engine + per-trip data modules, built to static pages.
 
-- `src/layouts/Planner.astro` — the ONE copy of the shell markup, `<style>`, and the entire vanilla-JS engine. Trip data is injected via `<script is:inline define:vars={{ TRIP: trip }}>` (Astro prepends `const TRIP = <data>;` and wraps the script in an IIFE — engine functions are closure-scoped, not globals; `window.__state` is still exposed).
+- `src/layouts/Planner.astro` — the shell **markup only** (no styles, no engine). It injects the trip data with a tiny `<script is:inline define:vars={{ TRIP: trip }}>window.TRIP = TRIP;</script>` and then loads the engine module.
+- `src/styles/planner.css` — all planner styles (imported by the layout; Astro bundles it).
+- `src/scripts/engine.js` — the ONE copy of the vanilla-JS engine, a real ES module (reads `window.TRIP`; functions are module-scoped, not globals; `window.__state` is still exposed).
+- `src/scripts/xlsx.js` — the dependency-free .xlsx primitives (pure functions), imported by the engine.
 - `src/data/<trip>.js` — one plain-data module per trip (default-exports the full `TRIP` object: `meta/flights/hotels/transport/activities/routeDetail?/itinPool/itinDepart/visaPlan`). **Adding a trip = adding a data module + a 3-line page.**
 - `src/pages/<trip>-trip-planner.astro` — 3 lines: import data, import Planner, render. `src/pages/index.astro` is the hub.
 - `astro.config.mjs` — `site: 'https://dbeihl.github.io'`, `base: '/trip-planner'`, `build: { format: 'file' }` (preserves the `<name>-trip-planner.html` URLs).
 - `.github/workflows/deploy-astro.yml` — builds and deploys `dist/` to GitHub Pages via Actions on push to `main`.
 - Build: `npx astro build`; local preview needs the `/trip-planner` base path.
 
-The pre-Astro single-file planners were retired after the cutover was verified (parity baseline preserved in git history — last at tag-worthy commit `7fc72e3`…`#44`). Engine changes go in `Planner.astro` ONLY.
+The pre-Astro single-file planners were retired after the cutover was verified (parity baseline preserved in git history — last at tag-worthy commit `7fc72e3`…`#44`). Engine changes go in `src/scripts/engine.js` ONLY.
 
 ## The planner (`japan-trip-planner.html`)
 
@@ -42,7 +45,7 @@ Separate the trip-agnostic **engine** from the trip-specific **data**, then gene
 
 ## Editing conventions
 
-- The engine stays **vanilla JS inside `Planner.astro`** — no client framework, no CDNs, no network calls at view time (booking links are plain `<a href>`; print/Excel export must keep working offline once loaded). CSS may be bundled by Astro; everything must resolve same-origin under the `/trip-planner` base.
+- The engine stays **vanilla JS in `src/scripts/engine.js`** — no client framework, no CDNs, no network calls at view time (booking links are plain `<a href>`; print/Excel export must keep working offline once loaded). Astro bundles the CSS/JS assets; everything must resolve same-origin under the `/trip-planner` base.
 - Vanilla JS, 2-space indent, `const`/`let`, template-literal rendering.
 - Never hard-wrap markdown prose — one line per paragraph; reflow on contact. Lists/tables/code fences unchanged.
 
