@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Seoul & Busan by Rail — Oct 2026",
+    title: "Seoul & Busan by Rail — Oct 2027",
     route: ["seoul", "busan"],
     optionalCities: [],
     flexNightDefault: "seoul",
-    dates: { arrive: "2026-10-10", depart: "2026-10-18", nights: 8 },
+    dates: { arrive: "2027-10-10", depart: "2027-10-18", nights: 8 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into Incheon (ICN), out of Busan/Gimhae (PUS) — open jaw, no rental car",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Seoul",
     ui: {
       eyebrow:
-        'Oct 10 → Oct 18, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
+        'Oct 10 → Oct 18, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
       planTitle: "Seoul &amp; Busan by High-Speed Rail",
       planSub:
-        "Five nights in Seoul, then the KTX bullet train south to three nights in Busan — an open-jaw into Incheon and home from Gimhae, no rental car needed. Palaces and street food up north, beaches and temples down south. Pick a hotel tier per stop; train fares and transfers fold into the grand total. Every figure is a researched 2026 planning estimate.",
+        "Five nights in Seoul, then the KTX bullet train south to three nights in Busan — an open-jaw into Incheon and home from Gimhae, no rental car needed. Palaces and street food up north, beaches and temples down south. Pick a hotel tier per stop; train fares and transfers fold into the grand total. Every figure is a researched 2027 planning estimate.",
       flightsTitle: "Getting there — flights to Seoul, home from Busan",
       flightsIntro:
         "Two travelers converging on Seoul. Pick a routing for each — fares fold into the grand total. Fly into Incheon (ICN), out of Busan/Gimhae (PUS) so the whole trip moves in one direction, city to city, by train.",

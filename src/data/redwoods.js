@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "California Redwoods Road Trip — Jun 2026",
+    title: "California Redwoods Road Trip — Jun 2027",
     route: ["mendocino", "humboldt", "crescentCity"],
     optionalCities: [],
     flexNightDefault: "humboldt",
-    dates: { arrive: "2026-06-13", depart: "2026-06-19", nights: 6 },
+    dates: { arrive: "2027-06-13", depart: "2027-06-19", nights: 6 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into San Francisco, loop back out of SFO",
@@ -14,10 +14,10 @@ export default {
     destLabel: "San Francisco", // gateway shown for an "Other airport" origin
     ui: {
       eyebrow:
-        'Jun 13 → Jun 19, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
+        'Jun 13 → Jun 19, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
       planTitle: "California Redwoods Road Trip",
       planSub:
-        "A driving loop up the Mendocino and Humboldt coast into the tallest trees on Earth. Pick a lodge tier per stop; the rental car, fuel, and park/day-use fees fold into the total. Every figure is a researched 2026 planning estimate.",
+        "A driving loop up the Mendocino and Humboldt coast into the tallest trees on Earth. Pick a lodge tier per stop; the rental car, fuel, and park/day-use fees fold into the total. Every figure is a researched 2027 planning estimate.",
       flightsTitle: "Getting there — flights to the Bay",
       flightsIntro:
         "Two travelers converging on San Francisco. Pick a routing for each — fares fold into the grand total. Fly into SFO, loop the coast, and fly home out of SFO — no backtrack needed.",

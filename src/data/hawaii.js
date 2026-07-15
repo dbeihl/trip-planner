@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Oʻahu & Maui Island-Hop — Feb 2026",
+    title: "Oʻahu & Maui Island-Hop — Feb 2027",
     route: ["oahu", "maui"],
     optionalCities: [],
     flexNightDefault: "maui",
-    dates: { arrive: "2026-02-07", depart: "2026-02-15", nights: 8 },
+    dates: { arrive: "2027-02-07", depart: "2027-02-15", nights: 8 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into Honolulu, open-jaw home from Kahului (Maui)",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Honolulu",
     ui: {
       eyebrow:
-        'Feb 7 → Feb 15, 2026 · <span class="traveler-count-lbl">2</span> travelers · two-island self-drive',
+        'Feb 7 → Feb 15, 2027 · <span class="traveler-count-lbl">2</span> travelers · two-island self-drive',
       planTitle: "Oʻahu &amp; Maui Island-Hop",
       planSub:
-        "Honolulu first, then a short inter-island hop to Maui — open-jaw home from Kahului so there's no backtrack. Pick a lodging tier per island; the rental cars, the inter-island flight, and Hawaii's transient accommodations tax fold into the total. Every figure is a researched 2026 planning estimate.",
+        "Honolulu first, then a short inter-island hop to Maui — open-jaw home from Kahului so there's no backtrack. Pick a lodging tier per island; the rental cars, the inter-island flight, and Hawaii's transient accommodations tax fold into the total. Every figure is a researched 2027 planning estimate.",
       flightsTitle: "Getting there — flights to Honolulu",
       flightsIntro:
         "Two travelers converging on Oʻahu. Pick a routing for each — fares fold into the grand total. Fly into Honolulu (HNL); the Oʻahu→Maui leg and the flight home from Kahului (OGG) are handled separately in the itinerary.",

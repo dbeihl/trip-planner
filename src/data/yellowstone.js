@@ -1,10 +1,10 @@
 export default {
     meta: {
-      title: "Yellowstone & Grand Teton — Sep 2026",
+      title: "Yellowstone & Grand Teton — Sep 2027",
       route: ["jackson", "oldFaithful", "canyon", "mammoth"],
       optionalCities: [],
       flexNightDefault: "jackson",
-      dates: { arrive: "2026-09-12", depart: "2026-09-20", nights: 8 },
+      dates: { arrive: "2027-09-12", depart: "2027-09-20", nights: 8 },
       travelers: {
         count: 2,
         note: "2 travelers; fly into Jackson Hole, out of Bozeman",
@@ -14,10 +14,10 @@ export default {
       destLabel: "Jackson Hole", // gateway shown for an "Other airport" origin
       ui: {
         eyebrow:
-          'Sep 12 → Sep 20, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
+          'Sep 12 → Sep 20, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
         planTitle: "Yellowstone &amp; Grand Teton Road Trip",
         planSub:
-          "A driving loop through the Tetons and Yellowstone. Pick a lodge tier per stop; the rental car, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
+          "A driving loop through the Tetons and Yellowstone. Pick a lodge tier per stop; the rental car, fuel, and park pass fold into the total. Every figure is a researched 2027 planning estimate.",
         flightsTitle: "Getting there — flights to the gateway",
         flightsIntro:
           "Two travelers converging on Jackson Hole. Pick a routing for each — fares fold into the grand total. Fly into Jackson Hole (JAC), out of Bozeman (BZN) to skip the backtrack.",

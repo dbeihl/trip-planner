@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Thailand — Bangkok, Chiang Mai & Phuket — Jan 2026",
+    title: "Thailand — Bangkok, Chiang Mai & Phuket — Jan 2027",
     route: ["bangkok", "chiangMai", "phuket"],
     optionalCities: [],
     flexNightDefault: "phuket",
-    dates: { arrive: "2026-01-17", depart: "2026-01-26", nights: 9 },
+    dates: { arrive: "2027-01-17", depart: "2027-01-26", nights: 9 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into Bangkok, out of Phuket",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Bangkok",
     ui: {
       eyebrow:
-        'Jan 17 → Jan 26, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked Thailand loop',
+        'Jan 17 → Jan 26, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked Thailand loop',
       planTitle: "Thailand: Bangkok, Chiang Mai &amp; Phuket",
       planSub:
-        "An open-jaw loop down the country — temples and street food in Bangkok, mountains and elephants in Chiang Mai, islands and beaches in Phuket. Pick a lodging tier per stop; the domestic flights fold into the total. Every figure is a researched 2026 planning estimate.",
+        "An open-jaw loop down the country — temples and street food in Bangkok, mountains and elephants in Chiang Mai, islands and beaches in Phuket. Pick a lodging tier per stop; the domestic flights fold into the total. Every figure is a researched 2027 planning estimate.",
       flightsTitle: "Getting there — flights to Bangkok",
       flightsIntro:
         "Two travelers converging on Bangkok. Pick a routing for each — fares fold into the grand total. Fly into Suvarnabhumi (BKK), home from Phuket (HKT) so there's no backtrack.",
