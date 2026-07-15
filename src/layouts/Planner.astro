@@ -1777,7 +1777,7 @@ const { trip, title } = Astro.props;
 
   <footer class="notes">
     <h3>Methodology</h3>
-    <ul>
+    <ul id="finePrintList">
       <li>
         All hotel rates are live, date-locked quotes for the actual stay dates
         (Nov 2026), pulled directly from booking platforms — not seasonal floor
@@ -3629,17 +3629,15 @@ const { trip, title } = Astro.props;
     );
 
     const n = s.nights;
-    const route =
-      "Tokyo " +
-      n.tokyo +
-      " / Hakone " +
-      n.hakone +
-      " / Kyoto " +
-      n.kyoto +
-      (n.osaka ? " / Osaka " + n.osaka : "");
+    const route = TRIP.meta.route
+      .concat(TRIP.meta.optionalCities)
+      .filter((c) => (n[c] || 0) > 0)
+      .map((c) => HOTELS[c].label + " " + n[c])
+      .join(" / ");
     const addOns = days.filter((d) => d.fuller && itinFullerOn(d.id)).length;
     document.getElementById("itinSummary").innerHTML =
-      "9 days · " +
+      days.length +
+      " days · " +
       route +
       " · " +
       addOns +
@@ -4152,7 +4150,7 @@ const { trip, title } = Astro.props;
         cell(visaDate(addDays(cur, i)), 3),
         cell(VISA_PLAN[d.id] || strip(d.title), 3),
         cell("", 3),
-        cell(d.cityKey ? s[d.cityKey].name : "Departing Japan", 3),
+        cell(d.cityKey ? s[d.cityKey].name : "Departure", 3),
       ]);
     });
     for (let k = 0; k < 3; k++)
@@ -4309,6 +4307,19 @@ const { trip, title } = Astro.props;
       document.title =
         ui.planTitle.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&") +
         " — Budget & Itinerary";
+    // the fine-print list defaults to Japan's authored research notes; any
+    // trip with meta.ui gets ui.finePrint (array of HTML strings) or a
+    // generic set, so Japan-specific caveats never show on other trips.
+    if (TRIP.meta.ui) {
+      const fp = ui.finePrint || [
+        "Every figure is a researched planning estimate for the trip dates — verify live prices before booking.",
+        "Lodging totals include a flat planning buffer for taxes and fees (shown as its own line in the breakdown); actual taxes vary by property.",
+        "Flight fares are representative round-trips, not date-locked quotes — re-check fares (e.g. Google Flights) before booking.",
+        "Meals and incidentals beyond what's listed are not included.",
+      ];
+      const list = document.getElementById("finePrintList");
+      if (list) list.innerHTML = fp.map((x) => "<li>" + x + "</li>").join("");
+    }
     themeInit();
     document
       .querySelectorAll(".tab")
