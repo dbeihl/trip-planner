@@ -1940,6 +1940,8 @@ const { trip, title } = Astro.props;
   const TRIP_START = TRIP.meta.dates.arrive; // fixed arrival date, ISO
   const REFERENCE_TOTAL = TRIP.meta.reference ? TRIP.meta.reference.total : 0;
   const LODGING_TAX_BUFFER = TRIP.meta.lodgingTaxBuffer;
+  // display name for exports: "Japan — Nov 2026" → "Japan"
+  const TRIP_NAME = (TRIP.meta.title || "Trip").split(" — ")[0];
 
   function renderActivities(containerId, cityKey) {
     const el = document.getElementById(containerId);
@@ -3049,86 +3051,43 @@ const { trip, title } = Astro.props;
       );
     }
 
-    add(
-      "Transport",
-      "Airport → Tokyo",
-      `${s.airport === "nrt" ? "Narita" : "Haneda"}, ${s.airportMode === "public" ? "train/bus" : "private car"}`,
-      s.airportCost,
-    );
-    for (let i = 0; i < s.nights.tokyo; i++) {
-      add(
-        "Lodging",
-        s.tokyo.name,
-        `Tokyo, per night (${roomNote})`,
-        s.tokyo.rate * s.rooms,
-      );
-      if (i < s.nights.tokyo - 1) cursor = addDays(cursor, 1);
-    }
+    // day-by-day rows, generically from the trip data: the arrival leg,
+    // then each stop's nights + the leg into the next stop, then departure.
+    const legRow = (legId) => {
+      const m = moveData(legId, s);
+      if (m && m.lead) add("Transport", m.lead, m.detail, m.cost || 0);
+    };
+    const arrivalLeg = TRIP.transport.legs.find((l) => l.role === "arrival");
+    if (arrivalLeg) legRow(arrivalLeg.id);
 
-    cursor = addDays(cursor, 1);
-    add(
-      "Transport",
-      "Tokyo → Hakone",
-      s.thMode === "public" ? "Odakyu Romancecar" : "Private car",
-      s.thCost,
+    const stops = TRIP.meta.route
+      .concat(TRIP.meta.optionalCities)
+      .filter((c) => (s.nights[c] || 0) > 0);
+    stops.forEach((city, idx) => {
+      for (let i = 0; i < s.nights[city]; i++) {
+        add(
+          "Lodging",
+          s[city].name,
+          `${HOTELS[city].label}, per night (${roomNote})`,
+          s[city].rate * s.rooms,
+        );
+        if (i < s.nights[city] - 1) cursor = addDays(cursor, 1);
+      }
+      cursor = addDays(cursor, 1);
+      const next = stops[idx + 1];
+      if (next) {
+        const leg =
+          TRIP.transport.legs.find((l) => l.from === city && l.to === next) ||
+          TRIP.transport.legs.find(
+            (l) => l.role === "optional" && l.to === next,
+          );
+        if (leg) legRow(leg.id);
+      }
+    });
+    const departureLeg = TRIP.transport.legs.find(
+      (l) => l.role === "departure",
     );
-    for (let i = 0; i < s.nights.hakone; i++) {
-      add(
-        "Lodging",
-        s.hakone.name,
-        `Hakone, per night, half-board (${roomNote})`,
-        s.hakone.rate * s.rooms,
-      );
-      if (i < s.nights.hakone - 1) cursor = addDays(cursor, 1);
-    }
-
-    cursor = addDays(cursor, 1);
-    add(
-      "Transport",
-      "Hakone → Kyoto",
-      `Shinkansen + ${s.hkMode === "public" ? "bus/subway" : "taxi both ends"}`,
-      s.hkCost,
-    );
-    for (let i = 0; i < s.nights.kyoto; i++) {
-      add(
-        "Lodging",
-        s.kyoto.name,
-        `Kyoto, per night (${roomNote})`,
-        s.kyoto.rate * s.rooms,
-      );
-      if (i < s.nights.kyoto - 1) cursor = addDays(cursor, 1);
-    }
-
-    if (s.osakaMode) {
-      cursor = addDays(cursor, 1);
-      add(
-        "Transport",
-        "Kyoto → Osaka",
-        "Kintetsu Ltd. Express",
-        s.kyotoOsakaCost,
-      );
-      add(
-        "Lodging",
-        s.osaka.name,
-        `Osaka, per night (${roomNote})`,
-        s.osaka.rate * s.rooms,
-      );
-      cursor = addDays(cursor, 1);
-      add(
-        "Transport",
-        "Osaka → Kansai Airport",
-        "Nankai Rapi:t",
-        s.osakaAirportCost,
-      );
-    } else {
-      cursor = addDays(cursor, 1);
-      add(
-        "Transport",
-        "Kyoto → Kansai Airport",
-        s.finalMode === "public" ? "JR Haruka" : "Private car",
-        s.finalCost,
-      );
-    }
+    if (departureLeg) legRow(departureLeg.id);
 
     s.chosenActivities.forEach((a) => {
       rows.push({
@@ -3153,9 +3112,9 @@ const { trip, title } = Astro.props;
     const s = window.__state;
     const rows = buildRows();
     const out = [];
-    out.push(["Japan Trip — DIY Itinerary"]);
+    out.push([`${TRIP_NAME} Trip — DIY Itinerary`]);
     out.push([
-      `${fmtDate(toDate(TRIP_START))} to ${fmtDate(addDays(toDate(TRIP_START), s.nights.tokyo + s.nights.hakone + s.nights.kyoto + s.nights.osaka))}`,
+      `${fmtDate(toDate(TRIP_START))} to ${fmtDate(addDays(toDate(TRIP_START), Object.values(s.nights).reduce((a, b) => a + (b || 0), 0)))}`,
       `${s.N} travelers, ${s.rooms} room(s)`,
     ]);
     out.push([]);
@@ -3726,15 +3685,24 @@ const { trip, title } = Astro.props;
         .trim();
     const money = (c) => (SHOW_PRICES && c ? " ($" + fmt2(c) + ")" : "");
     const out = [];
-    out.push("JAPAN — Sat Nov 14 to Sun Nov 22, 2026");
+    const startD = toDate(TRIP_START);
+    const totalN = Object.values(n).reduce((a, b) => a + (b || 0), 0);
+    const endD = addDays(startD, totalN);
     out.push(
-      "Tokyo " +
-        n.tokyo +
-        " / Hakone " +
-        n.hakone +
-        " / Kyoto " +
-        n.kyoto +
-        (n.osaka ? " / Osaka " + n.osaka : ""),
+      TRIP_NAME.toUpperCase() +
+        " — " +
+        fmtDate(startD) +
+        " to " +
+        fmtDate(endD) +
+        ", " +
+        endD.getFullYear(),
+    );
+    out.push(
+      TRIP.meta.route
+        .concat(TRIP.meta.optionalCities)
+        .filter((c) => (n[c] || 0) > 0)
+        .map((c) => HOTELS[c].label + " " + n[c])
+        .join(" / "),
     );
     if (SHOW_PRICES)
       out.push(
