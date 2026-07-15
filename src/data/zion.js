@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Zion Deep-Dive — Apr 2026",
+    title: "Zion Deep-Dive — Apr 2027",
     route: ["springdale", "bryce"],
     optionalCities: [],
     flexNightDefault: "springdale",
-    dates: { arrive: "2026-04-18", depart: "2026-04-24", nights: 6 },
+    dates: { arrive: "2027-04-18", depart: "2027-04-24", nights: 6 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into and out of Las Vegas, short rental-car loop up to Zion and Bryce",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Las Vegas", // gateway shown for an "Other airport" origin / drive
     ui: {
       eyebrow:
-        'Apr 18 → Apr 24, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
+        'Apr 18 → Apr 24, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
       planTitle: "Zion Deep-Dive",
       planSub:
-        "No rushing through — four nights based in Springdale to actually work through Zion (Angels Landing, the Narrows, Kolob Canyons, the east side), then one night at Bryce for the hoodoos on the way out. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
+        "No rushing through — four nights based in Springdale to actually work through Zion (Angels Landing, the Narrows, Kolob Canyons, the east side), then one night at Bryce for the hoodoos on the way out. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2027 planning estimate.",
       flightsTitle: "Getting there — flights to the gateway",
       flightsIntro:
         "Two travelers converging on Las Vegas. Pick a routing for each — fares fold into the grand total. Fly into and out of Las Vegas (LAS); the rental car handles the rest.",

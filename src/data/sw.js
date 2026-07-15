@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Southwest National Parks Road Trip — May 2026",
+    title: "Southwest National Parks Road Trip — May 2027",
     route: ["zion", "bryce", "grandCanyon"],
     optionalCities: [],
     flexNightDefault: "zion",
-    dates: { arrive: "2026-05-09", depart: "2026-05-15", nights: 6 },
+    dates: { arrive: "2027-05-09", depart: "2027-05-15", nights: 6 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into and out of Las Vegas, driving loop by rental SUV",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Las Vegas", // gateway shown for an "Other airport" origin / drive
     ui: {
       eyebrow:
-        'May 9 → May 15, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
+        'May 9 → May 15, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
       planTitle: "Southwest National Parks Road Trip",
       planSub:
-        "A driving loop out of Las Vegas through Zion, Bryce, and the Grand Canyon's South Rim. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2026 planning estimate.",
+        "A driving loop out of Las Vegas through Zion, Bryce, and the Grand Canyon's South Rim. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2027 planning estimate.",
       flightsTitle: "Getting there — flights to the gateway",
       flightsIntro:
         "Two travelers converging on Las Vegas. Pick a routing for each — fares fold into the grand total. Fly into and out of Las Vegas (LAS); the rental car handles the rest.",

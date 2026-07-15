@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Christmas Markets in Germany by Rail — Dec 2026",
+    title: "Christmas Markets in Germany by Rail — Dec 2027",
     route: ["nuremberg", "rothenburg", "munich"],
     optionalCities: [],
     flexNightDefault: "munich",
-    dates: { arrive: "2026-12-05", depart: "2026-12-12", nights: 7 },
+    dates: { arrive: "2027-12-05", depart: "2027-12-12", nights: 7 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into Frankfurt (FRA), out of Munich (MUC) — open jaw, no rental car",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Frankfurt",
     ui: {
       eyebrow:
-        'Dec 5 → Dec 12, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
+        'Dec 5 → Dec 12, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
       planTitle: "Nuremberg, Rothenburg &amp; Munich by Rail",
       planSub:
-        "Three Christmas markets by Deutsche Bahn — Nuremberg's Christkindlesmarkt, the walled town of Rothenburg ob der Tauber, and Munich's Marienplatz, open-jaw into Frankfurt and home from Munich, no rental car needed. Pick a hotel tier per stop; train fares and transfers fold into the grand total. December is peak Christmas-market season — every figure is a researched 2026 planning estimate and runs high accordingly.",
+        "Three Christmas markets by Deutsche Bahn — Nuremberg's Christkindlesmarkt, the walled town of Rothenburg ob der Tauber, and Munich's Marienplatz, open-jaw into Frankfurt and home from Munich, no rental car needed. Pick a hotel tier per stop; train fares and transfers fold into the grand total. December is peak Christmas-market season — every figure is a researched 2027 planning estimate and runs high accordingly.",
       flightsTitle: "Getting there — flights to Frankfurt, home from Munich",
       flightsIntro:
         "Two travelers converging on Frankfurt for the market season. Pick a routing for each — fares fold into the grand total. Fly into Frankfurt (FRA), out of Munich (MUC) so the whole trip moves in one direction, city to city, by train.",
