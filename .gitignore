@@ -2,3 +2,8 @@
 *.pdf
 *.xlsx
 .playwright-mcp/
+
+# astro / node
+node_modules
+dist
+.astro
