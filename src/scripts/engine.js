@@ -2177,6 +2177,7 @@ const TRIP = window.TRIP;
           emoji: "🎄",
           label: "Christmas in Germany",
         },
+        { file: "seoul-trip-planner.html", emoji: "🏯", label: "Seoul & Busan" },
       ];
       const btn = document.getElementById("changeTripBtn");
       const menu = document.getElementById("tripMenu");

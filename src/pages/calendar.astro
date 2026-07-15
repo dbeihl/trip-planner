@@ -1,0 +1,407 @@
+---
+// Year-at-a-glance calendar. Reads every trip's meta.dates and paints the
+// travel windows across a 12-month grid, so the whole year of trips is
+// visible in one place. Fully data-driven: add a trip module below and it
+// shows up here automatically.
+import japan from "../data/japan.js";
+import yellowstone from "../data/yellowstone.js";
+import sw from "../data/sw.js";
+import italy from "../data/italy.js";
+import hawaii from "../data/hawaii.js";
+import thailand from "../data/thailand.js";
+import redwoods from "../data/redwoods.js";
+import zion from "../data/zion.js";
+import germany from "../data/germany.js";
+import seoul from "../data/seoul.js";
+
+// slug → presentation (emoji, short label, planner href, calendar color).
+// Colors are distinct hues that read on both the light and dark paper.
+const REGISTRY = {
+  japan: { emoji: "🗼", label: "Japan", href: "japan-trip-planner.html", color: "#9d174d" },
+  yellowstone: { emoji: "🏔️", label: "Yellowstone & Grand Teton", href: "yellowstone-trip-planner.html", color: "#0f766e" },
+  sw: { emoji: "🏜️", label: "Southwest Parks", href: "sw-trip-planner.html", color: "#b45309" },
+  italy: { emoji: "🏛️", label: "Italy by Rail", href: "italy-trip-planner.html", color: "#1d4ed8" },
+  hawaii: { emoji: "🌺", label: "Hawaii — Oʻahu & Maui", href: "hawaii-trip-planner.html", color: "#db2777" },
+  thailand: { emoji: "🛕", label: "Thailand", href: "thailand-trip-planner.html", color: "#c2410c" },
+  redwoods: { emoji: "🌲", label: "California Redwoods", href: "redwoods-trip-planner.html", color: "#15803d" },
+  zion: { emoji: "🧗", label: "Zion Deep-Dive", href: "zion-trip-planner.html", color: "#dc2626" },
+  germany: { emoji: "🎄", label: "Christmas in Germany", href: "germany-trip-planner.html", color: "#4d7c0f" },
+  seoul: { emoji: "🏯", label: "Seoul & Busan", href: "seoul-trip-planner.html", color: "#7c3aed" },
+};
+
+const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul };
+
+// Build the trip list from the data modules; skip any without dates.
+const trips = Object.entries(MODULES)
+  .map(([slug, data]) => {
+    const d = data.meta && data.meta.dates;
+    if (!d || !d.arrive || !d.depart) return null;
+    const meta = REGISTRY[slug] || { emoji: "✦", label: slug, href: slug + "-trip-planner.html", color: "#26456b" };
+    return { slug, arrive: d.arrive, depart: d.depart, nights: d.nights, ...meta };
+  })
+  .filter(Boolean)
+  .sort((a, b) => (a.arrive < b.arrive ? -1 : 1));
+
+// The year to render: the year the trips fall in (they share one).
+const YEAR = Number((trips[0] && trips[0].arrive.slice(0, 4)) || new Date().getUTCFullYear());
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MON_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+
+const pad = (n) => String(n).padStart(2, "0");
+const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+
+// Trips covering a given ISO date (arrive..depart inclusive). ISO strings
+// compare correctly with < / >, so no Date math is needed for the range test.
+function tripsOn(dateStr) {
+  return trips.filter((t) => t.arrive <= dateStr && dateStr <= t.depart);
+}
+
+// Background for a day cell given the trips on it: a per-theme tint that
+// mixes the trip color into the paper, split diagonally when trips overlap.
+function dayBg(ts) {
+  if (!ts.length) return "";
+  const tint = (c) => `color-mix(in srgb, ${c} 34%, var(--paper-raised))`;
+  if (ts.length === 1) return tint(ts[0].color);
+  const a = tint(ts[0].color);
+  const b = tint(ts[1].color);
+  return `linear-gradient(105deg, ${a} 0 50%, ${b} 50% 100%)`;
+}
+
+// Precompute each month's weeks (arrays of day numbers, 0 = padding).
+const months = MONTHS.map((name, m) => {
+  const first = new Date(Date.UTC(YEAR, m, 1)).getUTCDay(); // 0=Sun
+  const days = new Date(Date.UTC(YEAR, m + 1, 0)).getUTCDate();
+  const cells = [];
+  for (let i = 0; i < first; i++) cells.push(0);
+  for (let d = 1; d <= days; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(0);
+  return { name, m, cells };
+});
+
+// Legend date range, e.g. "Oct 10 – 18" or "Sep 19 – 27" (same-month) /
+// "Feb 27 – Mar 3" (cross-month).
+function fmtRange(arrive, depart) {
+  const [ay, am, ad] = arrive.split("-").map(Number);
+  const [by, bm, bd] = depart.split("-").map(Number);
+  const start = `${MON_ABBR[am - 1]} ${ad}`;
+  const end = am === bm ? `${bd}` : `${MON_ABBR[bm - 1]} ${bd}`;
+  return `${start} – ${end}`;
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trip Planner — {YEAR} calendar</title>
+    <style is:global>
+      :root {
+        --paper: #eeebe3;
+        --paper-raised: #f7f5ef;
+        --ink: #201f1a;
+        --ink-soft: #5a5648;
+        --indigo: #26456b;
+        --indigo-deep: #16293f;
+        --line: #d5d0c1;
+        --line-strong: #b7b09a;
+        --focus: #26456b;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #171813;
+          --paper-raised: #201f19;
+          --ink: #ece8dc;
+          --ink-soft: #b0aa98;
+          --indigo: #86a7cd;
+          --indigo-deep: #b9cfe8;
+          --line: #38362c;
+          --line-strong: #4c4939;
+          --focus: #b9cfe8;
+        }
+      }
+      :root[data-theme="dark"] {
+        --paper: #171813;
+        --paper-raised: #201f19;
+        --ink: #ece8dc;
+        --ink-soft: #b0aa98;
+        --indigo: #86a7cd;
+        --indigo-deep: #b9cfe8;
+        --line: #38362c;
+        --line-strong: #4c4939;
+        --focus: #b9cfe8;
+      }
+      :root[data-theme="light"] {
+        --paper: #eeebe3;
+        --paper-raised: #f7f5ef;
+        --ink: #201f1a;
+        --ink-soft: #5a5648;
+        --indigo: #26456b;
+        --indigo-deep: #16293f;
+        --line: #d5d0c1;
+        --line-strong: #b7b09a;
+        --focus: #26456b;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        display: flex;
+        justify-content: center;
+        padding: 2rem 1.25rem 4rem;
+      }
+      .wrap { width: 100%; max-width: 1080px; }
+      .topbar {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .back {
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--indigo);
+        text-decoration: none;
+      }
+      .back:hover { text-decoration: underline; }
+      .eyebrow {
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin: 0 0 0.6rem;
+      }
+      h1 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 600;
+        font-size: clamp(1.9rem, 5vw, 2.7rem);
+        line-height: 1.1;
+        margin: 0 0 0.6rem;
+      }
+      .lede {
+        font-size: 1.02rem;
+        color: var(--ink-soft);
+        max-width: 60ch;
+        margin: 0 0 2rem;
+      }
+      .theme-toggle {
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 999px;
+        border: 1px solid var(--line-strong);
+        background: var(--paper-raised);
+        color: var(--ink-soft);
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+      }
+      .theme-toggle:hover { border-color: var(--indigo); color: var(--ink); }
+
+      .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 1.1rem;
+      }
+      .month {
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.85rem 0.9rem 1rem;
+      }
+      .month h2 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.1rem;
+        margin: 0 0 0.55rem;
+      }
+      .dow, .week {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+      }
+      .dow span {
+        text-align: center;
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 0.62rem;
+        color: var(--ink-soft);
+        padding-bottom: 0.2rem;
+      }
+      .week { margin-top: 3px; }
+      .cell {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 2px 4px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .cell.pad { visibility: hidden; }
+      .cell.trip {
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent);
+      }
+      a.cell.trip:hover {
+        outline: 2px solid var(--focus);
+        outline-offset: -1px;
+      }
+      .cell .emoji {
+        position: absolute;
+        right: 1px;
+        bottom: 0;
+        font-size: 0.68rem;
+        line-height: 1;
+      }
+      .cell .num { position: relative; z-index: 1; }
+
+      .legend {
+        margin-top: 2.4rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1.4rem;
+      }
+      .legend h2 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.2rem;
+        margin: 0 0 1rem;
+      }
+      .legend-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.5rem 1.4rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        text-decoration: none;
+        color: inherit;
+        padding: 0.4rem 0.3rem;
+        border-radius: 5px;
+      }
+      .legend-item:hover { background: var(--paper-raised); }
+      .swatch {
+        flex: 0 0 auto;
+        width: 0.95rem;
+        height: 0.95rem;
+        border-radius: 3px;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent);
+      }
+      .legend-name { font-weight: 600; }
+      .legend-emoji { margin-right: 0.15rem; }
+      .legend-dates {
+        margin-left: auto;
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 0.74rem;
+        color: var(--ink-soft);
+        white-space: nowrap;
+      }
+      .foot {
+        margin-top: 2.4rem;
+        font-size: 0.8rem;
+        color: var(--ink-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <script is:inline>
+      try {
+        var _saved = localStorage.getItem("theme");
+        if (_saved) document.documentElement.setAttribute("data-theme", _saved);
+      } catch (e) {}
+    </script>
+    <main class="wrap">
+      <div class="topbar">
+        <a class="back" href="index.html">← All trips</a>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light or dark mode" title="Toggle light / dark"></button>
+      </div>
+      <p class="eyebrow"><span style="color: var(--indigo)">✦</span> The year in trips</p>
+      <h1>{YEAR} at a glance</h1>
+      <p class="lede">
+        Every planned trip laid across the calendar. Each colored block is a travel window —
+        click into any month or the legend below to open that trip's planner.
+      </p>
+
+      <div class="cal-grid">
+        {months.map((mo) => (
+          <div class="month">
+            <h2>{mo.name}</h2>
+            <div class="dow">{DOW.map((d) => <span>{d}</span>)}</div>
+            {Array.from({ length: mo.cells.length / 7 }).map((_, w) => (
+              <div class="week">
+                {mo.cells.slice(w * 7, w * 7 + 7).map((d) => {
+                  if (d === 0) return <span class="cell pad"></span>;
+                  const ts = tripsOn(iso(YEAR, mo.m, d));
+                  if (!ts.length) return <span class="cell"><span class="num">{d}</span></span>;
+                  const first = ts.find((t) => t.arrive === iso(YEAR, mo.m, d));
+                  const label = ts.map((t) => `${t.label} (${fmtRange(t.arrive, t.depart)})`).join(" · ");
+                  return (
+                    <a class="cell trip" href={ts[0].href} style={`background:${dayBg(ts)}`} title={label}>
+                      <span class="num">{d}</span>
+                      {first && <span class="emoji">{first.emoji}</span>}
+                    </a>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div class="legend">
+        <h2>{trips.length} trips this year</h2>
+        <ul class="legend-list">
+          {trips.map((t) => (
+            <li>
+              <a class="legend-item" href={t.href}>
+                <span class="swatch" style={`background:${t.color}`}></span>
+                <span class="legend-name"><span class="legend-emoji">{t.emoji}</span>{t.label}</span>
+                <span class="legend-dates">{fmtRange(t.arrive, t.depart)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p class="foot">Dates are planning targets — each planner has the day-by-day. Verify live before booking.</p>
+    </main>
+    <script is:inline>
+      (function () {
+        const root = document.documentElement;
+        const btn = document.getElementById("themeToggle");
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const isDark = () => {
+          const a = root.getAttribute("data-theme");
+          return a ? a === "dark" : mq.matches;
+        };
+        const paint = () => (btn.textContent = isDark() ? "☀" : "☾");
+        btn.addEventListener("click", () => {
+          const next = isDark() ? "light" : "dark";
+          root.setAttribute("data-theme", next);
+          try { localStorage.setItem("theme", next); } catch (e) {}
+          paint();
+        });
+        mq.addEventListener("change", () => {
+          if (!root.getAttribute("data-theme")) paint();
+        });
+        paint();
+      })();
+    </script>
+  </body>
+</html>
