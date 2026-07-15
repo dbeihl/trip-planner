@@ -19,7 +19,7 @@ The site is an **Astro project**: one shared engine + per-trip data modules, bui
 - `.github/workflows/deploy-astro.yml` — builds and deploys `dist/` to GitHub Pages via Actions on push to `main`.
 - Build: `npx astro build`; local preview needs the `/trip-planner` base path.
 
-The root `*-trip-planner.html` files are the **legacy pre-Astro static pages** (kept until the Pages cutover is confirmed stable; they were the parity baseline). Engine changes go in `Planner.astro` ONLY — do not edit the legacy files except to delete them post-cutover.
+The pre-Astro single-file planners were retired after the cutover was verified (parity baseline preserved in git history — last at tag-worthy commit `7fc72e3`…`#44`). Engine changes go in `Planner.astro` ONLY.
 
 ## The planner (`japan-trip-planner.html`)
 
