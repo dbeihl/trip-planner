@@ -1464,6 +1464,53 @@
     border-color: var(--indigo);
     background: var(--paper);
   }
+
+  /* --- per-stop night steppers --- */
+  .nightsteps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .nightstep {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+    background: var(--paper);
+  }
+  .nightstep .ns-city {
+    font-size: 0.82rem;
+    color: var(--ink);
+  }
+  .nightstep .ns-btn {
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    color: var(--indigo);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nightstep .ns-btn:hover {
+    border-color: var(--indigo);
+  }
+  .nightstep .ns-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .nightstep .ns-val {
+    min-width: 1.1rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
 </style>
 
 <script>
@@ -1669,12 +1716,10 @@
 
     <div class="extra-night">
       <div class="label-row">
-        <span>Where does the 9th night go?</span>
-        <span id="extraNightHint"
-          >3 Tokyo · 1 Hakone · 3 Kyoto = 7 nights, +1 to place</span
-        >
+        <span>Nights per stop</span>
+        <span id="extraNightHint">7 nights total</span>
       </div>
-      <div class="seg" id="extraNightSeg"></div>
+      <div class="nightsteps" id="extraNightSeg"></div>
     </div>
 
     <!-- The whole leg + stop sequence is generated from TRIP by
@@ -2650,16 +2695,54 @@ TRIP.activities = {
   // ── generate the flexible-night selector from TRIP.meta ───────────
   // route cities → "+1 <City>", optional cities → "Add <City>";
   // default selection from meta.flexNightDefault.
-  function renderFlexNight() {
+  // per-stop nights: default = base (+1 on the trip's flex-night city),
+  // optional cities start at 0. Users step any stop up or down.
+  const NIGHT_STATE = {};
+  const NIGHT_MAX = 9;
+  (function initNightState() {
     const m = TRIP.meta;
-    const opt = (city, prefix) =>
-      `<input type="radio" name="extra" id="extra-${city}" value="${city}"${city === m.flexNightDefault ? " checked" : ""} />` +
-      `<label for="extra-${city}">${prefix} ${HOTELS[city].label}</label>`;
-    document.getElementById("extraNightSeg").innerHTML =
-      m.route.map((c) => opt(c, "+1")).join("") +
-      m.optionalCities.map((c) => opt(c, "Add")).join("");
+    m.route.forEach(
+      (c) =>
+        (NIGHT_STATE[c] =
+          HOTELS[c].baseNights + (c === m.flexNightDefault ? 1 : 0)),
+    );
+    m.optionalCities.forEach(
+      (c) => (NIGHT_STATE[c] = c === m.flexNightDefault ? 1 : 0),
+    );
+  })();
+  function nightMin(city) {
+    return TRIP.meta.optionalCities.includes(city) ? 0 : 1;
   }
-  renderFlexNight();
+  function renderNightSteppers() {
+    const m = TRIP.meta;
+    const row = (c) => {
+      const n = NIGHT_STATE[c];
+      const lo = n <= nightMin(c) ? " disabled" : "";
+      const hi = n >= NIGHT_MAX ? " disabled" : "";
+      return (
+        `<div class="nightstep"><span class="ns-city">${HOTELS[c].label}</span>` +
+        `<button type="button" class="ns-btn" data-city="${c}" data-delta="-1" aria-label="one fewer night in ${HOTELS[c].label}"${lo}>−</button>` +
+        `<span class="ns-val" id="ns-${c}">${n}</span>` +
+        `<button type="button" class="ns-btn" data-city="${c}" data-delta="1" aria-label="one more night in ${HOTELS[c].label}"${hi}>+</button></div>`
+      );
+    };
+    document.getElementById("extraNightSeg").innerHTML = m.route
+      .concat(m.optionalCities)
+      .map(row)
+      .join("");
+  }
+  renderNightSteppers();
+  document.getElementById("extraNightSeg").addEventListener("click", (e) => {
+    const btn = e.target.closest(".ns-btn");
+    if (!btn) return;
+    const c = btn.dataset.city;
+    const next = (NIGHT_STATE[c] || 0) + parseInt(btn.dataset.delta, 10);
+    if (next < nightMin(c) || next > NIGHT_MAX) return;
+    NIGHT_STATE[c] = next;
+    renderNightSteppers();
+    recalc();
+    renderItinerary();
+  });
 
   function applyRatingFilter() {
     const floor = parseFloat(document.getElementById("minRating").value);
@@ -2739,12 +2822,14 @@ TRIP.activities = {
       .querySelectorAll(".traveler-count-lbl")
       .forEach((el) => (el.textContent = N));
 
-    const extra = selectedValue("extra");
-    const osakaMode = TRIP.meta.optionalCities.includes(extra);
+    const osakaMode = TRIP.meta.optionalCities.some(
+      (c) => (NIGHT_STATE[c] || 0) > 0,
+    );
     // show the selected optional-city block, hide the rest (guarded per trip)
     TRIP.meta.optionalCities.forEach((oc) => {
       const block = document.getElementById(oc + "Block");
-      if (block) block.style.display = extra === oc ? "block" : "none";
+      if (block)
+        block.style.display = (NIGHT_STATE[oc] || 0) > 0 ? "block" : "none";
     });
     const finalName = document.getElementById("finalLegName");
     if (finalName)
@@ -2755,15 +2840,11 @@ TRIP.activities = {
     if (finalModeEl)
       finalModeEl.style.display = osakaMode ? "none" : "inline-flex";
 
-    // nights per city: base + the flexible +1 where it's placed; an optional
-    // city contributes a night only when it's the one selected.
+    // nights per city come straight from the steppers
     const nights = {};
-    TRIP.meta.route.forEach((c) => {
-      nights[c] = HOTELS[c].baseNights + (extra === c ? 1 : 0);
-    });
-    TRIP.meta.optionalCities.forEach((c) => {
-      nights[c] = extra === c ? 1 : 0;
-    });
+    TRIP.meta.route
+      .concat(TRIP.meta.optionalCities)
+      .forEach((c) => (nights[c] = NIGHT_STATE[c] || 0));
 
     TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
       const el = document.getElementById(c + "NightsLbl");
@@ -2771,20 +2852,9 @@ TRIP.activities = {
       const n = nights[c] || 0;
       el.textContent = n + " night" + (n !== 1 ? "s" : "");
     });
-    const baseTotal = TRIP.meta.route.reduce(
-      (s, c) => s + HOTELS[c].baseNights,
-      0,
-    );
+    const totalNightsAll = Object.values(nights).reduce((a, b) => a + b, 0);
     document.getElementById("extraNightHint").textContent =
-      TRIP.meta.route
-        .map((c) => HOTELS[c].baseNights + " " + HOTELS[c].label)
-        .join(" · ") +
-      " = " +
-      baseTotal +
-      " nights, +1 → " +
-      (osakaMode
-        ? "new " + HOTELS[extra].label + " stop"
-        : HOTELS[extra].label);
+      totalNightsAll + " night" + (totalNightsAll !== 1 ? "s" : "") + " total";
 
     // lodging cost per city (route + optional), from the chosen tier
     const hotelCost = {};
@@ -3044,7 +3114,6 @@ TRIP.activities = {
 
     // stash computed state for the itinerary generator
     window.__state = {
-      extra,
       osakaMode,
       nights,
       N,
@@ -3952,13 +4021,28 @@ TRIP.itinDepart = {
   function assembleItinDays(s) {
     const days = [];
     TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((city) => {
-      (ITIN_POOL[city] || [])
-        .slice(0, s.nights[city] || 0)
-        .forEach((d, idx) =>
-          days.push(
-            Object.assign({}, d, { cityKey: city, firstOfCity: idx === 0 }),
-          ),
+      const pool = ITIN_POOL[city] || [];
+      const n = s.nights[city] || 0;
+      // extra nights beyond the written narrative become "at leisure" days
+      for (let idx = 0; idx < n; idx++) {
+        const base = pool[idx] || {
+          id: city + "-leisure-" + idx,
+          cityTag: HOTELS[city].label,
+          sun: "",
+          title: "A day at leisure",
+          rows: [
+            {
+              tag: "Open",
+              kind: "soft",
+              detail:
+                "Unscheduled — revisit a favorite, rest, or add a day trip.",
+            },
+          ],
+        };
+        days.push(
+          Object.assign({}, base, { cityKey: city, firstOfCity: idx === 0 }),
         );
+      }
     });
     days.push(itinDepartDay(s.osakaMode));
     // the last overnight day carries the "special last dinner" nudge
