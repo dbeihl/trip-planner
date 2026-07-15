@@ -14,19 +14,44 @@ import zion from "../data/zion.js";
 import germany from "../data/germany.js";
 import seoul from "../data/seoul.js";
 
-// slug → presentation (emoji, short label, planner href, calendar color).
-// Colors are distinct hues that read on both the light and dark paper.
+// slug → presentation (emoji, short label, planner href).
 const REGISTRY = {
-  japan: { emoji: "🗼", label: "Japan", href: "japan-trip-planner.html", color: "#9d174d" },
-  yellowstone: { emoji: "🏔️", label: "Yellowstone & Grand Teton", href: "yellowstone-trip-planner.html", color: "#0f766e" },
-  sw: { emoji: "🏜️", label: "Southwest Parks", href: "sw-trip-planner.html", color: "#b45309" },
-  italy: { emoji: "🏛️", label: "Italy by Rail", href: "italy-trip-planner.html", color: "#1d4ed8" },
-  hawaii: { emoji: "🌺", label: "Hawaii — Oʻahu & Maui", href: "hawaii-trip-planner.html", color: "#db2777" },
-  thailand: { emoji: "🛕", label: "Thailand", href: "thailand-trip-planner.html", color: "#c2410c" },
-  redwoods: { emoji: "🌲", label: "California Redwoods", href: "redwoods-trip-planner.html", color: "#15803d" },
-  zion: { emoji: "🧗", label: "Zion Deep-Dive", href: "zion-trip-planner.html", color: "#dc2626" },
-  germany: { emoji: "🎄", label: "Christmas in Germany", href: "germany-trip-planner.html", color: "#4d7c0f" },
-  seoul: { emoji: "🏯", label: "Seoul & Busan", href: "seoul-trip-planner.html", color: "#7c3aed" },
+  japan: { emoji: "🗼", label: "Japan", href: "japan-trip-planner.html" },
+  yellowstone: { emoji: "🏔️", label: "Yellowstone & Grand Teton", href: "yellowstone-trip-planner.html" },
+  sw: { emoji: "🏜️", label: "Southwest Parks", href: "sw-trip-planner.html" },
+  italy: { emoji: "🏛️", label: "Italy by Rail", href: "italy-trip-planner.html" },
+  hawaii: { emoji: "🌺", label: "Hawaii — Oʻahu & Maui", href: "hawaii-trip-planner.html" },
+  thailand: { emoji: "🛕", label: "Thailand", href: "thailand-trip-planner.html" },
+  redwoods: { emoji: "🌲", label: "California Redwoods", href: "redwoods-trip-planner.html" },
+  zion: { emoji: "🧗", label: "Zion Deep-Dive", href: "zion-trip-planner.html" },
+  germany: { emoji: "🎄", label: "Christmas in Germany", href: "germany-trip-planner.html" },
+  seoul: { emoji: "🏯", label: "Seoul & Busan", href: "seoul-trip-planner.html" },
+};
+
+// Who's going. The calendar is color-coded by traveler group, not by trip:
+// each trip takes its group's color. Three well-separated hues (orange /
+// blue / green) that read on both the light and dark paper.
+const GROUPS = {
+  all: { label: "Everyone", members: "David, Suzanne, Mike & Sherry", color: "#c2410c" },
+  couple: { label: "David & Suzanne", members: "David & Suzanne", color: "#1d4ed8" },
+  parents: { label: "Mike & Sherry", members: "Mike & Sherry", color: "#15803d" },
+};
+const GROUP_ORDER = ["all", "couple", "parents"];
+const FALLBACK_GROUP = { label: "Unassigned", members: "", color: "#26456b" };
+
+// trip slug → traveler group. Everyone goes to Japan & Seoul; Thailand is
+// just David & Suzanne; the rest are Mike & Sherry's trips.
+const TRIP_GROUP = {
+  japan: "all",
+  seoul: "all",
+  thailand: "couple",
+  yellowstone: "parents",
+  sw: "parents",
+  italy: "parents",
+  hawaii: "parents",
+  redwoods: "parents",
+  zion: "parents",
+  germany: "parents",
 };
 
 const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul };
@@ -36,8 +61,19 @@ const trips = Object.entries(MODULES)
   .map(([slug, data]) => {
     const d = data.meta && data.meta.dates;
     if (!d || !d.arrive || !d.depart) return null;
-    const meta = REGISTRY[slug] || { emoji: "✦", label: slug, href: slug + "-trip-planner.html", color: "#26456b" };
-    return { slug, arrive: d.arrive, depart: d.depart, nights: d.nights, ...meta };
+    const meta = REGISTRY[slug] || { emoji: "✦", label: slug, href: slug + "-trip-planner.html" };
+    const grp = GROUPS[TRIP_GROUP[slug]] || FALLBACK_GROUP;
+    return {
+      slug,
+      ...meta,
+      arrive: d.arrive,
+      depart: d.depart,
+      nights: d.nights,
+      group: TRIP_GROUP[slug] || null,
+      groupLabel: grp.label,
+      groupMembers: grp.members,
+      color: grp.color,
+    };
   })
   .filter(Boolean)
   .sort((a, b) => (a.arrive < b.arrive ? -1 : 1));
@@ -218,6 +254,35 @@ function fmtRange(arrive, depart) {
       }
       .theme-toggle:hover { border-color: var(--indigo); color: var(--ink); }
 
+      .groups {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem 1.8rem;
+        margin: 0 0 2.2rem;
+        padding: 1rem 1.15rem;
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .groups-title {
+        flex: 1 0 100%;
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin: 0;
+      }
+      .group {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+      }
+      .group .swatch { width: 1.05rem; height: 1.05rem; }
+      .group-label { font-weight: 600; }
+      .group-members { color: var(--ink-soft); }
+
       .cal-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -330,8 +395,17 @@ function fmtRange(arrive, depart) {
       }
       .legend-name { font-weight: 600; }
       .legend-emoji { margin-right: 0.15rem; }
-      .legend-dates {
+      .legend-who {
         margin-left: auto;
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 0.66rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        white-space: nowrap;
+      }
+      .legend-dates {
+        margin-left: 0.9rem;
         font-family: ui-monospace, "SF Mono", Consolas, monospace;
         font-size: 0.74rem;
         color: var(--ink-soft);
@@ -359,9 +433,22 @@ function fmtRange(arrive, depart) {
       <p class="eyebrow"><span style="color: var(--indigo)">✦</span> The year in trips</p>
       <h1>{YEARS.length > 1 ? `${YEARS[0]}–${YEARS[YEARS.length - 1]}` : YEARS[0]} at a glance</h1>
       <p class="lede">
-        Every planned trip laid across the calendar. Each colored block is a travel window —
-        click into any month or the legend to open that trip's planner.
+        Every planned trip laid across the calendar, color-coded by who's going. Each block is a
+        travel window — click into any month or the legend to open that trip's planner.
       </p>
+
+      <div class="groups">
+        <p class="groups-title">Who's going</p>
+        {GROUP_ORDER.map((key) => (
+          <div class="group">
+            <span class="swatch" style={`background:${GROUPS[key].color}`}></span>
+            <span class="group-label">{GROUPS[key].label}</span>
+            {GROUPS[key].members !== GROUPS[key].label && (
+              <span class="group-members">— {GROUPS[key].members}</span>
+            )}
+          </div>
+        ))}
+      </div>
 
       {calendars.map((cal) => (
         <section class="year">
@@ -401,6 +488,7 @@ function fmtRange(arrive, depart) {
                 <a class="legend-item" href={t.href}>
                   <span class="swatch" style={`background:${t.color}`}></span>
                   <span class="legend-name"><span class="legend-emoji">{t.emoji}</span>{t.label}</span>
+                  <span class="legend-who">{t.groupLabel}</span>
                   <span class="legend-dates">{fmtRange(t.arrive, t.depart)}</span>
                 </a>
               </li>
