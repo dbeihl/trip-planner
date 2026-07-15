@@ -4020,6 +4020,29 @@ TRIP.itinDepart = {
 
   function assembleItinDays(s) {
     const days = [];
+    // multi-day drive: overnight days on the road out and back
+    const roadOut = s.arriveMode === "drive" ? (s.enrouteNights || 0) / 2 : 0;
+    const roadDay = (dir, i) => ({
+      id: "road-" + dir + "-" + i,
+      travel: true,
+      sun: "",
+      cityTag: dir === "out" ? "On the road" : "Homeward",
+      title:
+        dir === "out" ? "On the road — a driving day" : "The long drive home",
+      rows: [
+        {
+          tag: "Drive",
+          kind: "soft",
+          detail:
+            dir === "out"
+              ? "A day toward " +
+                (TRIP.meta.destLabel || "the start") +
+                "; overnight near the halfway point."
+              : "A day back on the road; overnight en route to split the miles.",
+        },
+      ],
+    });
+    for (let i = 0; i < roadOut; i++) days.push(roadDay("out", i));
     TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((city) => {
       const pool = ITIN_POOL[city] || [];
       const n = s.nights[city] || 0;
@@ -4045,8 +4068,9 @@ TRIP.itinDepart = {
       }
     });
     days.push(itinDepartDay(s.osakaMode));
+    for (let i = 0; i < roadOut; i++) days.push(roadDay("back", i));
     // the last overnight day carries the "special last dinner" nudge
-    const lastStay = days[days.length - 2];
+    const lastStay = days[days.length - 2 - roadOut];
     if (lastStay) lastStay.lastNight = true;
     return days;
   }
@@ -4056,7 +4080,8 @@ TRIP.itinDepart = {
     if (!s) return;
     const acts = chosenActsByCity();
     const days = assembleItinDays(s);
-    const cur = toDate(TRIP_START);
+    const roadOut = s.arriveMode === "drive" ? (s.enrouteNights || 0) / 2 : 0;
+    const cur = addDays(toDate(TRIP_START), -roadOut);
     const priceSpan = (c) =>
       SHOW_PRICES && c ? ' <span class="cost">$' + fmt2(c) + "</span>" : "";
 
@@ -4246,7 +4271,8 @@ TRIP.itinDepart = {
     if (!s) return "";
     const acts = chosenActsByCity();
     const days = assembleItinDays(s);
-    const cur = toDate(TRIP_START);
+    const roadOut = s.arriveMode === "drive" ? (s.enrouteNights || 0) / 2 : 0;
+    const cur = addDays(toDate(TRIP_START), -roadOut);
     const n = s.nights;
     const strip = (x) =>
       String(x)
@@ -4613,7 +4639,8 @@ TRIP.visaPlan = {
   function buildExcelWorkbook(forceBudget) {
     const s = window.__state;
     const days = assembleItinDays(s);
-    const cur = toDate(TRIP_START);
+    const roadOut = s.arriveMode === "drive" ? (s.enrouteNights || 0) / 2 : 0;
+    const cur = addDays(toDate(TRIP_START), -roadOut);
     const strip = (x) =>
       String(x)
         .replace(/<[^>]+>/g, "")
