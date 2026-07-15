@@ -1428,6 +1428,42 @@
   .trip-menu .tm-emoji {
     font-size: 1rem;
   }
+
+  /* --- book the selected hotel (shows on the checked tier) --- */
+  .book-row {
+    display: none;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-top: 0.45rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--line-strong);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 0.72rem;
+  }
+  .tier input:checked ~ .book-row {
+    display: flex;
+  }
+  .book-row .book-lbl {
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .book-row a {
+    color: var(--indigo);
+    text-decoration: none;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    transition:
+      background 0.12s,
+      border-color 0.12s;
+  }
+  .book-row a:hover {
+    border-color: var(--indigo);
+    background: var(--paper);
+  }
 </style>
 
 <script>
@@ -2483,8 +2519,11 @@
     const el = document.getElementById(containerId);
     const city = HOTELS[cityKey];
     el.innerHTML = city.options
-      .map(
-        (opt, i) => `
+      .map((opt, i) => {
+        const q = encodeURIComponent(
+          opt.name + " " + (city.header || city.label),
+        );
+        return `
     <label class="tier" data-rating="${opt.rating}" data-current="${opt.current ? "1" : "0"}">
       <input type="radio" name="${cityKey}Tier" value="${i}" ${i === 0 ? "checked" : ""}>
       <div>
@@ -2492,9 +2531,15 @@
         <div class="tier-meta"><span class="tier-rating">★ ${opt.rating}</span> · ${opt.note}</div>
       </div>
       <div class="tier-price">$${opt.rate}<small>/night/room</small></div>
+      <div class="book-row">
+        <span class="book-lbl">Book ↗</span>
+        <a href="https://www.google.com/travel/search?q=${q}" target="_blank" rel="noopener">Google Hotels</a>
+        <a href="https://www.booking.com/searchresults.html?ss=${q}" target="_blank" rel="noopener">Booking.com</a>
+        <a href="https://www.expedia.com/Hotel-Search?destination=${q}" target="_blank" rel="noopener">Expedia</a>
+      </div>
     </label>
-  `,
-      )
+  `;
+      })
       .join("");
   }
 
