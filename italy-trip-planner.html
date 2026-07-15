@@ -2655,6 +2655,36 @@ TRIP.activities = {
       "</div>"
     );
   }
+  // state-aware inner HTML for an arrival/departure leg name (Plan tab).
+  // In the default fly + renting state it reproduces routeName + note exactly.
+  function legNameHtml(leg, mode, renting, enroute) {
+    const gw = TRIP.meta.destLabel || "the gateway";
+    const noteSpan = (t) =>
+      t ? ' <span class="fixed-leg">' + t + "</span>" : "";
+    if (mode === "drive") {
+      const days = (enroute || 0) / 2 + 1;
+      const multi = enroute > 0 ? ` (${days}-day drive each way)` : "";
+      if (leg.role === "arrival")
+        return (
+          "Drive in to " +
+          gw +
+          multi +
+          noteSpan(
+            renting ? "grab a rental on arrival" : "your own car for the trip",
+          )
+        );
+      return "Drive home" + multi + noteSpan("the long road back");
+    }
+    // flying — keep the authored text; drop the rental mention if not renting
+    let name = leg.routeName || "";
+    let note = leg.note || "";
+    if (!renting) {
+      const strip = (x) => x.replace(/\s*·\s*pick up[^·<]*/i, "");
+      name = strip(name);
+      note = strip(note);
+    }
+    return name + noteSpan(note);
+  }
   function stopHtml(city, withActivities) {
     return (
       '<div class="stop" data-stop="' +
@@ -3078,6 +3108,16 @@ TRIP.activities = {
         ? R.label
         : R.ownCarLabel || "Fuel + park pass (own car)"
       : "";
+    // keep the Plan-tab arrival/departure leg text in sync with fly/drive + rental
+    ["arrival", "departure"].forEach((role) => {
+      const leg = TRIP.transport.legs.find((l) => l.role === role);
+      if (!leg || leg.dynamicNameId) return;
+      const el = document.querySelector(
+        '[data-leg="' + leg.id + '"] .leg-name',
+      );
+      if (el)
+        el.innerHTML = legNameHtml(leg, arriveMode, renting, enrouteNights);
+    });
     const transportTotal =
       Object.values(legCosts).reduce((s, c) => s + c, 0) + rentalCost;
     const hotelSubtotal = Object.values(hotelCost).reduce((s, v) => s + v, 0);
