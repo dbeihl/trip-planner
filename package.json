@@ -1,0 +1,24 @@
+{
+  "name": "trip-planner",
+  "version": "1.0.0",
+  "description": "A self-contained, single-file trip planner — a cost **budget ledger** and a sendable **day-by-day itinerary** over one shared state, with PDF / Excel / text export (including a Japan visa-form sheet). The goal is to turn it from one hardcoded trip into a **\"pick a destination → describe the trip → get a planner\"** tool.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbeihl/trip-planner.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dbeihl/trip-planner/issues"
+  },
+  "homepage": "https://github.com/dbeihl/trip-planner#readme",
+  "type": "module",
+  "dependencies": {
+    "astro": "^7.0.9"
+  }
+}

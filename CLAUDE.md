@@ -4,9 +4,22 @@ Guidance for AI assistants working in this repository.
 
 ## What this repository is
 
-The home for generalizing a single-file trip planner into a **"pick a destination → get a planner"** tool. It was seeded from a working Japan planner (which lives in the private `japan-travel` repo and is in active use for a real trip). Here, **Japan is the reference dataset** — the engine is generalized without touching that live trip. The design is in `GENERALIZATION-PLAN.md`; work is tracked in Issues.
+A **"pick a destination → get a planner"** tool, live at `https://dbeihl.github.io/trip-planner/`. It was seeded from a working Japan planner (which lives in the private `japan-travel` repo and is in active use for a real trip). Here, **Japan is the reference dataset** — the engine is generalized without touching that live trip. The design is in `GENERALIZATION-PLAN.md`; work is tracked in Issues.
 
 **Do not** treat this as the Japan trip's repo. Never push planner changes from here back to `japan-travel` or its live site (`dbeihl/japan-itinerary`) unless explicitly asked — that trip is frozen on purpose.
+
+## Architecture (post-Astro migration)
+
+The site is an **Astro project**: one shared engine + per-trip data modules, built to static pages.
+
+- `src/layouts/Planner.astro` — the ONE copy of the shell markup, `<style>`, and the entire vanilla-JS engine. Trip data is injected via `<script is:inline define:vars={{ TRIP: trip }}>` (Astro prepends `const TRIP = <data>;` and wraps the script in an IIFE — engine functions are closure-scoped, not globals; `window.__state` is still exposed).
+- `src/data/<trip>.js` — one plain-data module per trip (default-exports the full `TRIP` object: `meta/flights/hotels/transport/activities/routeDetail?/itinPool/itinDepart/visaPlan`). **Adding a trip = adding a data module + a 3-line page.**
+- `src/pages/<trip>-trip-planner.astro` — 3 lines: import data, import Planner, render. `src/pages/index.astro` is the hub.
+- `astro.config.mjs` — `site: 'https://dbeihl.github.io'`, `base: '/trip-planner'`, `build: { format: 'file' }` (preserves the `<name>-trip-planner.html` URLs).
+- `.github/workflows/deploy-astro.yml` — builds and deploys `dist/` to GitHub Pages via Actions on push to `main`.
+- Build: `npx astro build`; local preview needs the `/trip-planner` base path.
+
+The root `*-trip-planner.html` files are the **legacy pre-Astro static pages** (kept until the Pages cutover is confirmed stable; they were the parity baseline). Engine changes go in `Planner.astro` ONLY — do not edit the legacy files except to delete them post-cutover.
 
 ## The planner (`japan-trip-planner.html`)
 
@@ -29,8 +42,8 @@ Separate the trip-agnostic **engine** from the trip-specific **data**, then gene
 
 ## Editing conventions
 
-- Keep the planner a **single self-contained file** — inline any new CSS/JS/data; no external assets, CDNs, or network calls. (Also what makes the print/Excel export work.)
-- Vanilla JS, 2-space indent, `const`/`let`, template-literal rendering, no framework.
+- The engine stays **vanilla JS inside `Planner.astro`** — no client framework, no CDNs, no network calls at view time (booking links are plain `<a href>`; print/Excel export must keep working offline once loaded). CSS may be bundled by Astro; everything must resolve same-origin under the `/trip-planner` base.
+- Vanilla JS, 2-space indent, `const`/`let`, template-literal rendering.
 - Never hard-wrap markdown prose — one line per paragraph; reflow on contact. Lists/tables/code fences unchanged.
 
 ## Git workflow
