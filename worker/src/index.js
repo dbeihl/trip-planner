@@ -4,7 +4,9 @@
 // pull to D1 (data_pull), read-through cached.
 // Phase 2: three more free sources (holidays, events, advisories) on the same
 // spine, plus /api/context aggregating them into a "what's happening that
-// week" panel. Still no AI (that's Phase 3) and no paid pricing (Phase 4).
+// week" panel.
+// Phase 3: the AI layer — /api/replan asks Claude to compare a proposed window
+// to the trip's original and explain what changed. No paid pricing yet (Phase 4).
 //
 // Routes (all /api/* require an authenticated caller):
 //   GET /  |  /api/health   -> service status, known trips + sources
@@ -13,6 +15,7 @@
 //   GET /api/events         -> events near the gateway (?trip=<slug>)
 //   GET /api/advisories     -> U.S. State Dept advisory level (?trip=<slug>)
 //   GET /api/context        -> all of the above for one trip, in parallel
+//   GET /api/replan         -> AI date-change briefing (?trip=<slug>&start=&end=)
 //   ...&fresh=1             -> bypass the cache on any data route
 
 import { TRIPS } from "./trips.js";
@@ -22,6 +25,7 @@ import { weather } from "./sources/weather.js";
 import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
 import { advisories } from "./sources/advisories.js";
+import { replan } from "./sources/replan.js";
 
 const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory"];
 
@@ -81,10 +85,12 @@ export default {
       return json({
         ok: true,
         service: "trip-planner-api",
-        phase: 2,
+        phase: 3,
         access: env.CF_ACCESS_TEAM_DOMAIN ? "enforced" : "dev-mode",
         sources: SOURCES,
         events_configured: !!env.TICKETMASTER_API_KEY,
+        replan_configured: !!env.ANTHROPIC_API_KEY,
+        replan_model: env.CLAUDE_MODEL || "claude-haiku-4-5",
         trips: Object.keys(TRIPS),
       }, { env });
     }
@@ -129,6 +135,20 @@ export default {
         events: e.body,
         advisories: a.body,
       }, { env });
+    }
+
+    // AI date-change briefing (Phase 3). Needs a baseline trip + new dates.
+    if (url.pathname === "/api/replan") {
+      const slug = q.get("trip");
+      const info = slug ? TRIPS[slug] : null;
+      if (!info) return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
+      const start = q.get("start"), end = q.get("end");
+      if (!start || !end) return json({ error: "need &start=&end= (ISO YYYY-MM-DD) — the proposed dates" }, { status: 400, env });
+      try {
+        return json(await replan(env, info, ctx, { start, end }), { env });
+      } catch (err) {
+        return json({ error: err.message || "replan failed", http_status: err.httpStatus }, { status: err.status || 500, env });
+      }
     }
 
     return json({ error: "not found" }, { status: 404, env });

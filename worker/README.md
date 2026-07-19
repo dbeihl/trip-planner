@@ -1,6 +1,6 @@
-# Trip Planner API — Phases 1–2
+# Trip Planner API — Phases 1–3
 
-The research back end from [`AI-RESEARCH-PLAN.md`](../AI-RESEARCH-PLAN.md): a Cloudflare Worker + D1 that pulls free external data on demand and **logs every pull** (the log doubles as a read-through cache). Phase 1 proved the spine — **auth → fetch → log** — with Open-Meteo weather. Phase 2 adds three more free sources (holidays, events, advisories) and an aggregate "what's happening that week" panel. No AI yet (that's Phase 3); no paid pricing (Phase 4).
+The research back end from [`AI-RESEARCH-PLAN.md`](../AI-RESEARCH-PLAN.md): a Cloudflare Worker + D1 that pulls free external data on demand and **logs every pull** (the log doubles as a read-through cache). Phase 1 proved the spine — **auth → fetch → log** — with Open-Meteo weather. Phase 2 added three more free sources (holidays, events, advisories) and an aggregate panel. Phase 3 adds the AI layer: a **date-change briefing** — Claude reads the fresh signals for a proposed window and explains what's better or worse. No paid pricing yet (Phase 4).
 
 It is intentionally separate from the Astro site: the static planners keep working with no network, and this back end is a progressive enhancement the signed-in travelers can call.
 
@@ -15,6 +15,7 @@ GET /api/holidays?trip=<slug>      -> public holidays in the window (Nager.Date)
 GET /api/events?trip=<slug>        -> events near the gateway in the window (Ticketmaster)
 GET /api/advisories?trip=<slug>    -> U.S. State Dept advisory level 1-4 (foreign trips)
 GET /api/context?trip=<slug>       -> all of the above for one trip, in parallel
+GET /api/replan?trip=<slug>&start=&end=  -> AI briefing: compare proposed dates to the trip's
 GET /api/weather?lat=&lon=&start=&end=   -> explicit coords + ISO window (weather)
 ...&fresh=1                        -> bypass the cache on any data route
 ```
@@ -69,6 +70,18 @@ npx wrangler secret put TICKETMASTER_API_KEY
 
 Without it, `/api/events` reports `configured: false` and the other routes are unaffected. The key is never written to `data_pull`.
 
+## AI briefing (optional)
+
+`/api/replan` asks Claude to compare a proposed window to the trip's original, grounded in the freshly-pulled signals for the new dates. It's the one AI job in Phase 3 — "explain what changed"; it does **not** re-price flights (Phase 4).
+
+```sh
+npx wrangler secret put ANTHROPIC_API_KEY
+# optional: pick a model (defaults to claude-haiku-4-5)
+#   set CLAUDE_MODEL=claude-sonnet-5 in wrangler.toml [vars]
+```
+
+Defaults to **Claude Haiku 4.5** (cheapest current-gen) per the plan; the call returns structured JSON (`summary`, `verdict`, per-aspect `changes`, `flags`, `recommendation`) and is itself logged to `data_pull` as `source='claude'` with an estimated `cost_usd`, so LLM spend is auditable alongside the data pulls. Without the key, `/api/replan` reports `configured: false`.
+
 ## Inspecting the log
 
 ```sh
@@ -88,9 +101,10 @@ npx wrangler d1 execute trip-planner --local \
 | `src/sources/holidays.js` | Nager.Date public holidays, filtered to the window |
 | `src/sources/events.js` | Ticketmaster events (key-gated) |
 | `src/sources/advisories.js` | U.S. State Dept advisory feed parse (level 1-4) |
+| `src/sources/replan.js` | The Claude date-change briefing (structured output, cost-logged) |
 | `migrations/0001_data_pull.sql` | The `data_pull` provenance + cache table |
-| `wrangler.toml` | Worker + D1 binding + CORS/Access/events vars |
+| `wrangler.toml` | Worker + D1 binding + CORS/Access/events/AI vars |
 
 ## Not built yet
 
-The Claude re-plan (Phase 3) and any flight/lodging pricing (Phase 4 — blocked on the open ToS question). See the plan.
+Flight/lodging pricing and the fare-aware re-cost (Phase 4 — blocked on the open ToS question of a cacheable price source). Full agentic tool-use (Claude calling the data-pull functions itself, rather than the Worker pre-gathering them) is a later refinement. See the plan.

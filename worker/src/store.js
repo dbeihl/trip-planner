@@ -25,7 +25,7 @@ async function cacheLookup(env, key) {
   return row || null;
 }
 
-async function insertPull(env, row) {
+export async function insertPull(env, row) {
   await env.DB.prepare(
     `INSERT INTO data_pull
        (id, source, endpoint, dedup_key, params_json, response_json,
