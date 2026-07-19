@@ -2113,7 +2113,7 @@ const TRIP = window.TRIP;
     mount.innerHTML =
       '<section class="replan">' +
       '<h3 class="replan-h">Thinking about different dates?</h3>' +
-      '<p class="replan-sub">Get an AI read on how a new window compares — weather, holidays, events, the travel advisory, and flight fares (when pricing is enabled) for the dates you’re considering.</p>' +
+      '<p class="replan-sub">Get an AI read on how a new window compares — weather, holidays, events, the travel advisory, and flight + lodging pricing (when enabled) for the dates you’re considering.</p>' +
       '<div class="replan-row">' +
       '<label class="replan-field">New start<input type="date" id="replanStart" value="' + esc(d.arrive) + '"></label>' +
       '<label class="replan-field">New end<input type="date" id="replanEnd" value="' + esc(d.depart) + '"></label>' +
@@ -2152,6 +2152,24 @@ const TRIP = window.TRIP;
         data.cost_usd != null
           ? " · ~$" + Number(data.cost_usd).toFixed(4)
           : "";
+      const money = (n) =>
+        n == null ? null : "$" + Math.round(n).toLocaleString();
+      const est = data.estimate || {};
+      const eparts = [];
+      if (est.flights_2adults != null)
+        eparts.push("Flights <strong>" + money(est.flights_2adults) + "</strong>");
+      if (est.lodging_nightly != null)
+        eparts.push(
+          "Lodging <strong>" + money(est.lodging_nightly) + "</strong>/night" +
+            (est.nights ? " × " + est.nights : "") +
+            (est.lodging_total != null ? " = <strong>" + money(est.lodging_total) + "</strong>" : ""),
+        );
+      const budgetHtml = eparts.length
+        ? '<div class="replan-budget"><span class="rb-h">Est. for these dates</span> ' +
+          eparts.join(" · ") +
+          (est.subtotal != null ? ' · <span class="rb-sub">≈ ' + money(est.subtotal) + " flights + lodging</span>" : "") +
+          "</div>"
+        : "";
       return (
         '<div class="replan-brief">' +
         '<div class="replan-verdict v-' + esc(b.verdict) + '">' + esc(b.verdict || "") +
@@ -2160,8 +2178,9 @@ const TRIP = window.TRIP;
         (changes ? '<ul class="replan-changes">' + changes + "</ul>" : "") +
         (flags ? '<div class="replan-flags"><span class="rf-h">Watch:</span><ul>' + flags + "</ul></div>" : "") +
         (b.recommendation ? '<p class="replan-rec"><strong>Recommendation:</strong> ' + esc(b.recommendation) + "</p>" : "") +
+        budgetHtml +
         '<p class="replan-meta">' + esc(data.model || "") + cost +
-        " · grounded in weather, holidays, events, the travel advisory &amp; flight fares (when enabled) for the new dates. Verify fares before booking.</p>" +
+        " · grounded in weather, holidays, events, the travel advisory, flight fares &amp; lodging rates (when enabled) for the new dates. Estimate covers flights + lodging only; verify before booking.</p>" +
         "</div>"
       );
     }

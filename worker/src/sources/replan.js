@@ -14,6 +14,7 @@ import { holidays } from "./holidays.js";
 import { events } from "./events.js";
 import { advisories } from "./advisories.js";
 import { flights } from "./flights.js";
+import { lodging } from "./lodging.js";
 
 const DEFAULT_MODEL = "claude-haiku-4-5"; // per AI-RESEARCH-PLAN.md; override with CLAUDE_MODEL
 const API_URL = "https://api.anthropic.com/v1/messages";
@@ -32,6 +33,27 @@ export function nights(start, end) {
   return Math.round((b - a) / 86400000);
 }
 
+// A partial, deterministic budget for the proposed dates: flights (2-adult
+// total) + lodging (median nightly x nights). The Worker computes this — Claude
+// only explains it — so no fares are invented. Excludes transport, activities,
+// and taxes (those are date-independent in the planner). Pure — unit-tested.
+export function buildEstimate(fl, lo, nights) {
+  const num = (x) => (typeof x === "number" && !Number.isNaN(x) ? x : null);
+  const flightsTotal = fl && fl.configured ? num(fl.cheapest_total_2adults) : null;
+  const nightly = lo && lo.configured ? num(lo.nightly_median) : null;
+  const lodgingTotal = nightly != null && nights > 0 ? Math.round(nightly * nights) : null;
+  const subtotal = flightsTotal != null || lodgingTotal != null ? (flightsTotal || 0) + (lodgingTotal || 0) : null;
+  return {
+    flights_2adults: flightsTotal,
+    lodging_nightly: nightly,
+    nights,
+    lodging_total: lodgingTotal,
+    subtotal,
+    currency: "USD",
+    note: "flights + lodging only; excludes transport, activities, and taxes",
+  };
+}
+
 export function estimateCost(model, usage) {
   const r = RATES[model] || RATES[DEFAULT_MODEL];
   const i = (usage?.input_tokens || 0) + (usage?.cache_read_input_tokens || 0) + (usage?.cache_creation_input_tokens || 0);
@@ -41,10 +63,10 @@ export function estimateCost(model, usage) {
 
 const SYSTEM = [
   "You help a small group decide whether moving a trip's dates is a good idea.",
-  "You are given the trip, its ORIGINAL window, a PROPOSED window, and freshly gathered signals for the proposed dates: weather seasonality (from the same week a year earlier), public holidays that fall in the window, local events, the U.S. travel advisory, and — when available — representative round-trip flight fares (a 2-adult total, in USD) for the proposed dates.",
-  "Compare the two windows and explain what changes. Be concrete and honest, and ground every claim in a signal you were given — do not invent data.",
-  "If flight fares are present, factor them in and treat them as representative quotes to verify before booking; lodging is not included. If flights are absent, unconfigured, or errored, do not estimate fares.",
-  "Call out holidays that could mean closures or crowds, weather that's clearly better or worse, notable events, any advisory change, and any fare difference. Keep it short and useful.",
+  "You are given the trip, its ORIGINAL window, a PROPOSED window, freshly gathered signals for the proposed dates (weather seasonality from the same week a year earlier, public holidays in the window, local events, the U.S. travel advisory, representative round-trip flight fares, and representative nightly lodging rates — fares and rates are 2-adult / one-room, in USD), and a pre-computed budget estimate (flights + lodging) for the proposed window.",
+  "Compare the two windows and explain what changes. Be concrete and honest, and ground every claim in a signal you were given — do not invent data or numbers.",
+  "The budget estimate is already computed for you: use its figures verbatim, treat them as representative quotes to verify before booking, and make clear it covers only flights + lodging (not transport, activities, or taxes). If a price signal is absent, unconfigured, or errored, don't estimate that part.",
+  "Call out holidays that could mean closures or crowds, weather that's clearly better or worse, notable events, any advisory change, and any cost difference (fares or lodging). Keep it short and useful.",
 ].join(" ");
 
 // The structured-output schema (see shared/tool-use-concepts.md limits:
@@ -61,7 +83,7 @@ export const BRIEF_SCHEMA = {
         type: "object",
         additionalProperties: false,
         properties: {
-          aspect: { type: "string", enum: ["weather", "holidays", "events", "advisory", "flights", "length"] },
+          aspect: { type: "string", enum: ["weather", "holidays", "events", "advisory", "flights", "lodging", "budget", "length"] },
           direction: { type: "string", enum: ["better", "neutral", "worse"] },
           detail: { type: "string" },
         },
@@ -113,23 +135,26 @@ export async function replan(env, info, ctx, toDates) {
 
   // Gather the fresh signals for the PROPOSED dates (Phase 2 + 4 sources).
   const newInfo = { ...info, arrive: to.start, depart: to.end };
-  const [w, h, e, a, fl] = await Promise.all([
+  const [w, h, e, a, fl, lo] = await Promise.all([
     weather(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     holidays(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     events(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     advisories(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     flights(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
+    lodging(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
   ]);
-  const context = { weather: w, holidays: h, events: e, advisories: a, flights: fl };
+  const context = { weather: w, holidays: h, events: e, advisories: a, flights: fl, lodging: lo };
 
   const nightsFrom = nights(from.start, from.end);
   const nightsTo = nights(to.start, to.end);
+  const estimate = buildEstimate(fl, lo, nightsTo);
   const payload = {
     trip: ctx.trip,
     gateway: info.label,
     original_window: { ...from, nights: nightsFrom },
     proposed_window: { ...to, nights: nightsTo },
     signals_for_proposed: context,
+    budget_estimate_for_proposed: estimate,
   };
 
   const req = buildRequest(env, payload);
@@ -171,6 +196,7 @@ export async function replan(env, info, ctx, toDates) {
     nights_delta: nightsTo - nightsFrom,
     model: req.body.model,
     cost_usd: estimateCost(req.body.model, data.usage),
+    estimate,
     context,
     briefing: parseResponse(data),
   };

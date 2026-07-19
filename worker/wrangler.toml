@@ -33,4 +33,4 @@ ALLOWED_ORIGIN = "https://dbeihl.github.io"
 # Secrets (set with `wrangler secret put`, never in this file):
 #   TICKETMASTER_API_KEY                    enables /api/events
 #   ANTHROPIC_API_KEY                       enables /api/replan (the AI briefing)
-#   AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET   enable /api/flights (Amadeus pricing)
+#   AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET   enable /api/flights + /api/lodging (Amadeus pricing)
