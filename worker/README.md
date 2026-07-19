@@ -82,6 +82,16 @@ npx wrangler secret put ANTHROPIC_API_KEY
 
 Defaults to **Claude Haiku 4.5** (cheapest current-gen) per the plan; the call returns structured JSON (`summary`, `verdict`, per-aspect `changes`, `flags`, `recommendation`) and is itself logged to `data_pull` as `source='claude'` with an estimated `cost_usd`, so LLM spend is auditable alongside the data pulls. Without the key, `/api/replan` reports `configured: false`.
 
+## Wiring it into the planner UI
+
+The planners call `/api/replan` from a "re-plan these dates" panel on the Itinerary tab — but only when the site is built with the back end's URL. Set it as a **build-time** public env var for the Astro build (e.g. in the deploy workflow or a `.env`):
+
+```sh
+PUBLIC_API_BASE="https://trip-planner-api.<you>.workers.dev" npx astro build
+```
+
+Unset, `window.__API_BASE` is empty and the panel never renders — the planners stay fully static with no network at view time. The panel sends the Cloudflare Access cookie (`credentials: "include"`), so for Access to work cross-origin the browser needs that cookie for the API's domain; the four travelers get it by signing in at the API once (Access redirects them). `ALLOWED_ORIGIN` in `wrangler.toml` must match the Pages origin (defaults to `https://dbeihl.github.io`).
+
 ## Inspecting the log
 
 ```sh

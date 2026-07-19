@@ -1,6 +1,10 @@
 ---
 const { trip, title } = Astro.props;
 import "../styles/planner.css";
+// Optional: the research back end (worker/) base URL. Set PUBLIC_API_BASE at
+// build time to light up the "re-plan these dates" panel; unset, the planners
+// stay fully static with no network at view time.
+const apiBase = import.meta.env.PUBLIC_API_BASE || "";
 ---
 
 <html lang="en">
@@ -389,6 +393,10 @@ import "../styles/planner.css";
     style="margin: -1rem 0 1.5rem; text-align: right"
   ></div>
 
+  <!-- Progressive enhancement: the engine fills this only when PUBLIC_API_BASE
+       is set (see apiBase above). Empty/invisible otherwise. -->
+  <div id="replanMount" class="no-print"></div>
+
   <div id="itinRail"></div>
   <div class="itin-total" id="itinTotal" style="display: none"></div>
 
@@ -407,9 +415,11 @@ import "../styles/planner.css";
     </ul>
   </footer>
 </div>
-    <script is:inline define:vars={{ TRIP: trip }}>
+    <script is:inline define:vars={{ TRIP: trip, API_BASE: apiBase }}>
       // hand the trip data to the engine module (loads after parse)
       window.TRIP = TRIP;
+      // optional research back-end base URL (empty = feature off)
+      window.__API_BASE = API_BASE;
     </script>
     <script>
       import "../scripts/engine.js";
