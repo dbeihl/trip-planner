@@ -6,7 +6,9 @@
 // spine, plus /api/context aggregating them into a "what's happening that
 // week" panel.
 // Phase 3: the AI layer — /api/replan asks Claude to compare a proposed window
-// to the trip's original and explain what changed. No paid pricing yet (Phase 4).
+// to the trip's original and explain what changed.
+// Phase 4: flight pricing via Amadeus Self-Service (/api/flights), folded into
+// the context panel and the re-plan so the briefing is fare-aware.
 //
 // Routes (all /api/* require an authenticated caller):
 //   GET /  |  /api/health   -> service status, known trips + sources
@@ -14,6 +16,7 @@
 //   GET /api/holidays       -> public holidays in the window (?trip=<slug>)
 //   GET /api/events         -> events near the gateway (?trip=<slug>)
 //   GET /api/advisories     -> U.S. State Dept advisory level (?trip=<slug>)
+//   GET /api/flights        -> Amadeus round-trip fares (?trip=<slug>&origin=<IATA>)
 //   GET /api/context        -> all of the above for one trip, in parallel
 //   GET /api/replan         -> AI date-change briefing (?trip=<slug>&start=&end=)
 //   ...&fresh=1             -> bypass the cache on any data route
@@ -25,9 +28,10 @@ import { weather } from "./sources/weather.js";
 import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
 import { advisories } from "./sources/advisories.js";
+import { flights } from "./sources/flights.js";
 import { replan } from "./sources/replan.js";
 
-const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory"];
+const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory", "amadeus"];
 
 function corsHeaders(env) {
   const origin = env.ALLOWED_ORIGIN || "*";
@@ -90,10 +94,11 @@ export default {
       return json({
         ok: true,
         service: "trip-planner-api",
-        phase: 3,
+        phase: 4,
         access: env.CF_ACCESS_TEAM_DOMAIN ? "enforced" : "dev-mode",
         sources: SOURCES,
         events_configured: !!env.TICKETMASTER_API_KEY,
+        flights_configured: !!(env.AMADEUS_CLIENT_ID && env.AMADEUS_CLIENT_SECRET),
         replan_configured: !!env.ANTHROPIC_API_KEY,
         replan_model: env.CLAUDE_MODEL || "claude-haiku-4-5",
         trips: Object.keys(TRIPS),
@@ -105,7 +110,7 @@ export default {
     if (!auth) return json({ error: "unauthorized" }, { status: 401, env });
 
     const q = url.searchParams;
-    const ctx = { trip: q.get("trip") || null, requestedBy: auth.email, fresh: q.get("fresh") === "1" };
+    const ctx = { trip: q.get("trip") || null, requestedBy: auth.email, fresh: q.get("fresh") === "1", origin: q.get("origin") || null };
 
     // Single-source data routes.
     const routes = {
@@ -113,6 +118,7 @@ export default {
       "/api/holidays": holidays,
       "/api/events": events,
       "/api/advisories": advisories,
+      "/api/flights": flights,
     };
     if (routes[url.pathname]) {
       const { info, error } = resolveInfo(q);
@@ -125,11 +131,12 @@ export default {
     if (url.pathname === "/api/context") {
       const { slug, info, error } = resolveInfo(q);
       if (error) return json({ error: error.msg, ...(error.known && { known: error.known }) }, { status: 400, env });
-      const [w, h, e, a] = await Promise.all([
+      const [w, h, e, a, f] = await Promise.all([
         runSource(weather, env, info, ctx),
         runSource(holidays, env, info, ctx),
         runSource(events, env, info, ctx),
         runSource(advisories, env, info, ctx),
+        runSource(flights, env, info, ctx),
       ]);
       return json({
         trip: slug,
@@ -139,6 +146,7 @@ export default {
         holidays: h.body,
         events: e.body,
         advisories: a.body,
+        flights: f.body,
       }, { env });
     }
 

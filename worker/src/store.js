@@ -85,7 +85,10 @@ export async function cachedFetch(env, opts) {
 
   let res, body, httpStatus;
   try {
-    res = await fetch(endpoint, init || { headers: { "User-Agent": "trip-planner-api/0.2" } });
+    // init may be a function so callers can defer expensive auth (e.g. an
+    // OAuth token) until we actually miss the cache.
+    const resolvedInit = typeof init === "function" ? await init() : init;
+    res = await fetch(endpoint, resolvedInit || { headers: { "User-Agent": "trip-planner-api/0.2" } });
     httpStatus = res.status;
     body = await res.text();
   } catch (err) {
