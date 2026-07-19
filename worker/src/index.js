@@ -30,12 +30,17 @@ import { replan } from "./sources/replan.js";
 const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory"];
 
 function corsHeaders(env) {
-  return {
-    "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
+  const origin = env.ALLOWED_ORIGIN || "*";
+  const h = {
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": "Content-Type, X-Dev-User",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     Vary: "Origin",
   };
+  // Credentialed requests (the planner UI sends the Access cookie) require a
+  // specific origin — not "*" — plus this header.
+  if (origin !== "*") h["Access-Control-Allow-Credentials"] = "true";
+  return h;
 }
 
 function json(data, { status = 200, env } = {}) {

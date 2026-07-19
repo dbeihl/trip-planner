@@ -1508,3 +1508,136 @@
     font-variant-numeric: tabular-nums;
     font-weight: 600;
   }
+
+/* ── "Re-plan these dates" panel (progressive enhancement) ───────────
+   Rendered by engine.js initReplan() into #replanMount, only when a
+   research back-end base URL is configured. Uses the planner's own
+   tokens so it adapts to light/dark automatically. */
+.replan {
+  margin: 0 0 2rem;
+  padding: 1.25rem 1.4rem;
+  background: var(--indigo-wash);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--indigo);
+  border-radius: 8px;
+}
+.replan-h {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.replan-sub {
+  margin: 0 0 1rem;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  max-width: 60ch;
+}
+.replan-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.7rem 1rem;
+}
+.replan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.replan-field input {
+  font: inherit;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: var(--paper);
+  color: var(--ink);
+  color-scheme: light dark;
+}
+.replan-row .generate-btn {
+  flex: 0 0 auto;
+}
+.replan-out {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+.replan-loading,
+.replan-note,
+.replan-err {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.replan-err {
+  color: var(--shu);
+}
+.replan-verdict {
+  display: inline-block;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-soft);
+  margin-bottom: 0.5rem;
+}
+.replan-verdict.v-better { color: var(--good); border-color: var(--good); }
+.replan-verdict.v-worse { color: var(--shu); border-color: var(--shu); }
+.replan-verdict.v-mixed,
+.replan-verdict.v-similar { color: var(--indigo); border-color: var(--indigo); }
+.replan-summary {
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.replan-changes {
+  list-style: none;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.replan-changes .rc {
+  padding-left: 0.2rem;
+}
+.replan-changes .rc-a {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-right: 0.4rem;
+}
+.replan-changes .rc-better .rc-a { color: var(--good); }
+.replan-changes .rc-worse .rc-a { color: var(--shu); }
+.replan-changes .rc-neutral .rc-a { color: var(--ink-soft); }
+.replan-flags {
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+}
+.replan-flags .rf-h {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--shu);
+}
+.replan-flags ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+.replan-rec {
+  margin: 0 0 0.7rem;
+  color: var(--ink);
+}
+.replan-meta {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+}

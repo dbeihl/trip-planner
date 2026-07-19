@@ -2090,6 +2090,112 @@ const TRIP = window.TRIP;
     return problems;
   }
 
+  // ── "Re-plan these dates" panel (progressive enhancement) ─────────
+  // Opt-in only: nothing fetches on load, so a static planner with no
+  // API base configured behaves exactly as before. When window.__API_BASE
+  // is set, the Itinerary tab gains a panel that asks the research back
+  // end (worker/) for an AI briefing comparing a proposed window to this
+  // trip's dates. See AI-RESEARCH-PLAN.md.
+  function initReplan() {
+    const API = (window.__API_BASE || "").replace(/\/+$/, "");
+    const mount = document.getElementById("replanMount");
+    if (!API || !mount) return; // feature off — planner stays fully static
+
+    const slug = (location.pathname.split("/").pop() || "")
+      .replace(/-trip-planner\.html$/, "")
+      .replace(/\.html$/, "");
+    const d = (TRIP.meta && TRIP.meta.dates) || {};
+    const esc = (s) =>
+      String(s == null ? "" : s).replace(/[&<>"]/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+      );
+
+    mount.innerHTML =
+      '<section class="replan">' +
+      '<h3 class="replan-h">Thinking about different dates?</h3>' +
+      '<p class="replan-sub">Get an AI read on how a new window compares — weather, holidays, events, and the travel advisory for the dates you’re considering. Flights aren’t re-priced yet.</p>' +
+      '<div class="replan-row">' +
+      '<label class="replan-field">New start<input type="date" id="replanStart" value="' + esc(d.arrive) + '"></label>' +
+      '<label class="replan-field">New end<input type="date" id="replanEnd" value="' + esc(d.depart) + '"></label>' +
+      '<button type="button" id="replanBtn" class="generate-btn">Get AI briefing</button>' +
+      "</div>" +
+      '<div class="replan-out" id="replanOut" hidden></div>' +
+      "</section>";
+
+    const btn = document.getElementById("replanBtn");
+    const out = document.getElementById("replanOut");
+    const show = (html) => {
+      out.innerHTML = html;
+      out.hidden = false;
+    };
+
+    const arrow = { better: "↗", neutral: "→", worse: "↘" };
+    function renderBriefing(data) {
+      const b = data.briefing || {};
+      const nd = data.nights_delta;
+      const ndTxt =
+        nd === 0
+          ? "same length"
+          : (nd > 0 ? "+" + nd : nd) + " night" + (Math.abs(nd) === 1 ? "" : "s");
+      const changes = (b.changes || [])
+        .map(
+          (c) =>
+            '<li class="rc rc-' + esc(c.direction) + '"><span class="rc-a">' +
+            (arrow[c.direction] || "") + " " + esc(c.aspect) +
+            '</span> ' + esc(c.detail) + "</li>",
+        )
+        .join("");
+      const flags = (b.flags || [])
+        .map((f) => "<li>" + esc(f) + "</li>")
+        .join("");
+      const cost =
+        data.cost_usd != null
+          ? " · ~$" + Number(data.cost_usd).toFixed(4)
+          : "";
+      return (
+        '<div class="replan-brief">' +
+        '<div class="replan-verdict v-' + esc(b.verdict) + '">' + esc(b.verdict || "") +
+        ' · ' + esc(ndTxt) + "</div>" +
+        "<p class=\"replan-summary\">" + esc(b.summary) + "</p>" +
+        (changes ? '<ul class="replan-changes">' + changes + "</ul>" : "") +
+        (flags ? '<div class="replan-flags"><span class="rf-h">Watch:</span><ul>' + flags + "</ul></div>" : "") +
+        (b.recommendation ? '<p class="replan-rec"><strong>Recommendation:</strong> ' + esc(b.recommendation) + "</p>" : "") +
+        '<p class="replan-meta">' + esc(data.model || "") + cost +
+        " · grounded in weather, holidays, events &amp; the travel advisory for the new dates. Fares not included.</p>" +
+        "</div>"
+      );
+    }
+
+    btn.addEventListener("click", async () => {
+      const start = document.getElementById("replanStart").value;
+      const end = document.getElementById("replanEnd").value;
+      if (!start || !end) return show('<p class="replan-err">Pick a start and an end date.</p>');
+      if (end <= start) return show('<p class="replan-err">The end date needs to be after the start.</p>');
+
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Thinking…";
+      show('<p class="replan-loading">Pulling weather, holidays, events and the advisory for ' + esc(start) + " → " + esc(end) + "…</p>");
+      try {
+        const url = API + "/api/replan?trip=" + encodeURIComponent(slug) +
+          "&start=" + encodeURIComponent(start) + "&end=" + encodeURIComponent(end);
+        const res = await fetch(url, { credentials: "include" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
+        if (data.configured === false) {
+          show('<p class="replan-note">The AI briefing isn’t enabled on the server yet.</p>');
+          return;
+        }
+        show(renderBriefing(data));
+      } catch (err) {
+        show('<p class="replan-err">Couldn’t get a briefing: ' + esc(err && err.message ? err.message : err) + "</p>");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    });
+  }
+
   function initPlanner() {
     const problems = validateTrip();
     if (problems.length) {
@@ -2276,6 +2382,7 @@ const TRIP = window.TRIP;
       .getElementById("minRating")
       .addEventListener("input", renderItinerary);
     renderItinerary();
+    initReplan(); // opt-in "re-plan these dates" panel (no-op if no API base)
     // A shared "#itinerary" link opens straight to the day-by-day.
     if (location.hash === "#itinerary") showTab("itin");
   }
