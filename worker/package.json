@@ -1,0 +1,16 @@
+{
+  "name": "trip-planner-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 1 research back end — Cloudflare Worker + D1 data_pull log.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate:local": "wrangler d1 migrations apply trip-planner --local",
+    "migrate:remote": "wrangler d1 migrations apply trip-planner --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
