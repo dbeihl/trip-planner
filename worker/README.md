@@ -1,6 +1,6 @@
 # Trip Planner API — Phases 1–4
 
-The research back end from [`AI-RESEARCH-PLAN.md`](../AI-RESEARCH-PLAN.md): a Cloudflare Worker + D1 that pulls external data on demand and **logs every pull** (the log doubles as a read-through cache). Phase 1 proved the spine — **auth → fetch → log** — with Open-Meteo weather. Phase 2 added three more free sources (holidays, events, advisories) and an aggregate panel. Phase 3 added the AI layer: a **date-change briefing**. Phase 4 adds **flight pricing** (Amadeus Self-Service), folded into the panel and the briefing so the re-plan is fare-aware.
+The research back end from [`AI-RESEARCH-PLAN.md`](../AI-RESEARCH-PLAN.md): a Cloudflare Worker + D1 that pulls external data on demand and **logs every pull** (the log doubles as a read-through cache). Phase 1 proved the spine — **auth → fetch → log** — with Open-Meteo weather. Phase 2 added three more free sources (holidays, events, advisories) and an aggregate panel. Phase 3 added the AI layer: a **date-change briefing**. Phase 4 adds **flight + lodging pricing** (Amadeus Self-Service), folded into the panel and the briefing as a flights + lodging budget estimate so the re-plan is cost-aware.
 
 It is intentionally separate from the Astro site: the static planners keep working with no network, and this back end is a progressive enhancement the signed-in travelers can call.
 
@@ -15,13 +15,14 @@ GET /api/holidays?trip=<slug>      -> public holidays in the window (Nager.Date)
 GET /api/events?trip=<slug>        -> events near the gateway in the window (Ticketmaster)
 GET /api/advisories?trip=<slug>    -> U.S. State Dept advisory level 1-4 (foreign trips)
 GET /api/flights?trip=<slug>       -> round-trip fares, 2-adult total (Amadeus; &origin=IATA)
+GET /api/lodging?trip=<slug>       -> representative nightly hotel rate (Amadeus)
 GET /api/context?trip=<slug>       -> all of the above for one trip, in parallel
 GET /api/replan?trip=<slug>&start=&end=  -> AI briefing: compare proposed dates to the trip's
 GET /api/weather?lat=&lon=&start=&end=   -> explicit coords + ISO window (weather)
 ...&fresh=1                        -> bypass the cache on any data route
 ```
 
-Sources and their cache TTLs: weather 30d, holidays 30d, advisories 1d, events 6h, flights 6h. Every call that reaches an external API inserts one `data_pull` row (provenance); the read path (`dedup_key` + TTL) is the cache. `data_pull` never stores API keys — secret query params are redacted before the endpoint is logged, keys never appear in the cache-key params, and the Amadeus bearer token rides in a header (fetched only on a cache miss), never in the stored URL.
+Sources and their cache TTLs: weather 30d, holidays 30d, advisories 1d, events 6h, flights 6h, lodging 6h (hotel list 30d). Every call that reaches an external API inserts one `data_pull` row (provenance); the read path (`dedup_key` + TTL) is the cache. `data_pull` never stores API keys — secret query params are redacted before the endpoint is logged, keys never appear in the cache-key params, and the Amadeus bearer token rides in a header (fetched only on a cache miss), never in the stored URL.
 
 ## One-time setup
 
@@ -73,7 +74,7 @@ Without it, `/api/events` reports `configured: false` and the other routes are u
 
 ## AI briefing (optional)
 
-`/api/replan` asks Claude to compare a proposed window to the trip's original, grounded in the freshly-pulled signals for the new dates — including flight fares when Amadeus is configured (below). It's the "explain what changed" job.
+`/api/replan` asks Claude to compare a proposed window to the trip's original, grounded in the freshly-pulled signals for the new dates — including a flights + lodging budget estimate when Amadeus is configured (below). It's the "explain what changed" job.
 
 ```sh
 npx wrangler secret put ANTHROPIC_API_KEY
@@ -83,9 +84,9 @@ npx wrangler secret put ANTHROPIC_API_KEY
 
 Defaults to **Claude Haiku 4.5** (cheapest current-gen) per the plan; the call returns structured JSON (`summary`, `verdict`, per-aspect `changes`, `flags`, `recommendation`) and is itself logged to `data_pull` as `source='claude'` with an estimated `cost_usd`, so LLM spend is auditable alongside the data pulls. Without the key, `/api/replan` reports `configured: false`.
 
-## Flight pricing (optional)
+## Flight & lodging pricing (optional)
 
-`/api/flights` prices a round trip (2 adults, USD) via the **Amadeus Self-Service** API and feeds the fare into `/api/context` and the `/api/replan` briefing. Get free credentials at [developers.amadeus.com](https://developers.amadeus.com):
+`/api/flights` (round trip, 2 adults, USD) and `/api/lodging` (representative nightly hotel rate for the gateway city) both use the **Amadeus Self-Service** API, and feed into `/api/context` and the `/api/replan` briefing. The re-plan combines them into a **flights + lodging budget estimate** for the proposed dates. One set of free credentials from [developers.amadeus.com](https://developers.amadeus.com) enables both:
 
 ```sh
 npx wrangler secret put AMADEUS_CLIENT_ID
@@ -94,9 +95,9 @@ npx wrangler secret put AMADEUS_CLIENT_SECRET
 #   AMADEUS_BASE=https://api.amadeus.com in wrangler.toml [vars]
 ```
 
-OAuth is handled for you — a bearer token is fetched on a cache miss and reused in-isolate; it never lands in `data_pull`. Origin defaults to `IND`; override per call with `&origin=<IATA>`. Without the credentials, `/api/flights` reports `configured: false` and the briefing simply omits fares.
+OAuth is handled for you — one bearer token, fetched on a cache miss and reused in-isolate; it never lands in `data_pull`. Flight origin defaults to `IND` (override with `&origin=<IATA>`); lodging prices the trip's gateway city (a gateway-area rate, not the exact town). Without the credentials, both report `configured: false` and the briefing omits pricing.
 
-> **ToS caveat:** the test host returns largely static data and is meant for development. Treat fares as representative and verify before booking; production volume needs the production host and a re-read of Amadeus's caching terms (the open question the plan flagged).
+> **ToS caveat:** the test host returns largely static data and is meant for development. Treat prices as representative and verify before booking; production volume needs the production host and a re-read of Amadeus's caching terms (the open question the plan flagged). The `estimate` covers flights + lodging only — transport, activities, and taxes are date-independent and stay in the planner's own ledger.
 
 ## Wiring it into the planner UI
 
@@ -127,11 +128,13 @@ npx wrangler d1 execute trip-planner --local \
 | `src/sources/holidays.js` | Nager.Date public holidays, filtered to the window |
 | `src/sources/events.js` | Ticketmaster events (key-gated) |
 | `src/sources/advisories.js` | U.S. State Dept advisory feed parse (level 1-4) |
-| `src/sources/flights.js` | Amadeus Self-Service pricing (OAuth + Flight Offers Search) |
-| `src/sources/replan.js` | The Claude date-change briefing (structured output, cost-logged) |
+| `src/sources/amadeus.js` | Shared Amadeus OAuth (token cache) for flights + lodging |
+| `src/sources/flights.js` | Amadeus Flight Offers Search |
+| `src/sources/lodging.js` | Amadeus Hotel Search (list + offers) → nightly rate |
+| `src/sources/replan.js` | The Claude briefing + flights/lodging budget estimate |
 | `migrations/0001_data_pull.sql` | The `data_pull` provenance + cache table |
 | `wrangler.toml` | Worker + D1 binding + CORS/Access/events/AI/Amadeus vars |
 
 ## Not built yet
 
-Lodging pricing (Amadeus/Booking) to complete a full budget re-cost, and full agentic tool-use (Claude calling the data-pull functions itself, rather than the Worker pre-gathering them). See the plan.
+Full agentic tool-use (Claude calling the data-pull functions itself, rather than the Worker pre-gathering them), and folding the estimate back into the planner's own grand-total ledger rather than showing it as a standalone flights + lodging figure. See the plan.

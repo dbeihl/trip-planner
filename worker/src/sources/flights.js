@@ -7,38 +7,11 @@
 // ToS/caching note: the test host returns largely static data and is for
 // development; short TTL + verify-before-booking. Production volume needs the
 // production host (AMADEUS_BASE) and a re-read of Amadeus's terms.
-import { cachedFetch, SourceError } from "../store.js";
+import { cachedFetch } from "../store.js";
+import { base, authInit } from "./amadeus.js";
 
 const TTL = 60 * 60 * 6; // 6 hours — fares move
 const DEFAULT_ORIGIN = "IND"; // the owner's home airport; override per query
-
-function base(env) {
-  return (env.AMADEUS_BASE || "https://test.api.amadeus.com").replace(/\/+$/, "");
-}
-
-// Bearer token cached per isolate; Amadeus tokens last ~30 min.
-let tokenCache = { token: null, expires: 0 };
-
-export function _resetTokenCache() { tokenCache = { token: null, expires: 0 }; } // test hook
-
-async function getToken(env) {
-  const now = Date.now();
-  if (tokenCache.token && tokenCache.expires > now + 5000) return tokenCache.token;
-  const res = await fetch(`${base(env)}/v1/security/oauth2/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: env.AMADEUS_CLIENT_ID,
-      client_secret: env.AMADEUS_CLIENT_SECRET,
-    }),
-  });
-  const text = await res.text();
-  if (!res.ok) throw new SourceError("amadeus auth failed", { httpStatus: res.status });
-  const data = JSON.parse(text);
-  tokenCache = { token: data.access_token, expires: now + (data.expires_in || 1799) * 1000 };
-  return tokenCache.token;
-}
 
 export function buildSearchParams(origin, dest, start, end) {
   return {
@@ -97,9 +70,7 @@ export async function flights(env, info, ctx) {
     trip: ctx.trip,
     requestedBy: ctx.requestedBy,
     fresh: ctx.fresh,
-    init: async () => ({
-      headers: { Authorization: `Bearer ${await getToken(env)}`, "User-Agent": "trip-planner-api/0.4" },
-    }),
+    init: authInit(env),
   });
 
   return {

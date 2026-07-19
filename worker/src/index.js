@@ -17,6 +17,7 @@
 //   GET /api/events         -> events near the gateway (?trip=<slug>)
 //   GET /api/advisories     -> U.S. State Dept advisory level (?trip=<slug>)
 //   GET /api/flights        -> Amadeus round-trip fares (?trip=<slug>&origin=<IATA>)
+//   GET /api/lodging        -> Amadeus nightly hotel rate for the window (?trip=<slug>)
 //   GET /api/context        -> all of the above for one trip, in parallel
 //   GET /api/replan         -> AI date-change briefing (?trip=<slug>&start=&end=)
 //   ...&fresh=1             -> bypass the cache on any data route
@@ -29,9 +30,10 @@ import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
 import { advisories } from "./sources/advisories.js";
 import { flights } from "./sources/flights.js";
+import { lodging } from "./sources/lodging.js";
 import { replan } from "./sources/replan.js";
 
-const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory", "amadeus"];
+const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory", "amadeus", "amadeus-hotels", "amadeus-lodging"];
 
 function corsHeaders(env) {
   const origin = env.ALLOWED_ORIGIN || "*";
@@ -119,6 +121,7 @@ export default {
       "/api/events": events,
       "/api/advisories": advisories,
       "/api/flights": flights,
+      "/api/lodging": lodging,
     };
     if (routes[url.pathname]) {
       const { info, error } = resolveInfo(q);
@@ -131,12 +134,13 @@ export default {
     if (url.pathname === "/api/context") {
       const { slug, info, error } = resolveInfo(q);
       if (error) return json({ error: error.msg, ...(error.known && { known: error.known }) }, { status: 400, env });
-      const [w, h, e, a, f] = await Promise.all([
+      const [w, h, e, a, f, l] = await Promise.all([
         runSource(weather, env, info, ctx),
         runSource(holidays, env, info, ctx),
         runSource(events, env, info, ctx),
         runSource(advisories, env, info, ctx),
         runSource(flights, env, info, ctx),
+        runSource(lodging, env, info, ctx),
       ]);
       return json({
         trip: slug,
@@ -147,6 +151,7 @@ export default {
         events: e.body,
         advisories: a.body,
         flights: f.body,
+        lodging: l.body,
       }, { env });
     }
 

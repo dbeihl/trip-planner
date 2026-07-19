@@ -1641,3 +1641,24 @@
   font-size: 0.74rem;
   color: var(--ink-soft);
 }
+.replan-budget {
+  margin: 0 0 0.8rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.replan-budget .rb-h {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-right: 0.4rem;
+}
+.replan-budget .rb-sub {
+  font-weight: 700;
+  color: var(--indigo);
+}
