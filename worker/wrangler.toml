@@ -1,0 +1,24 @@
+# Cloudflare Worker for the trip planner's research back end (Phase 1).
+# See worker/README.md for the one-time setup (D1 create, migrate, Access).
+name = "trip-planner-api"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+# D1 (managed SQLite). Create the DB once with:
+#   npx wrangler d1 create trip-planner
+# then paste the printed database_id below (it is not a secret).
+[[d1_databases]]
+binding = "DB"
+database_name = "trip-planner"
+database_id = "PLACEHOLDER_RUN_wrangler_d1_create"
+migrations_dir = "migrations"
+
+[vars]
+# The GitHub Pages origin allowed to call this API (CORS).
+ALLOWED_ORIGIN = "https://dbeihl.github.io"
+
+# Cloudflare Access verification is enabled only when BOTH of these are set
+# (as secrets / vars after you turn on Access — see README). Left unset, the
+# Worker runs in dev mode and trusts an X-Dev-User header instead.
+#   CF_ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
+#   CF_ACCESS_AUD = "<application audience tag from the Access app>"
