@@ -26,6 +26,11 @@ ALLOWED_ORIGIN = "https://dbeihl.github.io"
 # Optional model override for the Phase 3 re-plan (defaults to claude-haiku-4-5).
 #   CLAUDE_MODEL = "claude-sonnet-5"
 
+# Amadeus host: defaults to the free test host; set the production host once
+# you're on the production tier (and have re-checked the caching terms).
+#   AMADEUS_BASE = "https://api.amadeus.com"
+
 # Secrets (set with `wrangler secret put`, never in this file):
-#   TICKETMASTER_API_KEY   enables /api/events
-#   ANTHROPIC_API_KEY      enables /api/replan (the AI briefing)
+#   TICKETMASTER_API_KEY                    enables /api/events
+#   ANTHROPIC_API_KEY                       enables /api/replan (the AI briefing)
+#   AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET   enable /api/flights (Amadeus pricing)

@@ -13,6 +13,7 @@ import { weather } from "./weather.js";
 import { holidays } from "./holidays.js";
 import { events } from "./events.js";
 import { advisories } from "./advisories.js";
+import { flights } from "./flights.js";
 
 const DEFAULT_MODEL = "claude-haiku-4-5"; // per AI-RESEARCH-PLAN.md; override with CLAUDE_MODEL
 const API_URL = "https://api.anthropic.com/v1/messages";
@@ -40,10 +41,10 @@ export function estimateCost(model, usage) {
 
 const SYSTEM = [
   "You help a small group decide whether moving a trip's dates is a good idea.",
-  "You are given the trip, its ORIGINAL window, a PROPOSED window, and freshly gathered signals for the proposed dates: weather seasonality (from the same week a year earlier), public holidays that fall in the window, local events, and the U.S. travel advisory.",
+  "You are given the trip, its ORIGINAL window, a PROPOSED window, and freshly gathered signals for the proposed dates: weather seasonality (from the same week a year earlier), public holidays that fall in the window, local events, the U.S. travel advisory, and — when available — representative round-trip flight fares (a 2-adult total, in USD) for the proposed dates.",
   "Compare the two windows and explain what changes. Be concrete and honest, and ground every claim in a signal you were given — do not invent data.",
-  "Flights and lodging prices are NOT included yet, so do not estimate fares or a budget delta; if cost matters, say it depends on fares to be checked separately.",
-  "Call out holidays that could mean closures or crowds, weather that's clearly better or worse, notable events, and any advisory change. Keep it short and useful.",
+  "If flight fares are present, factor them in and treat them as representative quotes to verify before booking; lodging is not included. If flights are absent, unconfigured, or errored, do not estimate fares.",
+  "Call out holidays that could mean closures or crowds, weather that's clearly better or worse, notable events, any advisory change, and any fare difference. Keep it short and useful.",
 ].join(" ");
 
 // The structured-output schema (see shared/tool-use-concepts.md limits:
@@ -60,7 +61,7 @@ export const BRIEF_SCHEMA = {
         type: "object",
         additionalProperties: false,
         properties: {
-          aspect: { type: "string", enum: ["weather", "holidays", "events", "advisory", "length"] },
+          aspect: { type: "string", enum: ["weather", "holidays", "events", "advisory", "flights", "length"] },
           direction: { type: "string", enum: ["better", "neutral", "worse"] },
           detail: { type: "string" },
         },
@@ -110,15 +111,16 @@ export async function replan(env, info, ctx, toDates) {
   const from = { start: info.arrive, end: info.depart };
   const to = { start: toDates.start, end: toDates.end };
 
-  // Gather the fresh signals for the PROPOSED dates (Phase 2 sources).
+  // Gather the fresh signals for the PROPOSED dates (Phase 2 + 4 sources).
   const newInfo = { ...info, arrive: to.start, depart: to.end };
-  const [w, h, e, a] = await Promise.all([
+  const [w, h, e, a, fl] = await Promise.all([
     weather(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     holidays(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     events(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
     advisories(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
+    flights(env, newInfo, ctx).catch((err) => ({ error: String(err) })),
   ]);
-  const context = { weather: w, holidays: h, events: e, advisories: a };
+  const context = { weather: w, holidays: h, events: e, advisories: a, flights: fl };
 
   const nightsFrom = nights(from.start, from.end);
   const nightsTo = nights(to.start, to.end);
