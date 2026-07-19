@@ -22,3 +22,10 @@ ALLOWED_ORIGIN = "https://dbeihl.github.io"
 # Worker runs in dev mode and trusts an X-Dev-User header instead.
 #   CF_ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
 #   CF_ACCESS_AUD = "<application audience tag from the Access app>"
+
+# Optional model override for the Phase 3 re-plan (defaults to claude-haiku-4-5).
+#   CLAUDE_MODEL = "claude-sonnet-5"
+
+# Secrets (set with `wrangler secret put`, never in this file):
+#   TICKETMASTER_API_KEY   enables /api/events
+#   ANTHROPIC_API_KEY      enables /api/replan (the AI briefing)
