@@ -13,6 +13,7 @@ import redwoods from "../data/redwoods.js";
 import zion from "../data/zion.js";
 import germany from "../data/germany.js";
 import seoul from "../data/seoul.js";
+import philippines from "../data/philippines.js";
 
 // slug → presentation (emoji, short label, planner href).
 const REGISTRY = {
@@ -26,6 +27,7 @@ const REGISTRY = {
   zion: { emoji: "🧗", label: "Zion Deep-Dive", href: "zion-trip-planner.html" },
   germany: { emoji: "🎄", label: "Christmas in Germany", href: "germany-trip-planner.html" },
   seoul: { emoji: "🏯", label: "Seoul & Busan", href: "seoul-trip-planner.html" },
+  philippines: { emoji: "🏝️", label: "Philippines", href: "philippines-trip-planner.html" },
 };
 
 // Who's going. The calendar is color-coded by traveler group, not by trip:
@@ -52,9 +54,10 @@ const TRIP_GROUP = {
   redwoods: "parents",
   zion: "parents",
   germany: "parents",
+  philippines: "couple",
 };
 
-const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul };
+const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul, philippines };
 
 // Build the trip list from the data modules; skip any without dates.
 const trips = Object.entries(MODULES)

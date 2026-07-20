@@ -12,6 +12,7 @@ import redwoods from "../../src/data/redwoods.js";
 import zion from "../../src/data/zion.js";
 import germany from "../../src/data/germany.js";
 import seoul from "../../src/data/seoul.js";
+import philippines from "../../src/data/philippines.js";
 
 // country: ISO 3166-1 alpha-2 (for Nager.Date holidays).
 // countryName + advisoryMatch: how to find this country in the U.S. State Dept
@@ -30,9 +31,10 @@ const COORDS = {
   zion: { lat: 37.19, lon: -112.99, label: "Springdale, UT", country: "US", countryName: "United States", destAirport: "LAS", cityCode: "LAS" },
   germany: { lat: 49.45, lon: 11.08, label: "Nuremberg", country: "DE", countryName: "Germany", advisoryMatch: ["germany"], destAirport: "FRA", cityCode: "MUC" },
   seoul: { lat: 37.57, lon: 126.98, label: "Seoul", country: "KR", countryName: "South Korea", advisoryMatch: ["korea, republic of", "south korea"], destAirport: "ICN", cityCode: "SEL" },
+  philippines: { lat: 12.0, lon: 120.2, label: "Coron", country: "PH", countryName: "Philippines", advisoryMatch: ["philippines"], destAirport: "USU", cityCode: "MNL" },
 };
 
-const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul };
+const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul, philippines };
 
 // slug -> { lat, lon, label, country, countryName, advisoryMatch?, arrive, depart }
 export const TRIPS = Object.fromEntries(

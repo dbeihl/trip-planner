@@ -2303,6 +2303,11 @@ const TRIP = window.TRIP;
           label: "Christmas in Germany",
         },
         { file: "seoul-trip-planner.html", emoji: "🏯", label: "Seoul & Busan" },
+        {
+          file: "philippines-trip-planner.html",
+          emoji: "🏝️",
+          label: "Philippines",
+        },
       ];
       const btn = document.getElementById("changeTripBtn");
       const menu = document.getElementById("tripMenu");

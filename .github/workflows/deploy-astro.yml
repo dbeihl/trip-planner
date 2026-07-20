@@ -31,6 +31,11 @@ jobs:
         run: npm ci
       - name: Build with Astro
         run: npx astro build
+        env:
+          # Repo variable: set to the deployed Worker URL to enable the
+          # "re-plan these dates" panel. Empty (unset) keeps the planners
+          # fully static — the panel never renders. See worker/README.md.
+          PUBLIC_API_BASE: ${{ vars.PUBLIC_API_BASE }}
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

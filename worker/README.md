@@ -101,13 +101,12 @@ OAuth is handled for you — one bearer token, fetched on a cache miss and reuse
 
 ## Wiring it into the planner UI
 
-The planners call `/api/replan` from a "re-plan these dates" panel on the Itinerary tab — but only when the site is built with the back end's URL. Set it as a **build-time** public env var for the Astro build (e.g. in the deploy workflow or a `.env`):
+The planners call `/api/replan` from a "re-plan these dates" panel on the Itinerary tab — but only when the site is built with the back end's URL (`PUBLIC_API_BASE`). The Pages deploy workflow reads it from a **GitHub repo variable**, so going live is one setting:
 
-```sh
-PUBLIC_API_BASE="https://trip-planner-api.<you>.workers.dev" npx astro build
-```
+> GitHub → repo **Settings → Secrets and variables → Actions → Variables → New variable**
+> `PUBLIC_API_BASE` = `https://trip-planner-api.<you>.workers.dev`
 
-Unset, `window.__API_BASE` is empty and the panel never renders — the planners stay fully static with no network at view time. The panel sends the Cloudflare Access cookie (`credentials: "include"`), so for Access to work cross-origin the browser needs that cookie for the API's domain; the four travelers get it by signing in at the API once (Access redirects them). `ALLOWED_ORIGIN` in `wrangler.toml` must match the Pages origin (defaults to `https://dbeihl.github.io`).
+then re-run the "Deploy Astro site to Pages" workflow (or push any commit). Unset, the variable is empty, `window.__API_BASE` is empty, and the panel never renders — the planners stay fully static with no network at view time. For a local build you can still pass it inline: `PUBLIC_API_BASE="https://…" npx astro build`. The panel sends the Cloudflare Access cookie (`credentials: "include"`), so for Access to work cross-origin the browser needs that cookie for the API's domain; the four travelers get it by signing in at the API once (Access redirects them). `ALLOWED_ORIGIN` in `wrangler.toml` must match the Pages origin (defaults to `https://dbeihl.github.io`).
 
 ## Inspecting the log
 
