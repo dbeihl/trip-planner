@@ -35,36 +35,66 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
     </script>
   </head>
   <body>
-<header class="site-nav no-print">
+<header class="site-nav no-print" id="siteNav">
   <a class="site-wordmark" href="index.html"
     ><span class="star">✦</span> <span class="wordmark-label">Trip Planner</span></a
   >
-  <nav class="tabs" aria-label="Planner sections">
-    <button class="tab active" data-tab="plan" type="button">
-      Plan &amp; Budget
-    </button>
-    <button class="tab" data-tab="itin" type="button">Itinerary</button>
-  </nav>
   <button
-    class="theme-toggle"
-    id="themeToggle"
+    class="nav-toggle"
+    id="navToggle"
     type="button"
-    aria-label="Toggle light or dark mode"
-    title="Toggle light / dark"
-  ></button>
-  <div class="site-changewrap">
-    <button
-      class="site-change"
-      id="changeTripBtn"
-      type="button"
-      aria-haspopup="true"
-      aria-expanded="false"
+    aria-label="Menu"
+    aria-expanded="false"
+    aria-controls="navCollapse"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      aria-hidden="true"
     >
-      ↺ <span class="change-label">Change trip </span>▾
+      <path d="M3 6h18M3 12h18M3 18h18"></path>
+    </svg>
+  </button>
+  <!-- On mobile this wrapper is the hamburger dropdown; on desktop it uses
+       display:contents so the tabs/theme/change-trip lay out inline in the
+       nav flex exactly as before. -->
+  <div class="nav-collapse" id="navCollapse">
+    <nav class="tabs" aria-label="Planner sections">
+      <button class="tab active" data-tab="plan" type="button">
+        Plan &amp; Budget
+      </button>
+      <button class="tab" data-tab="itin" type="button">Itinerary</button>
+    </nav>
+    <button
+      class="theme-toggle"
+      id="themeToggle"
+      type="button"
+      aria-label="Toggle light or dark mode"
+      title="Toggle light / dark"
+    >
+      <span class="tt-icon" aria-hidden="true"></span>
+      <span class="tt-label"></span>
     </button>
-    <div class="trip-menu" id="tripMenu" role="menu" hidden></div>
+    <div class="site-changewrap">
+      <button
+        class="site-change"
+        id="changeTripBtn"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span class="ct-icon" aria-hidden="true">↺</span>
+        <span class="change-label">Change trip</span>
+        <span class="ct-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="trip-menu" id="tripMenu" role="menu" hidden></div>
+    </div>
   </div>
 </header>
+<div class="nav-backdrop no-print" id="navBackdrop" hidden></div>
 
 <div class="wrap pane" id="planPane">
   <header class="masthead">
@@ -258,7 +288,9 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
     >
       <span class="sum-figure">
         <span class="eyebrow">
-          Grand total · <span class="traveler-count-lbl">2</span> travelers
+          Grand total<span class="gt-pax">
+            · <span class="traveler-count-lbl">2</span> travelers</span
+          >
         </span>
         <span class="grand-total" id="grandTotal">$0</span>
       </span>
