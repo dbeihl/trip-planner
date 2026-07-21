@@ -20,9 +20,11 @@ Flight/lodging pricing now uses **Duffel** (fares) + **SerpAPI** (Google Hotels,
 
 ## Who can use it
 
-The four travelers, via the Cloudflare Access allow policy `travelers` (emails). Sign-in is Cloudflare-hosted: hit any API URL, enter your email, type the one-time PIN it sends. The panel shows a sign-in link automatically if the browser hasn't done this yet. Sessions last 24h.
+The four travelers, via the Cloudflare Access allow policy `travelers` (emails). Sign-in is Cloudflare-hosted: hit any API URL, enter your email, type the one-time PIN it sends. The panel shows a sign-in link automatically if the browser hasn't done this yet. Sessions last **1 month** (raised from the 24h default so the PIN dance is rare — for a four-person family app the convenience wins; any session can be revoked instantly from the dashboard).
 
 - **Add/remove a traveler:** Zero Trust → Access controls → Applications → `trip-planner-api` → policy `travelers` → edit the email list.
+- **Session duration (owner action, one-time):** Zero Trust → Access controls → Applications → `trip-planner-api` → Settings → **Session Duration** → set to 1 month. Until that's done, sessions stay at the 24h default.
+- **Revoke sessions:** same Application page → Revoke existing sessions (or remove the email from the `travelers` policy).
 - **Gotcha (already configured, don't undo):** the app's Additional settings → CORS headers → **Bypass OPTIONS requests** must stay ON, or browser preflights get 403 and the panel dies with "Failed to fetch".
 
 ## Health check
