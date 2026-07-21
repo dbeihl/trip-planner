@@ -21,6 +21,21 @@ const trips = Object.entries(modules)
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Trip Planner — pick a destination</title>
+    <link
+      rel="manifest"
+      href={import.meta.env.BASE_URL.replace(/\/?$/, "/") + "manifest.webmanifest"}
+    />
+    <meta name="theme-color" content="#26456b" />
+    <script is:inline>
+      // Installable + offline (PWA); same worker/scope as the planners.
+      if ("serviceWorker" in navigator) {
+        addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("service-worker.js")
+            .catch(function () {});
+        });
+      }
+    </script>
     <style is:global>
       @font-face {
         font-family: "Ledger Serif";
