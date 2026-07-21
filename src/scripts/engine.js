@@ -580,6 +580,7 @@ const TRIP = window.TRIP;
   let __restoringScenario = false;
   let __persistTimer = null;
   let __localSavedAt = 0; // savedAt of the snapshot found at page load (0 = none)
+  let __datesOverride = null; // applied re-plan dates ({start,end}) or null
 
   function captureScenario() {
     const radios = {};
@@ -613,7 +614,7 @@ const TRIP = window.TRIP;
         pax: originChoice.pax.slice(),
         other,
       },
-      datesOverride: null,
+      datesOverride: __datesOverride,
       grand: window.__state ? window.__state.grand : null,
     };
   }
@@ -689,6 +690,10 @@ const TRIP = window.TRIP;
       if (fare && other[slot].fare != null) fare.value = other[slot].fare;
     });
     recalc();
+    // applied re-plan dates come last: applyDates re-runs recalc + itinerary
+    const dov = snap.datesOverride;
+    if (dov && dov.start && dov.end && dov.end > dov.start)
+      applyDates(dov.start, dov.end);
   }
 
   function restoreScenario() {
@@ -2684,13 +2689,27 @@ const TRIP = window.TRIP;
         btn.textContent = label;
       }
     });
+
+    // restored datesOverride ran before this panel existed — re-show its banner
+    if (__datesOverride)
+      showDatesBanner(__datesOverride.start, __datesOverride.end);
   }
 
   // ── apply proposed dates / AI edit deltas to the live planner ─────
   // Everything routes through existing user-reachable state (dates,
   // NIGHT_STATE) — costs, hotels, and itinPool are never written, so the
   // 2-adult and experience-only invariants hold by construction.
+  // Applied dates ride in the scenario snapshot (datesOverride), so they
+  // survive a reload and sync across devices like every other pick.
+  const ORIGINAL_DATES = {
+    arrive: TRIP.meta.dates.arrive,
+    depart: TRIP.meta.dates.depart,
+  };
   function applyDates(start, end) {
+    __datesOverride =
+      start === ORIGINAL_DATES.arrive && end === ORIGINAL_DATES.depart
+        ? null
+        : { start, end };
     TRIP.meta.dates.arrive = start;
     TRIP.meta.dates.depart = end;
     TRIP.meta.dates.nights = Math.round((toDate(end) - toDate(start)) / 86400000);
@@ -2716,9 +2735,14 @@ const TRIP = window.TRIP;
   }
 
   function showDatesBanner(start, end) {
+    const existing = document.getElementById("datesBanner");
+    if (!__datesOverride) {
+      if (existing) existing.remove();
+      return;
+    }
     const mount = document.getElementById("replanMount");
     if (!mount) return;
-    let b = document.getElementById("datesBanner");
+    let b = existing;
     if (!b) {
       b = document.createElement("div");
       b.id = "datesBanner";
@@ -2728,8 +2752,14 @@ const TRIP = window.TRIP;
     b.innerHTML =
       "Planner shifted to <strong>" +
       fmtDate(toDate(start)) + " → " + fmtDate(toDate(end)) +
-      "</strong> — reload the page to reset. " +
+      "</strong> (saved with your picks). " +
+      '<button type="button" class="ss-btn" id="datesBannerReset">Reset dates</button>' +
       '<button type="button" id="datesBannerClose" aria-label="dismiss">✕</button>';
+    document
+      .getElementById("datesBannerReset")
+      .addEventListener("click", () =>
+        applyDates(ORIGINAL_DATES.arrive, ORIGINAL_DATES.depart),
+      );
     document
       .getElementById("datesBannerClose")
       .addEventListener("click", () => b.remove());
