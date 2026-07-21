@@ -1779,19 +1779,7 @@
   color: var(--ink-soft);
   font-size: 0.82rem;
 }
-.ss-btn {
-  font: inherit;
-  font-size: 0.72rem;
-  padding: 0.1rem 0.5rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--paper);
-  color: var(--indigo);
-  cursor: pointer;
-}
-.ss-btn:hover {
-  border-color: var(--indigo);
-}
+/* .ss-btn itself is defined with the scenario strip above */
 .ss-btn:disabled {
   opacity: 0.7;
   cursor: default;
