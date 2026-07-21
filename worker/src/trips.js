@@ -17,8 +17,8 @@ import philippines from "../../src/data/philippines.js";
 // country: ISO 3166-1 alpha-2 (for Nager.Date holidays).
 // countryName + advisoryMatch: how to find this country in the U.S. State Dept
 // advisory feed (foreign trips only; domestic US trips skip advisories).
-// destAirport: IATA arrival code for Amadeus flight pricing (city codes ok).
-// cityCode: IATA city code for Amadeus hotel pricing (gateway-area rate).
+// destAirport: IATA arrival code for flight pricing (city codes ok).
+// cityCode: legacy IATA city code (kept for reference; lodging now prices label).
 // originAirport defaults to IND (the owner's home) — override per query.
 const COORDS = {
   japan: { lat: 35.68, lon: 139.76, label: "Tokyo", country: "JP", countryName: "Japan", advisoryMatch: ["japan"], destAirport: "TYO", cityCode: "TYO" },

@@ -16,7 +16,7 @@ Deployed 2026-07-21. This captures what's live and how to operate it. Setup deta
 
 `ANTHROPIC_API_KEY` (AI briefing), `TICKETMASTER_API_KEY` (events), `CF_ACCESS_AUD` (Access JWT check). Rotate any of them with `cd worker && npx wrangler secret put <NAME>`.
 
-`AMADEUS_CLIENT_ID`/`AMADEUS_CLIENT_SECRET` are **not** set: the Amadeus self-service portal was decommissioned 2026-07-17, so flight/lodging pricing reports `configured: false` and the briefing omits fares. To restore pricing, swap `worker/src/sources/flights.js` + `lodging.js` to another provider (Duffel or SerpAPI are candidates) — the rest of the app doesn't care.
+Flight/lodging pricing now uses **Duffel** (fares) + **SerpAPI** (Google Hotels, and the Google Flights fallback) — the Amadeus adapter was removed after its self-service portal was decommissioned 2026-07-17. Pricing reports `configured: false` until the keys are set: create a free account at duffel.com and serpapi.com, then `cd worker && npx wrangler secret put DUFFEL_API_KEY` and `npx wrangler secret put SERPAPI_KEY` and redeploy. A `duffel_test_*` key returns synthetic fares (the response is labeled); swap in a live key when ready.
 
 ## Who can use it
 

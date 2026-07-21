@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "test": "node --test",
     "migrate:local": "wrangler d1 migrations apply trip-planner --local",
     "migrate:remote": "wrangler d1 migrations apply trip-planner --remote"
   },
