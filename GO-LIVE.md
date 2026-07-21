@@ -1,0 +1,30 @@
+# Go-live record — trip-planner API
+
+Deployed 2026-07-21. This captures what's live and how to operate it. Setup details for each piece are in `worker/README.md`.
+
+## What's running
+
+| Piece          | Value                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| Worker         | `https://trip-planner-api.david-beihl.workers.dev` (`worker/`, deployed with `npx wrangler deploy`) |
+| D1 database    | `trip-planner` (`96495dd1-a991-4742-b6b5-c482522e8e38`, in `wrangler.toml`)                         |
+| Site           | `https://dbeihl.github.io/trip-planner/` (GitHub Pages, `deploy-astro.yml` on push to `main`)       |
+| Panel wiring   | GitHub repo variable `PUBLIC_API_BASE` = the Worker URL (unset it to turn the panel off)            |
+| Access (login) | Cloudflare Zero Trust app `trip-planner-api`, team domain `delicate-dust-d38a.cloudflareaccess.com` |
+
+## Secrets set on the Worker
+
+`ANTHROPIC_API_KEY` (AI briefing), `TICKETMASTER_API_KEY` (events), `CF_ACCESS_AUD` (Access JWT check). Rotate any of them with `cd worker && npx wrangler secret put <NAME>`.
+
+`AMADEUS_CLIENT_ID`/`AMADEUS_CLIENT_SECRET` are **not** set: the Amadeus self-service portal was decommissioned 2026-07-17, so flight/lodging pricing reports `configured: false` and the briefing omits fares. To restore pricing, swap `worker/src/sources/flights.js` + `lodging.js` to another provider (Duffel or SerpAPI are candidates) — the rest of the app doesn't care.
+
+## Who can use it
+
+The four travelers, via the Cloudflare Access allow policy `travelers` (emails). Sign-in is Cloudflare-hosted: hit any API URL, enter your email, type the one-time PIN it sends. The panel shows a sign-in link automatically if the browser hasn't done this yet. Sessions last 24h.
+
+- **Add/remove a traveler:** Zero Trust → Access controls → Applications → `trip-planner-api` → policy `travelers` → edit the email list.
+- **Gotcha (already configured, don't undo):** the app's Additional settings → CORS headers → **Bypass OPTIONS requests** must stay ON, or browser preflights get 403 and the panel dies with "Failed to fetch".
+
+## Health check
+
+`https://trip-planner-api.david-beihl.workers.dev/api/health` (behind sign-in) — expect `phase: 4`, `access: "enforced"`, `replan_configured: true`, `events_configured: true`.

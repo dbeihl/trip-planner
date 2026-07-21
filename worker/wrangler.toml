@@ -10,7 +10,7 @@ compatibility_date = "2026-07-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "trip-planner"
-database_id = "PLACEHOLDER_RUN_wrangler_d1_create"
+database_id = "96495dd1-a991-4742-b6b5-c482522e8e38"
 migrations_dir = "migrations"
 
 [vars]
@@ -20,8 +20,8 @@ ALLOWED_ORIGIN = "https://dbeihl.github.io"
 # Cloudflare Access verification is enabled only when BOTH of these are set
 # (as secrets / vars after you turn on Access — see README). Left unset, the
 # Worker runs in dev mode and trusts an X-Dev-User header instead.
-#   CF_ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
-#   CF_ACCESS_AUD = "<application audience tag from the Access app>"
+# CF_ACCESS_AUD is set as a secret.
+CF_ACCESS_TEAM_DOMAIN = "delicate-dust-d38a.cloudflareaccess.com"
 
 # Optional model override for the Phase 3 re-plan (defaults to claude-haiku-4-5).
 #   CLAUDE_MODEL = "claude-sonnet-5"
