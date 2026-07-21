@@ -2453,6 +2453,33 @@ const TRIP = window.TRIP;
     paint();
   }
 
+  // Mobile: the fixed price bar collapses to a single line (total + delta +
+  // chevron); tapping it expands the drawer with the breakdown, reference
+  // note, and export buttons. Desktop keeps the full panel always open, so
+  // the tap is a no-op there. Starts collapsed on every mobile load.
+  function initSummaryCollapse() {
+    const panel = document.getElementById("summaryPanel");
+    const bar = document.getElementById("summaryToggle");
+    if (!panel || !bar) return;
+    const mq = window.matchMedia("(max-width: 860px)");
+    const sync = () =>
+      bar.setAttribute(
+        "aria-expanded",
+        String(mq.matches ? panel.classList.contains("open") : true),
+      );
+    bar.addEventListener("click", () => {
+      if (!mq.matches) return; // desktop panel is always open
+      panel.classList.toggle("open");
+      sync();
+    });
+    // Leaving mobile width drops the collapsed state so desktop is never stuck.
+    mq.addEventListener("change", () => {
+      if (!mq.matches) panel.classList.remove("open");
+      sync();
+    });
+    sync();
+  }
+
   function showTab(t) {
     document
       .querySelectorAll(".tab")
@@ -2900,6 +2927,7 @@ const TRIP = window.TRIP;
       if (list) list.innerHTML = fp.map((x) => "<li>" + x + "</li>").join("");
     }
     themeInit();
+    initSummaryCollapse();
     document
       .querySelectorAll(".tab")
       .forEach((t) =>

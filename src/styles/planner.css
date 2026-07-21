@@ -549,6 +549,28 @@
     padding: 1.25rem 1.3rem;
   }
 
+  /* The header row. On desktop it's a plain stacked header (button chrome
+     reset away) and the drawer below is always visible; on mobile it becomes
+     the tap target that expands/collapses the drawer. */
+  .sum-bar {
+    display: block;
+    width: 100%;
+    padding: 0;
+    text-align: left;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+  }
+  .sum-figure {
+    display: flex;
+    flex-direction: column;
+  }
+  .chev {
+    display: none;
+  }
+
   @media (max-width: 860px) {
     .summary {
       position: fixed;
@@ -559,10 +581,72 @@
       border-radius: 0;
       border-width: 1px 0 0;
       z-index: 10;
-      padding: 0.9rem 1.2rem;
+      padding: 0;
+    }
+    .sum-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      cursor: pointer;
+      padding: 0.7rem 1.2rem calc(0.7rem + env(safe-area-inset-bottom));
+    }
+    .summary.open .sum-bar {
+      padding-bottom: 0.7rem;
+    }
+    .sum-bar .eyebrow {
+      font-size: 0.62rem;
+      margin-bottom: 0;
+    }
+    .sum-bar .delta {
+      margin: 0 0 0 auto;
+      text-align: right;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .chev {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      background: var(--paper);
+      color: var(--ink-soft);
+      transition: transform 0.2s ease;
+    }
+    .chev svg {
+      width: 0.85rem;
+      height: 0.85rem;
+    }
+    .summary.open .chev {
+      transform: rotate(180deg);
+    }
+    .sum-drawer {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 1.2rem;
+      transition: max-height 0.28s ease;
+    }
+    .summary.open .sum-drawer {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-bottom: calc(0.9rem + env(safe-area-inset-bottom));
     }
     .summary .breakdown {
-      display: none;
+      margin-top: 0.7rem;
+      padding-top: 0.7rem;
+    }
+    .sum-bar:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: -2px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sum-drawer,
+    .chev {
+      transition: none;
     }
   }
 
@@ -1422,6 +1506,36 @@
   }
   .trip-menu .tm-emoji {
     font-size: 1rem;
+  }
+
+  /* Narrow phones: the nav is four items on one no-wrap row and the
+     "Change trip" button runs off the edge. Collapse the wordmark to its
+     star and the button to its icon so everything fits honestly. */
+  @media (max-width: 620px) {
+    .site-nav {
+      gap: 0.45rem;
+      padding: 0.55rem 0.85rem;
+    }
+    .site-wordmark .wordmark-label,
+    .site-change .change-label {
+      /* keep them for screen readers, hide the glyphs */
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .site-wordmark .star {
+      font-size: 1.2rem;
+    }
+    .tab {
+      padding: 0.42rem 0.85rem;
+    }
+    .site-change {
+      padding: 0.4rem 0.6rem;
+    }
   }
 
   /* --- book the selected hotel (shows on the checked tier) --- */

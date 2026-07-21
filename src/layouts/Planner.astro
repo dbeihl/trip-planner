@@ -37,7 +37,7 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
   <body>
 <header class="site-nav no-print">
   <a class="site-wordmark" href="index.html"
-    ><span class="star">✦</span> Trip Planner</a
+    ><span class="star">✦</span> <span class="wordmark-label">Trip Planner</span></a
   >
   <nav class="tabs" aria-label="Planner sections">
     <button class="tab active" data-tab="plan" type="button">
@@ -60,7 +60,7 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
       aria-haspopup="true"
       aria-expanded="false"
     >
-      ↺ Change trip ▾
+      ↺ <span class="change-label">Change trip </span>▾
     </button>
     <div class="trip-menu" id="tripMenu" role="menu" hidden></div>
   </div>
@@ -245,24 +245,55 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
     <div id="routeBody"></div>
   </div>
 
-  <aside class="summary">
-    <div class="eyebrow">
-      Grand total · <span class="traveler-count-lbl">2</span> travelers
-    </div>
-    <div class="grand-total" id="grandTotal">$0</div>
-    <div class="delta" id="deltaLine"></div>
+  <aside class="summary" id="summaryPanel">
+    <!-- On mobile this bar is the tap target that expands the drawer below;
+         on desktop it's just the panel header and the drawer is always open
+         (see the collapse mechanics in planner.css + initSummaryCollapse()). -->
+    <button
+      class="sum-bar"
+      id="summaryToggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="sumDrawer"
+    >
+      <span class="sum-figure">
+        <span class="eyebrow">
+          Grand total · <span class="traveler-count-lbl">2</span> travelers
+        </span>
+        <span class="grand-total" id="grandTotal">$0</span>
+      </span>
+      <span class="delta" id="deltaLine"></span>
+      <span class="chev" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M18 15l-6-6-6 6"></path>
+        </svg>
+      </span>
+    </button>
 
-    <div class="breakdown" id="breakdown"></div>
+    <div class="sum-drawer" id="sumDrawer">
+      <div class="breakdown" id="breakdown"></div>
 
-    <div class="reference-note" id="referenceNote"></div>
+      <div class="reference-note" id="referenceNote"></div>
 
-    <div class="btn-row">
-      <button class="generate-btn" id="generateBtn" type="button">
-        Shareable text
-      </button>
-      <button class="generate-btn secondary" id="downloadXlsxBtn" type="button">
-        Download Excel
-      </button>
+      <div class="btn-row">
+        <button class="generate-btn" id="generateBtn" type="button">
+          Shareable text
+        </button>
+        <button
+          class="generate-btn secondary"
+          id="downloadXlsxBtn"
+          type="button"
+        >
+          Download Excel
+        </button>
+      </div>
     </div>
   </aside>
 
