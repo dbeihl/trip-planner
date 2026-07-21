@@ -21,7 +21,7 @@ const TRIP = window.TRIP;
   const TRANSPORT = TRIP.transport;
   const ACTIVITIES = TRIP.activities;
   const ROUTE_DETAIL = TRIP.routeDetail;
-  const TRIP_START = TRIP.meta.dates.arrive; // fixed arrival date, ISO
+  let TRIP_START = TRIP.meta.dates.arrive; // arrival date, ISO; applyDates() can shift it
   const REFERENCE_TOTAL = TRIP.meta.reference ? TRIP.meta.reference.total : 0;
   const LODGING_TAX_BUFFER = TRIP.meta.lodgingTaxBuffer;
   // display name for exports: "Japan — Nov 2026" → "Japan"
@@ -2447,6 +2447,12 @@ const TRIP = window.TRIP;
       '<label class="replan-field">New end<input type="date" id="replanEnd" value="' + esc(d.depart) + '"></label>' +
       '<button type="button" id="replanBtn" class="generate-btn">Get AI briefing</button>' +
       "</div>" +
+      '<div class="replan-row">' +
+      '<label class="replan-field replan-instr">Or describe a change' +
+      '<input type="text" id="replanInstr" maxlength="500" placeholder="e.g. one less night in ' +
+      esc(HOTELS[TRIP.meta.route[0]] ? HOTELS[TRIP.meta.route[0]].label : "the first stop") +
+      ', or swap a city"></label>' +
+      "</div>" +
       '<div class="replan-out" id="replanOut" hidden></div>' +
       "</section>";
 
@@ -2498,6 +2504,38 @@ const TRIP = window.TRIP;
           (est.subtotal != null ? ' · <span class="rb-sub">≈ ' + money(est.subtotal) + " flights + lodging</span>" : "") +
           "</div>"
         : "";
+      // AI-proposed edits (from a free-text instruction) with Apply buttons
+      const cityLabel = (k) => (HOTELS[k] && HOTELS[k].label) || k;
+      const describeDelta = (c) => {
+        if (c.op === "set_dates") return "Dates → " + esc(c.start) + " to " + esc(c.end);
+        if (c.op === "set_nights")
+          return esc(cityLabel(c.city)) + " → " + c.nights + " night" + (c.nights === 1 ? "" : "s");
+        if (c.op === "add_city") return "Add " + esc(cityLabel(c.city));
+        if (c.op === "remove_city") return "Remove " + esc(cityLabel(c.city));
+        return esc(c.reason || c.op);
+      };
+      const pcs = b.proposed_changes || [];
+      const deltasHtml = pcs.length
+        ? '<div class="replan-deltas"><span class="rd-h">Proposed edits</span><ul>' +
+          pcs
+            .map(
+              (c, i) =>
+                '<li><span class="rd-desc">' + describeDelta(c) + "</span>" +
+                (c.reason && c.op !== "note" ? ' <span class="rd-why">' + esc(c.reason) + "</span>" : "") +
+                (c.op !== "note"
+                  ? ' <button type="button" class="ss-btn" data-apply-delta="' + i + '">Apply</button>'
+                  : "") +
+                "</li>",
+            )
+            .join("") +
+          "</ul>" +
+          (pcs.filter((c) => c.op !== "note").length > 1
+            ? '<button type="button" class="ss-btn" id="applyAllDeltas">Apply all</button>'
+            : "") +
+          "</div>"
+        : "";
+      const applyDatesHtml =
+        '<button type="button" class="ss-btn" id="applyDatesBtn">Apply these dates to the planner</button>';
       return (
         '<div class="replan-brief">' +
         '<div class="replan-verdict v-' + esc(b.verdict) + '">' + esc(b.verdict || "") +
@@ -2507,10 +2545,44 @@ const TRIP = window.TRIP;
         (flags ? '<div class="replan-flags"><span class="rf-h">Watch:</span><ul>' + flags + "</ul></div>" : "") +
         (b.recommendation ? '<p class="replan-rec"><strong>Recommendation:</strong> ' + esc(b.recommendation) + "</p>" : "") +
         budgetHtml +
+        deltasHtml +
+        '<p class="replan-apply-row">' + applyDatesHtml + "</p>" +
         '<p class="replan-meta">' + esc(data.model || "") + cost +
         " · grounded in weather, holidays, events, the travel advisory, flight fares &amp; lodging rates (when enabled) for the new dates. Estimate covers flights + lodging only; verify before booking.</p>" +
         "</div>"
       );
+    }
+
+    // Wire the Apply buttons after a briefing lands in the DOM.
+    function wireBriefingActions(data) {
+      const b = data.briefing || {};
+      const pcs = b.proposed_changes || [];
+      const applyBtn = document.getElementById("applyDatesBtn");
+      if (applyBtn && data.to && data.to.start && data.to.end) {
+        applyBtn.addEventListener("click", () => {
+          applyDates(data.to.start, data.to.end);
+          applyBtn.textContent = "Applied ✓";
+          applyBtn.disabled = true;
+        });
+      } else if (applyBtn) {
+        applyBtn.remove();
+      }
+      const runDelta = (i, btn) => {
+        const problem = applyDelta(pcs[i]);
+        btn.textContent = problem ? "✕ " + problem : "Applied ✓";
+        btn.disabled = true;
+      };
+      out.querySelectorAll("[data-apply-delta]").forEach((btn) => {
+        btn.addEventListener("click", () => runDelta(+btn.dataset.applyDelta, btn));
+      });
+      const all = document.getElementById("applyAllDeltas");
+      if (all)
+        all.addEventListener("click", () => {
+          out.querySelectorAll("[data-apply-delta]").forEach((btn) => {
+            if (!btn.disabled) runDelta(+btn.dataset.applyDelta, btn);
+          });
+          all.disabled = true;
+        });
     }
 
     btn.addEventListener("click", async () => {
@@ -2519,14 +2591,32 @@ const TRIP = window.TRIP;
       if (!start || !end) return show('<p class="replan-err">Pick a start and an end date.</p>');
       if (end <= start) return show('<p class="replan-err">The end date needs to be after the start.</p>');
 
+      const instr = (document.getElementById("replanInstr") || { value: "" }).value.trim();
       const label = btn.textContent;
       btn.disabled = true;
       btn.textContent = "Thinking…";
       show('<p class="replan-loading">Pulling weather, holidays, events and the advisory for ' + esc(start) + " → " + esc(end) + "…</p>");
       try {
-        const url = API + "/api/replan?trip=" + encodeURIComponent(slug) +
-          "&start=" + encodeURIComponent(start) + "&end=" + encodeURIComponent(end);
-        const res = await fetch(url, { credentials: "include" });
+        // A free-text instruction rides in a POST body (with the currently
+        // selected nights, so "one less night in X" resolves to a target).
+        const res = instr
+          ? await fetch(API + "/api/replan", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                trip: slug,
+                start,
+                end,
+                instruction: instr,
+                nights: (window.__state && window.__state.nights) || null,
+              }),
+            })
+          : await fetch(
+              API + "/api/replan?trip=" + encodeURIComponent(slug) +
+                "&start=" + encodeURIComponent(start) + "&end=" + encodeURIComponent(end),
+              { credentials: "include" },
+            );
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
         if (data.configured === false) {
@@ -2534,6 +2624,7 @@ const TRIP = window.TRIP;
           return;
         }
         show(renderBriefing(data));
+        wireBriefingActions(data);
       } catch (err) {
         if (err instanceof TypeError) {
           // fetch() itself failed. With the API up this is almost always a
@@ -2553,6 +2644,91 @@ const TRIP = window.TRIP;
         btn.textContent = label;
       }
     });
+  }
+
+  // ── apply proposed dates / AI edit deltas to the live planner ─────
+  // Everything routes through existing user-reachable state (dates,
+  // NIGHT_STATE) — costs, hotels, and itinPool are never written, so the
+  // 2-adult and experience-only invariants hold by construction.
+  function applyDates(start, end) {
+    TRIP.meta.dates.arrive = start;
+    TRIP.meta.dates.depart = end;
+    TRIP.meta.dates.nights = Math.round((toDate(end) - toDate(start)) / 86400000);
+    TRIP_START = start;
+    // keep the selected nights matching the new window via the flex city
+    const target = TRIP.meta.dates.nights;
+    const current = Object.values(NIGHT_STATE).reduce((a, b) => a + b, 0);
+    const flex = TRIP.meta.flexNightDefault;
+    if (target !== current && flex && NIGHT_STATE[flex] != null) {
+      NIGHT_STATE[flex] = Math.min(
+        NIGHT_MAX,
+        Math.max(nightMin(flex), NIGHT_STATE[flex] + (target - current)),
+      );
+    }
+    renderNightSteppers();
+    recalc();
+    renderItinerary();
+    const rs = document.getElementById("replanStart");
+    const re = document.getElementById("replanEnd");
+    if (rs) rs.value = start;
+    if (re) re.value = end;
+    showDatesBanner(start, end);
+  }
+
+  function showDatesBanner(start, end) {
+    const mount = document.getElementById("replanMount");
+    if (!mount) return;
+    let b = document.getElementById("datesBanner");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "datesBanner";
+      b.className = "dates-banner no-print";
+      mount.insertBefore(b, mount.firstChild);
+    }
+    b.innerHTML =
+      "Planner shifted to <strong>" +
+      fmtDate(toDate(start)) + " → " + fmtDate(toDate(end)) +
+      "</strong> — reload the page to reset. " +
+      '<button type="button" id="datesBannerClose" aria-label="dismiss">✕</button>';
+    document
+      .getElementById("datesBannerClose")
+      .addEventListener("click", () => b.remove());
+  }
+
+  // One AI-proposed edit. Returns null on success, or a human-readable
+  // reason it couldn't be applied. Unknown city keys are refused, never
+  // guessed.
+  function applyDelta(c) {
+    if (!c || typeof c !== "object") return "not a change";
+    if (c.op === "note") return null; // informational — nothing to apply
+    if (c.op === "set_dates") {
+      if (c.start && c.end && c.end > c.start) {
+        applyDates(c.start, c.end);
+        return null;
+      }
+      return "needs a valid start and end date";
+    }
+    const cities = TRIP.meta.route.concat(TRIP.meta.optionalCities);
+    if (!cities.includes(c.city)) return 'unknown city "' + (c.city || "?") + '"';
+    if (c.op === "set_nights") {
+      NIGHT_STATE[c.city] = Math.min(
+        NIGHT_MAX,
+        Math.max(nightMin(c.city), Math.round(c.nights) || 0),
+      );
+    } else if (c.op === "add_city") {
+      if (!TRIP.meta.optionalCities.includes(c.city)) return "not an optional city";
+      NIGHT_STATE[c.city] = Math.max(1, NIGHT_STATE[c.city] || 0);
+    } else if (c.op === "remove_city") {
+      if (!TRIP.meta.optionalCities.includes(c.city))
+        return "route cities can't be removed (try set_nights instead)";
+      NIGHT_STATE[c.city] = 0;
+    } else {
+      return 'unknown operation "' + c.op + '"';
+    }
+    renderNightSteppers();
+    recalc();
+    renderItinerary();
+    return null;
   }
 
   // ── "Live" strip (progressive enhancement) ────────────────────────

@@ -1748,3 +1748,62 @@
   font-size: 0.72rem;
   color: var(--ink-soft);
 }
+
+/* ── actionable briefing: apply-dates, proposed edits, shift banner ── */
+.replan-instr input {
+  min-width: 18rem;
+  width: 100%;
+}
+.replan-deltas {
+  margin: 0 0 0.8rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.replan-deltas .rd-h {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.replan-deltas ul {
+  margin: 0 0 0.4rem;
+  padding-left: 1.1rem;
+}
+.replan-deltas .rd-why {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+/* .ss-btn itself is defined with the scenario strip above */
+.ss-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.replan-apply-row {
+  margin: 0 0 0.7rem;
+}
+.dates-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.9rem;
+  background: var(--indigo-wash);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--indigo);
+  border-radius: 6px;
+  font-size: 0.86rem;
+}
+.dates-banner button {
+  margin-left: auto;
+  font: inherit;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}

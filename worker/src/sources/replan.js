@@ -67,6 +67,7 @@ const SYSTEM = [
   "Compare the two windows and explain what changes. Be concrete and honest, and ground every claim in a signal you were given — do not invent data or numbers.",
   "The budget estimate is already computed for you: use its figures verbatim, treat them as representative quotes to verify before booking, and make clear it covers only flights + lodging (not transport, activities, or taxes). If a price signal is absent, unconfigured, or errored, don't estimate that part.",
   "Call out holidays that could mean closures or crowds, weather that's clearly better or worse, notable events, any advisory change, and any cost difference (fares or lodging). Keep it short and useful.",
+  "If the payload includes an `instruction` — a free-text edit request like 'one less night in Coron' or 'swap the optional city in' — translate it into proposed_changes operations, using ONLY the city keys listed in trip_cities. Never invent cities, hotels, costs, or per-person figures. set_nights carries the TARGET night count for that city (work it out from current_nights when given). Use an add_city/remove_city op only for cities trip_cities marks optional; anything the operations cannot express becomes an op:'note' whose reason explains why. With no instruction, proposed_changes is an empty array.",
 ].join(" ");
 
 // The structured-output schema (see shared/tool-use-concepts.md limits:
@@ -92,8 +93,25 @@ export const BRIEF_SCHEMA = {
     },
     flags: { type: "array", items: { type: "string" }, description: "Things to watch (closures, crowds, bookings)." },
     recommendation: { type: "string" },
+    proposed_changes: {
+      type: "array",
+      description: "Concrete edits translating the traveler's instruction; empty when there is no instruction. city keys come ONLY from trip_cities.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          op: { type: "string", enum: ["set_dates", "set_nights", "add_city", "remove_city", "note"] },
+          city: { type: "string", description: "city key from trip_cities, or \"\" when the op is not city-scoped" },
+          nights: { type: "integer", description: "TARGET night count for set_nights; 0 otherwise" },
+          start: { type: "string", description: "ISO date for set_dates; \"\" otherwise" },
+          end: { type: "string", description: "ISO date for set_dates; \"\" otherwise" },
+          reason: { type: "string" },
+        },
+        required: ["op", "city", "nights", "start", "end", "reason"],
+      },
+    },
   },
-  required: ["summary", "verdict", "changes", "flags", "recommendation"],
+  required: ["summary", "verdict", "changes", "flags", "recommendation", "proposed_changes"],
 };
 
 // Build the Anthropic request. Pure — unit-tested.
@@ -126,7 +144,7 @@ export function parseResponse(data) {
   return JSON.parse(text); // structured outputs guarantee valid JSON, but keep the throw as a guard
 }
 
-export async function replan(env, info, ctx, toDates) {
+export async function replan(env, info, ctx, toDates, edit = {}) {
   if (!env.ANTHROPIC_API_KEY) {
     return { configured: false, note: "set ANTHROPIC_API_KEY to enable the AI re-plan" };
   }
@@ -156,6 +174,17 @@ export async function replan(env, info, ctx, toDates) {
     signals_for_proposed: context,
     budget_estimate_for_proposed: estimate,
   };
+  // Free-text edit request (POST /api/replan): give the model the trip's real
+  // city keys — the only vocabulary proposed_changes may use — and, when the
+  // client sent them, the currently selected nights per city.
+  if (edit.instruction) {
+    payload.instruction = edit.instruction;
+    payload.trip_cities = {
+      route: (info.cities || []).map((k) => ({ key: k, label: (info.cityLabels || {})[k] || k })),
+      optional: (info.optionalCities || []).map((k) => ({ key: k, label: (info.cityLabels || {})[k] || k })),
+    };
+    if (edit.currentNights) payload.current_nights = edit.currentNights;
+  }
 
   const req = buildRequest(env, payload);
   const started = Math.floor(Date.now() / 1000);

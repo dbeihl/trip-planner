@@ -36,11 +36,19 @@ const COORDS = {
 
 const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul, philippines };
 
-// slug -> { lat, lon, label, country, countryName, advisoryMatch?, arrive, depart }
+// slug -> { lat, lon, label, country, countryName, advisoryMatch?, arrive,
+// depart, cities, optionalCities, cityLabels }. The city keys/labels give the
+// re-plan's NL-edit vocabulary — the only city names proposed_changes may use.
 export const TRIPS = Object.fromEntries(
   Object.entries(MODULES).map(([slug, data]) => {
     const c = COORDS[slug] || {};
-    const d = (data.meta && data.meta.dates) || {};
-    return [slug, { ...c, arrive: d.arrive, depart: d.depart }];
+    const m = data.meta || {};
+    const d = m.dates || {};
+    const cities = m.route || [];
+    const optionalCities = m.optionalCities || [];
+    const cityLabels = Object.fromEntries(
+      cities.concat(optionalCities).map((k) => [k, (data.hotels && data.hotels[k] && data.hotels[k].label) || k]),
+    );
+    return [slug, { ...c, arrive: d.arrive, depart: d.depart, cities, optionalCities, cityLabels }];
   }),
 );
