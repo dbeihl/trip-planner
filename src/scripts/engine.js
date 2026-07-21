@@ -1,6 +1,7 @@
 // The planner engine. Reads the trip data from window.TRIP (set by the
 // layout before this module loads). One copy shared by every trip page.
-import { xlEsc, xlCol, xlCrc32, xlZip } from "./xlsx.js";
+import { xlEsc, xlCol, xlCrc32, xlZip, buildXlsx, visaDate } from "./xlsx.js";
+import { buildIcsCalendar } from "./ics.js";
 import { validateTrip } from "./validate.js";
 
 const TRIP = window.TRIP;
@@ -2339,17 +2340,87 @@ const TRIP = window.TRIP;
       return;
     }
     const data = buildExcelWorkbook(forceBudget);
-    const blob = new Blob([data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+    triggerDownload(
+      new Blob([data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      exportSlug() + "-trip-itinerary.xlsx",
+    );
+  }
+
+  // filename stem from the page's own URL ("zion" from zion-trip-planner.html)
+  function exportSlug() {
+    const slug = (location.pathname.split("/").pop() || "")
+      .replace(/-trip-planner\.html$/, "")
+      .replace(/\.html$/, "");
+    return slug || "trip";
+  }
+
+  function triggerDownload(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "japan-trip-itinerary.xlsx";
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  // ── ICS export: one all-day event per itinerary day ───────────────
+  // Floating date-only events (no clock times — the planner deliberately
+  // doesn't lock those in), summaries from the day titles, stay hotel
+  // injected from __state like every other itinerary view.
+  function buildIcsEvents() {
+    const s = window.__state;
+    const days = assembleItinDays(s);
+    const roadOut = s.arriveMode === "drive" ? (s.enrouteNights || 0) / 2 : 0;
+    const start = addDays(toDate(TRIP_START), -roadOut);
+    const strip = (x) => String(x == null ? "" : x).replace(/<[^>]+>/g, "");
+    const slug = exportSlug();
+    return days.map((d, i) => {
+      const stayKey = d.lodging || d.cityKey;
+      const isDepart = i === days.length - 1 - roadOut;
+      const hotel = !isDepart && stayKey && s[stayKey] ? s[stayKey].name : null;
+      const parts = [];
+      if (hotel) parts.push("Stay: " + hotel);
+      if (d.sun) parts.push(strip(d.sun));
+      return {
+        uid: slug + "-day" + (i + 1) + "@dbeihl.github.io",
+        date: addDays(start, i),
+        summary:
+          "Day " + (i + 1) + " — " + strip(d.cityTag) + ": " + strip(d.title),
+        description: parts.join(" · "),
+      };
+    });
+  }
+
+  function downloadIcs() {
+    const name = TRIP_NAME + " itinerary";
+    const ics = buildIcsCalendar(name, buildIcsEvents());
+    let embedded = false;
+    try {
+      embedded = window.self !== window.top;
+    } catch (e) {
+      embedded = true;
+    }
+    if (embedded) {
+      // Same fallback as the Excel path: sandboxed previews block downloads.
+      modalTitle.textContent = "Copy this into a .ics file";
+      modalNote.style.display = "block";
+      modalNote.textContent =
+        "This embedded preview blocks file downloads. Open the site at its own web address to get the real .ics — or paste the text below into a file named " +
+        exportSlug() + "-itinerary.ics and import it into your calendar.";
+      shareOutput.value = ics;
+      modalOverlay.classList.add("open");
+      shareOutput.focus();
+      shareOutput.setSelectionRange(0, 0);
+      return;
+    }
+    triggerDownload(
+      new Blob([ics], { type: "text/calendar;charset=utf-8" }),
+      exportSlug() + "-itinerary.ics",
+    );
   }
 
   function themeInit() {
@@ -2928,6 +2999,7 @@ const TRIP = window.TRIP;
     document
       .getElementById("itinXlsxBtn")
       .addEventListener("click", () => downloadExcel(false));
+    document.getElementById("itinIcsBtn").addEventListener("click", downloadIcs);
     // keep the itinerary in sync with every Plan-tab change
     document.addEventListener("change", renderItinerary);
     document
