@@ -47,7 +47,7 @@ function corsHeaders(env) {
   const h = {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": "Content-Type, X-Dev-User",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, PUT, POST, OPTIONS",
     Vary: "Origin",
   };
   // Credentialed requests (the planner UI sends the Access cookie) require a
@@ -171,15 +171,37 @@ export default {
       return json(await computeChanges(env, slug, info), { env });
     }
 
-    // AI date-change briefing (Phase 3). Needs a baseline trip + new dates.
+    // AI date-change briefing (Phase 3). GET for a plain date comparison;
+    // POST additionally carries a free-text edit instruction (and the
+    // currently selected nights) in a JSON body.
     if (url.pathname === "/api/replan") {
-      const slug = q.get("trip");
+      let slug, start, end;
+      const edit = {};
+      if (request.method === "POST") {
+        let body;
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "POST body must be JSON" }, { status: 400, env });
+        }
+        slug = body.trip;
+        start = body.start;
+        end = body.end;
+        if (typeof body.instruction === "string" && body.instruction.trim())
+          edit.instruction = body.instruction.trim().slice(0, 500);
+        if (body.nights && typeof body.nights === "object" && !Array.isArray(body.nights))
+          edit.currentNights = body.nights;
+      } else {
+        slug = q.get("trip");
+        start = q.get("start");
+        end = q.get("end");
+      }
       const info = slug ? TRIPS[slug] : null;
       if (!info) return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
-      const start = q.get("start"), end = q.get("end");
       if (!start || !end) return json({ error: "need &start=&end= (ISO YYYY-MM-DD) — the proposed dates" }, { status: 400, env });
+      ctx.trip = slug; // POST carries the slug in the body, not the query
       try {
-        return json(await replan(env, info, ctx, { start, end }), { env });
+        return json(await replan(env, info, ctx, { start, end }, edit), { env });
       } catch (err) {
         return json({ error: err.message || "replan failed", http_status: err.httpStatus }, { status: err.status || 500, env });
       }
