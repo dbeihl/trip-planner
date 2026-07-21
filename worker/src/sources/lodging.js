@@ -1,29 +1,25 @@
-// Lodging pricing via the Amadeus Hotel Search API (Self-Service). Two calls:
-// list hotels in the gateway city (stable, cached 30d), then price a stay for
-// the trip's dates (cached 6h). Distills to a representative nightly rate
-// (median) and the cheapest, for a room of 2 adults — feeds the budget re-cost.
-// Reuses the shared Amadeus token. Gateway-area rate, not the exact town.
+// Lodging pricing via SerpAPI Google Hotels (replacing the Amadeus Hotel
+// Search adapter — portal decommissioned 2026-07-17). One call prices the
+// gateway city for the trip's dates; distilled to a representative nightly
+// rate (median) and the cheapest, for a room of 2 adults — the same shape the
+// budget re-cost consumed from Amadeus. Gateway-area rate, not the exact town.
+// The api_key query param is redacted by store.js before the endpoint is
+// logged.
 import { cachedFetch } from "../store.js";
-import { base, authInit, configured } from "./amadeus.js";
 
-const OFFERS_TTL = 60 * 60 * 6; // 6 hours — hotel prices move
-const LIST_TTL = 60 * 60 * 24 * 30; // 30 days — the set of hotels is stable
-const MAX_HOTELS = 20;
+const TTL = 60 * 60 * 24; // 24 hours — nightly rates move slower than fares
+const SERPAPI_BASE = "https://serpapi.com";
 
 export function nightsBetween(start, end) {
   return Math.round((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000);
 }
 
-// Representative nightly rates from a Hotel Offers response. Pure — unit-tested.
-export function distill(data, nights) {
-  const entries = (data && data.data) || [];
-  const nightly = [];
-  for (const h of entries) {
-    const offer = (h.offers || [])[0];
-    const total = offer && offer.price ? Number(offer.price.total) : NaN;
-    if (!Number.isNaN(total) && nights > 0) nightly.push(total / nights);
-  }
-  nightly.sort((a, b) => a - b);
+// Representative nightly rates from a google_hotels response. Pure — unit-tested.
+export function distillSerpHotels(data) {
+  const nightly = ((data && data.properties) || [])
+    .map((p) => p.rate_per_night && p.rate_per_night.extracted_lowest)
+    .filter((x) => typeof x === "number" && x > 0)
+    .sort((a, b) => a - b);
   const round = (x) => (x == null ? null : Math.round(x));
   const median = nightly.length ? nightly[Math.floor((nightly.length - 1) / 2)] : null;
   return {
@@ -34,49 +30,37 @@ export function distill(data, nights) {
   };
 }
 
-async function hotelIds(env, cityCode, ctx) {
-  const params = { cityCode, radius: 20, radiusUnit: "KM", hotelSource: "ALL" };
-  const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])));
-  const endpoint = `${base(env)}/v1/reference-data/locations/hotels/by-city?${qs}`;
-  const { raw } = await cachedFetch(env, {
-    source: "amadeus-hotels", endpoint, params, ttl: LIST_TTL,
-    trip: ctx.trip, requestedBy: ctx.requestedBy, fresh: ctx.fresh, init: authInit(env),
-  });
-  const data = JSON.parse(raw || "{}");
-  return (data.data || []).map((h) => h.hotelId).filter(Boolean).slice(0, MAX_HOTELS);
-}
-
 export async function lodging(env, info, ctx) {
-  if (!configured(env)) {
-    return { configured: false, note: "set AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET to enable lodging pricing" };
+  if (!env.SERPAPI_KEY) {
+    return { configured: false, note: "set SERPAPI_KEY to enable lodging pricing" };
   }
-  const city = info.cityCode;
-  if (!city) return { applicable: false, note: "no city code for this trip" };
-
-  const ids = await hotelIds(env, city, ctx);
+  const city = info.label;
+  if (!city) return { applicable: false, note: "no gateway city for this trip" };
   const nights = nightsBetween(info.arrive, info.depart);
-  if (!ids.length) {
-    return { configured: true, city, nights, hotels_priced: 0, note: "no hotels found for this city" };
-  }
 
-  const params = {
-    hotelIds: ids.join(","),
-    checkInDate: info.arrive,
-    checkOutDate: info.depart,
-    adults: 2,
-    roomQuantity: 1,
+  const params = { provider: "serpapi", city, start: info.arrive, end: info.depart, adults: 2 };
+  const qs = new URLSearchParams({
+    engine: "google_hotels",
+    q: `${city} hotels`,
+    check_in_date: info.arrive,
+    check_out_date: info.depart,
+    adults: "2",
     currency: "USD",
-    bestRateOnly: true,
-  };
-  const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])));
-  const endpoint = `${base(env)}/v3/shopping/hotel-offers?${qs}`;
+    api_key: env.SERPAPI_KEY, // redacted by store.js before logging
+  });
   const { cached, raw, fetched_at } = await cachedFetch(env, {
-    source: "amadeus-lodging", endpoint, params, ttl: OFFERS_TTL,
-    trip: ctx.trip, requestedBy: ctx.requestedBy, fresh: ctx.fresh, init: authInit(env),
+    source: "serpapi-hotels",
+    endpoint: `${SERPAPI_BASE}/search.json?${qs}`,
+    params,
+    ttl: TTL,
+    trip: ctx.trip,
+    requestedBy: ctx.requestedBy,
+    fresh: ctx.fresh,
   });
 
   return {
     configured: true,
+    provider: "serpapi",
     cached,
     fetched_at,
     city,
@@ -84,6 +68,6 @@ export async function lodging(env, info, ctx) {
     window: { start: info.arrive, end: info.depart },
     nights,
     adults: 2,
-    ...distill(JSON.parse(raw || "{}"), nights),
+    ...distillSerpHotels(JSON.parse(raw || "{}")),
   };
 }

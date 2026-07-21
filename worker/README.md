@@ -1,6 +1,6 @@
 # Trip Planner API — Phases 1–4
 
-The research back end from [`AI-RESEARCH-PLAN.md`](../AI-RESEARCH-PLAN.md): a Cloudflare Worker + D1 that pulls external data on demand and **logs every pull** (the log doubles as a read-through cache). Phase 1 proved the spine — **auth → fetch → log** — with Open-Meteo weather. Phase 2 added three more free sources (holidays, events, advisories) and an aggregate panel. Phase 3 added the AI layer: a **date-change briefing**. Phase 4 adds **flight + lodging pricing** (Amadeus Self-Service), folded into the panel and the briefing as a flights + lodging budget estimate so the re-plan is cost-aware.
+The research back end from [`AI-RESEARCH-PLAN.md`](../AI-RESEARCH-PLAN.md): a Cloudflare Worker + D1 that pulls external data on demand and **logs every pull** (the log doubles as a read-through cache). Phase 1 proved the spine — **auth → fetch → log** — with Open-Meteo weather. Phase 2 added three more free sources (holidays, events, advisories) and an aggregate panel. Phase 3 added the AI layer: a **date-change briefing**. Phase 4 adds **flight + lodging pricing** (Duffel fares + SerpAPI Google Hotels, after Amadeus retired its self-service portal), folded into the panel and the briefing as a flights + lodging budget estimate so the re-plan is cost-aware.
 
 It is intentionally separate from the Astro site: the static planners keep working with no network, and this back end is a progressive enhancement the signed-in travelers can call.
 
@@ -14,15 +14,15 @@ GET /api/weather?trip=<slug>       -> seasonality (same window, prior year — c
 GET /api/holidays?trip=<slug>      -> public holidays in the window (Nager.Date)
 GET /api/events?trip=<slug>        -> events near the gateway in the window (Ticketmaster)
 GET /api/advisories?trip=<slug>    -> U.S. State Dept advisory level 1-4 (foreign trips)
-GET /api/flights?trip=<slug>       -> round-trip fares, 2-adult total (Amadeus; &origin=IATA)
-GET /api/lodging?trip=<slug>       -> representative nightly hotel rate (Amadeus)
+GET /api/flights?trip=<slug>       -> round-trip fares, 2-adult total (Duffel/SerpAPI; &origin=IATA)
+GET /api/lodging?trip=<slug>       -> representative nightly hotel rate (SerpAPI)
 GET /api/context?trip=<slug>       -> all of the above for one trip, in parallel
 GET /api/replan?trip=<slug>&start=&end=  -> AI briefing: compare proposed dates to the trip's
 GET /api/weather?lat=&lon=&start=&end=   -> explicit coords + ISO window (weather)
 ...&fresh=1                        -> bypass the cache on any data route
 ```
 
-Sources and their cache TTLs: weather 30d, holidays 30d, advisories 1d, events 6h, flights 6h, lodging 6h (hotel list 30d). Every call that reaches an external API inserts one `data_pull` row (provenance); the read path (`dedup_key` + TTL) is the cache. `data_pull` never stores API keys — secret query params are redacted before the endpoint is logged, keys never appear in the cache-key params, and the Amadeus bearer token rides in a header (fetched only on a cache miss), never in the stored URL.
+Sources and their cache TTLs: weather 30d, holidays 30d, advisories 1d, events 6h, flights 6h, lodging 24h. Every call that reaches an external API inserts one `data_pull` row (provenance); the read path (`dedup_key` + TTL) is the cache. `data_pull` never stores API keys — secret query params (e.g. SerpAPI's `api_key`) are redacted before the endpoint is logged, keys never appear in the cache-key params, and the Duffel bearer key rides in a header, never in the stored URL.
 
 ## One-time setup
 
@@ -74,7 +74,7 @@ Without it, `/api/events` reports `configured: false` and the other routes are u
 
 ## AI briefing (optional)
 
-`/api/replan` asks Claude to compare a proposed window to the trip's original, grounded in the freshly-pulled signals for the new dates — including a flights + lodging budget estimate when Amadeus is configured (below). It's the "explain what changed" job.
+`/api/replan` asks Claude to compare a proposed window to the trip's original, grounded in the freshly-pulled signals for the new dates — including a flights + lodging budget estimate when pricing is configured (below). It's the "explain what changed" job.
 
 ```sh
 npx wrangler secret put ANTHROPIC_API_KEY
@@ -86,18 +86,19 @@ Defaults to **Claude Haiku 4.5** (cheapest current-gen) per the plan; the call r
 
 ## Flight & lodging pricing (optional)
 
-`/api/flights` (round trip, 2 adults, USD) and `/api/lodging` (representative nightly hotel rate for the gateway city) both use the **Amadeus Self-Service** API, and feed into `/api/context` and the `/api/replan` briefing. The re-plan combines them into a **flights + lodging budget estimate** for the proposed dates. One set of free credentials from [developers.amadeus.com](https://developers.amadeus.com) enables both:
+`/api/flights` (round trip, 2 adults, USD) and `/api/lodging` (representative nightly hotel rate for the gateway city) feed into `/api/context` and the `/api/replan` briefing, which combines them into a **flights + lodging budget estimate** for the proposed dates. The Amadeus adapter was retired when its self-service portal was decommissioned (2026-07-17); the providers are now:
+
+- **Flights: Duffel** (primary) — real airline offers; `total_amount` is already the all-passenger (2-adult) total. Free test mode returns synthetic "Duffel Airways"-style offers and the response says so. Key from [duffel.com](https://duffel.com).
+- **Flights fallback + lodging: SerpAPI** — Google Flights (used for fares when only `SERPAPI_KEY` is set) and Google Hotels (always the lodging source). Free tier is 100 searches/month — comfortable at family scale given the 6 h fare / 24 h lodging TTLs. Key from [serpapi.com](https://serpapi.com).
 
 ```sh
-npx wrangler secret put AMADEUS_CLIENT_ID
-npx wrangler secret put AMADEUS_CLIENT_SECRET
-# host defaults to the free test API; for the production tier set
-#   AMADEUS_BASE=https://api.amadeus.com in wrangler.toml [vars]
+npx wrangler secret put DUFFEL_API_KEY   # flights (test keys start duffel_test_)
+npx wrangler secret put SERPAPI_KEY      # lodging + flights fallback
 ```
 
-OAuth is handled for you — one bearer token, fetched on a cache miss and reused in-isolate; it never lands in `data_pull`. Flight origin defaults to `IND` (override with `&origin=<IATA>`); lodging prices the trip's gateway city (a gateway-area rate, not the exact town). Without the credentials, both report `configured: false` and the briefing omits pricing.
+The Duffel key rides in a request header and never lands in `data_pull`; the SerpAPI `api_key` query param is redacted before the endpoint is logged. Flight origin defaults to `IND` (override with `&origin=<IATA>`); lodging prices the trip's gateway city (a gateway-area rate, not the exact town). Without the keys, both report `configured: false` and the briefing omits pricing.
 
-> **ToS caveat:** the test host returns largely static data and is meant for development. Treat prices as representative and verify before booking; production volume needs the production host and a re-read of Amadeus's caching terms (the open question the plan flagged). The `estimate` covers flights + lodging only — transport, activities, and taxes are date-independent and stay in the planner's own ledger.
+> **ToS caveat:** treat prices as representative quotes and verify before booking. Fare TTLs stay short (6 h) on purpose — price data is contractually short-lived with most providers. The `estimate` covers flights + lodging only — transport, activities, and taxes are date-independent and stay in the planner's own ledger.
 
 ## Wiring it into the planner UI
 
@@ -127,12 +128,11 @@ npx wrangler d1 execute trip-planner --local \
 | `src/sources/holidays.js` | Nager.Date public holidays, filtered to the window |
 | `src/sources/events.js` | Ticketmaster events (key-gated) |
 | `src/sources/advisories.js` | U.S. State Dept advisory feed parse (level 1-4) |
-| `src/sources/amadeus.js` | Shared Amadeus OAuth (token cache) for flights + lodging |
-| `src/sources/flights.js` | Amadeus Flight Offers Search |
-| `src/sources/lodging.js` | Amadeus Hotel Search (list + offers) → nightly rate |
+| `src/sources/flights.js` | Duffel offer request (SerpAPI Google Flights fallback) |
+| `src/sources/lodging.js` | SerpAPI Google Hotels → representative nightly rate |
 | `src/sources/replan.js` | The Claude briefing + flights/lodging budget estimate |
 | `migrations/0001_data_pull.sql` | The `data_pull` provenance + cache table |
-| `wrangler.toml` | Worker + D1 binding + CORS/Access/events/AI/Amadeus vars |
+| `wrangler.toml` | Worker + D1 binding + CORS/Access/events/AI/pricing vars |
 
 ## Not built yet
 

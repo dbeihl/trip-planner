@@ -1,0 +1,8 @@
+{
+  "properties": [
+    { "name": "Hotel A", "rate_per_night": { "lowest": "$174", "extracted_lowest": 174 } },
+    { "name": "Hotel B", "rate_per_night": { "lowest": "$129", "extracted_lowest": 129 } },
+    { "name": "Hotel C", "rate_per_night": { "lowest": "$260", "extracted_lowest": 260 } },
+    { "name": "Hotel D (no rate)" }
+  ]
+}

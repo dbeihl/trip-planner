@@ -1,0 +1,20 @@
+{
+  "best_flights": [
+    {
+      "price": 837,
+      "flights": [
+        { "airline": "United", "flight_number": "UA 881" },
+        { "airline": "ANA", "flight_number": "NH 211" }
+      ]
+    }
+  ],
+  "other_flights": [
+    {
+      "price": 1120,
+      "flights": [{ "airline": "Delta", "flight_number": "DL 275" }]
+    },
+    {
+      "flights": [{ "airline": "Mystery Air" }]
+    }
+  ]
+}
