@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Classic Italy by Rail — Sep 2027",
+    title: "Classic Italy by Rail — Sep 2028",
     route: ["rome", "florence", "venice"],
     optionalCities: [],
     flexNightDefault: "rome",
-    dates: { arrive: "2027-09-19", depart: "2027-09-27", nights: 8 },
+    dates: { arrive: "2028-09-17", depart: "2028-09-25", nights: 8 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into Rome (FCO), out of Venice (VCE) — open jaw, no rental car",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Rome",
     ui: {
       eyebrow:
-        'Sep 19 → Sep 27, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
+        'Sep 17 → Sep 25, 2028 · <span class="traveler-count-lbl">2</span> travelers · self-booked rail trip',
       planTitle: "Classic Italy by High-Speed Rail",
       planSub:
-        "Rome, Florence &amp; Venice on the Frecciarossa — an open-jaw into Fiumicino and home from Marco Polo, no rental car needed. Pick a hotel tier per stop; train fares and transfers fold into the grand total. Every figure is a researched 2027 planning estimate.",
+        "Rome, Florence &amp; Venice on the Frecciarossa — an open-jaw into Fiumicino and home from Marco Polo, no rental car needed. Pick a hotel tier per stop; train fares and transfers fold into the grand total. Every figure is a researched 2028 planning estimate.",
       flightsTitle: "Getting there — flights to Rome, home from Venice",
       flightsIntro:
         "Two travelers converging on Rome. Pick a routing for each — fares fold into the grand total. Fly into Fiumicino (FCO), out of Venice Marco Polo (VCE) so the whole trip moves in one direction, city to city, by train.",
