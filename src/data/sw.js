@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Southwest National Parks Road Trip — May 2029",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 3,
+      emoji: "🏜️",
+      title: "Southwest Parks",
+      meta: "Las Vegas · Zion · Bryce · Grand Canyon",
+      go: "Southwest",
+      blurb:
+        "A red-rock driving loop out of Las Vegas through Zion, Bryce, and the Grand Canyon's South Rim — rental SUV, hiking-tier lodges, and every park entry folded in.",
+    },
     route: ["zion", "bryce", "grandCanyon"],
     optionalCities: [],
     flexNightDefault: "zion",

@@ -2,6 +2,18 @@
 // Landing page — pick a destination. Ported from index.html.
 // URLs stay relative (japan-trip-planner.html, etc.) so links resolve
 // under the /trip-planner base on GitHub Pages exactly as before.
+//
+// The trip cards are generated from each data module's meta.hub — adding a
+// trip = data module + 3-line page; the card appears here automatically.
+const modules = import.meta.glob("../data/*.js", { eager: true });
+const trips = Object.entries(modules)
+  .map(([path, mod]) => {
+    const slug = path.split("/").pop().replace(/\.js$/, "");
+    const hub = (mod.default && mod.default.meta && mod.default.meta.hub) || null;
+    return hub ? { slug, ...hub } : null;
+  })
+  .filter(Boolean)
+  .sort((a, b) => (a.order || 99) - (b.order || 99));
 ---
 
 <html lang="en">
@@ -238,126 +250,16 @@
       </p>
 
       <div class="trips">
-        <a class="trip" href="japan-trip-planner.html">
-          <h2 class="trip-title">🗼 Japan</h2>
-          <p class="trip-meta">Tokyo · Hakone · Kyoto · optional Osaka</p>
-          <p class="trip-desc">
-            Nine days by train through Tokyo, a Hakone onsen night, and old
-            Kyoto — flights from two origins, ryokan-to-hotel lodging tiers, and
-            a flexible ninth night.
-          </p>
-          <div class="go">Open the Japan planner →</div>
-        </a>
-
-        <a class="trip" href="yellowstone-trip-planner.html">
-          <h2 class="trip-title">🏔️ Yellowstone &amp; Grand Teton</h2>
-          <p class="trip-meta">Jackson · Old Faithful · Canyon · Mammoth</p>
-          <p class="trip-desc">
-            A driving loop through the Tetons and the Yellowstone grand loop —
-            open-jaw flights, park-lodge or cabin tiers, and a rental SUV with
-            fuel and park pass folded into the total.
-          </p>
-          <div class="go">Open the Yellowstone planner →</div>
-        </a>
-
-        <a class="trip" href="sw-trip-planner.html">
-          <h2 class="trip-title">🏜️ Southwest Parks</h2>
-          <p class="trip-meta">Las Vegas · Zion · Bryce · Grand Canyon</p>
-          <p class="trip-desc">
-            A red-rock driving loop out of Las Vegas through Zion, Bryce, and
-            the Grand Canyon's South Rim — rental SUV, hiking-tier lodges, and
-            every park entry folded in.
-          </p>
-          <div class="go">Open the Southwest planner →</div>
-        </a>
-
-        <a class="trip" href="italy-trip-planner.html">
-          <h2 class="trip-title">🏛️ Italy by Rail</h2>
-          <p class="trip-meta">Rome · Florence · Venice</p>
-          <p class="trip-desc">
-            The classic triangle by high-speed Frecciarossa train — open-jaw
-            into Rome and out of Venice, city hotels from pensione to palazzo,
-            Colosseum to canals.
-          </p>
-          <div class="go">Open the Italy planner →</div>
-        </a>
-
-        <a class="trip" href="hawaii-trip-planner.html">
-          <h2 class="trip-title">🌺 Hawaii — O‘ahu &amp; Maui</h2>
-          <p class="trip-meta">Waikiki · North Shore · Road to Hāna</p>
-          <p class="trip-desc">
-            Two islands with an inter-island hop — Waikiki and Pearl Harbor,
-            then Maui's beaches and the Road to Hāna. Condo-to-resort tiers and
-            a rental car on each island.
-          </p>
-          <div class="go">Open the Hawaii planner →</div>
-        </a>
-
-        <a class="trip" href="thailand-trip-planner.html">
-          <h2 class="trip-title">🛕 Thailand</h2>
-          <p class="trip-meta">Bangkok · Chiang Mai · Phuket</p>
-          <p class="trip-desc">
-            Temples, night markets, and southern beaches, linked by cheap
-            domestic flights — hostel-chic to beach-resort tiers, street food
-            the whole way down.
-          </p>
-          <div class="go">Open the Thailand planner →</div>
-        </a>
-
-        <a class="trip" href="redwoods-trip-planner.html">
-          <h2 class="trip-title">🌲 California Redwoods</h2>
-          <p class="trip-meta">Mendocino · Avenue of the Giants · Crescent City</p>
-          <p class="trip-desc">
-            A coastal loop out of San Francisco under the tallest trees on
-            Earth — foggy coves, the Avenue of the Giants, Fern Canyon, and
-            Roosevelt elk, with a rental SUV and park fees folded in.
-          </p>
-          <div class="go">Open the Redwoods planner →</div>
-        </a>
-
-        <a class="trip" href="zion-trip-planner.html">
-          <h2 class="trip-title">🧗 Zion Deep-Dive</h2>
-          <p class="trip-meta">Springdale · The Narrows · Angels Landing · Bryce</p>
-          <p class="trip-desc">
-            Four full days based in Springdale for the big Zion days — Angels
-            Landing, the Narrows, Kolob Canyons — plus a night among Bryce's
-            hoodoos on the way back to Vegas.
-          </p>
-          <div class="go">Open the Zion planner →</div>
-        </a>
-
-        <a class="trip" href="germany-trip-planner.html">
-          <h2 class="trip-title">🎄 Christmas in Germany</h2>
-          <p class="trip-meta">Nuremberg · Rothenburg · Munich</p>
-          <p class="trip-desc">
-            Christmas markets by rail — the Christkindlesmarkt, Rothenburg's
-            walled old town at dusk, and Marienplatz under the lights, with
-            glühwein at every stop.
-          </p>
-          <div class="go">Open the Germany planner →</div>
-        </a>
-
-        <a class="trip" href="seoul-trip-planner.html">
-          <h2 class="trip-title">🏯 Seoul &amp; Busan</h2>
-          <p class="trip-meta">Seoul · DMZ · KTX · Busan</p>
-          <p class="trip-desc">
-            Joseon palaces and night markets in Seoul, a day at the DMZ, then
-            the KTX bullet train south to Busan's beaches, cliffside temples,
-            and seafood markets — open-jaw, no rental car.
-          </p>
-          <div class="go">Open the Seoul planner →</div>
-        </a>
-
-        <a class="trip" href="philippines-trip-planner.html">
-          <h2 class="trip-title">🏝️ Philippines</h2>
-          <p class="trip-meta">Coron · Siargao · a week in Malita</p>
-          <p class="trip-desc">
-            Limestone lagoons and WWII wrecks in Coron, then a hop to Siargao
-            for the surf and the lagoons, and a slow week in Malita with family
-            near Davao — in through Manila, home open-jaw from Davao.
-          </p>
-          <div class="go">Open the Philippines planner →</div>
-        </a>
+        {
+          trips.map((t) => (
+            <a class="trip" href={t.slug + '-trip-planner.html'}>
+              <h2 class="trip-title">{t.emoji} {t.title}</h2>
+              <p class="trip-meta">{t.meta}</p>
+              <p class="trip-desc">{t.blurb}</p>
+              <div class="go">Open the {t.go} planner →</div>
+            </a>
+          ))
+        }
       </div>
 
       <p class="foot">

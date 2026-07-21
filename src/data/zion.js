@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Zion Deep-Dive — May 2028",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 8,
+      emoji: "🧗",
+      title: "Zion Deep-Dive",
+      meta: "Springdale · The Narrows · Angels Landing · Bryce",
+      go: "Zion",
+      blurb:
+        "Four full days based in Springdale for the big Zion days — Angels Landing, the Narrows, Kolob Canyons — plus a night among Bryce's hoodoos on the way back to Vegas.",
+    },
     route: ["springdale", "bryce"],
     optionalCities: [],
     flexNightDefault: "springdale",

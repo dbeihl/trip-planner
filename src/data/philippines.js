@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Philippines — Coron, Siargao & Malita — Jan 2027",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 11,
+      emoji: "🏝️",
+      title: "Philippines",
+      meta: "Coron · Siargao · a week in Malita",
+      go: "Philippines",
+      blurb:
+        "Limestone lagoons and WWII wrecks in Coron, then a hop to Siargao for the surf and the lagoons, and a slow week in Malita with family near Davao — in through Manila, home open-jaw from Davao.",
+    },
     route: ["coron", "siargao", "malita"],
     optionalCities: [],
     flexNightDefault: "coron",

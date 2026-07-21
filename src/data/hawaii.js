@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Oʻahu & Maui Island-Hop — Feb 2028",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 5,
+      emoji: "🌺",
+      title: "Hawaii — O‘ahu & Maui",
+      meta: "Waikiki · North Shore · Road to Hāna",
+      go: "Hawaii",
+      blurb:
+        "Two islands with an inter-island hop — Waikiki and Pearl Harbor, then Maui's beaches and the Road to Hāna. Condo-to-resort tiers and a rental car on each island.",
+    },
     route: ["oahu", "maui"],
     optionalCities: [],
     flexNightDefault: "maui",
