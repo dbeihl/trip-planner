@@ -39,6 +39,19 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
   <a class="site-wordmark" href="index.html"
     ><span class="star">✦</span> Trip Planner</a
   >
+  <nav class="tabs" aria-label="Planner sections">
+    <button class="tab active" data-tab="plan" type="button">
+      Plan &amp; Budget
+    </button>
+    <button class="tab" data-tab="itin" type="button">Itinerary</button>
+  </nav>
+  <button
+    class="theme-toggle"
+    id="themeToggle"
+    type="button"
+    aria-label="Toggle light or dark mode"
+    title="Toggle light / dark"
+  ></button>
   <div class="site-changewrap">
     <button
       class="site-change"
@@ -52,20 +65,6 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
     <div class="trip-menu" id="tripMenu" role="menu" hidden></div>
   </div>
 </header>
-
-<div class="tabs no-print">
-  <button class="tab active" data-tab="plan" type="button">
-    Plan &amp; Budget
-  </button>
-  <button class="tab" data-tab="itin" type="button">Itinerary</button>
-  <button
-    class="theme-toggle"
-    id="themeToggle"
-    type="button"
-    aria-label="Toggle light or dark mode"
-    title="Toggle light / dark"
-  ></button>
-</div>
 
 <div class="wrap pane" id="planPane">
   <header class="masthead">
