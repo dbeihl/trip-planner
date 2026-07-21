@@ -129,7 +129,7 @@
     "</styleSheet>";
   // style indices: 0 plain · 1 bold · 2 title(center) · 3 bordered-wrap · 4 bordered-bold-center · 5 right
 
-  function xlSheet(rows, cols, merges) {
+  export function xlSheet(rows, cols, merges) {
     const rowsXml = rows
       .map((row, r) => {
         const cells = row
@@ -190,7 +190,7 @@
     );
   }
 
-  function buildXlsx(sheets) {
+  export function buildXlsx(sheets) {
     const enc = new TextEncoder();
     let ov = "";
     for (let i = 1; i <= sheets.length; i++)
@@ -252,7 +252,7 @@
     return xlZip(files);
   }
 
-  function visaDate(d) {
+  export function visaDate(d) {
     return (
       d.getFullYear() +
       "/" +
