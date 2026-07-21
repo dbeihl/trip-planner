@@ -1663,6 +1663,49 @@
   color: var(--indigo);
 }
 
+/* ── shared-scenarios strip (progressive enhancement) ────────────────
+   Rendered by engine.js initScenarioSync() into #scenarioMount, only
+   when a back-end base URL is configured AND other travelers have saved
+   picks for this trip. */
+.scenario-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 0.65rem 0.9rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+.scenario-strip .ss-h {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.ss-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+}
+.ss-btn {
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--indigo);
+  cursor: pointer;
+}
+.ss-btn:hover {
+  border-color: var(--indigo);
+}
+
 /* ── "Live" what-changed strip (progressive enhancement) ─────────────
    Rendered by engine.js initLiveStrip() into #liveMount, only when a
    back-end base URL is configured and the cron has pulled data. */
@@ -1694,7 +1737,7 @@
   color: var(--ink-soft);
 }
 .live-strip .ls-item + .ls-item::before {
-  content: "· ";
+  content: "\00b7 ";
   color: var(--ink-soft);
 }
 .live-strip .ls-quiet {
