@@ -1,10 +1,10 @@
 export default {
   meta: {
-    title: "Zion Deep-Dive — Apr 2027",
+    title: "Zion Deep-Dive — May 2028",
     route: ["springdale", "bryce"],
     optionalCities: [],
     flexNightDefault: "springdale",
-    dates: { arrive: "2027-04-18", depart: "2027-04-24", nights: 6 },
+    dates: { arrive: "2028-05-14", depart: "2028-05-20", nights: 6 },
     travelers: {
       count: 2,
       note: "2 travelers; fly into and out of Las Vegas, short rental-car loop up to Zion and Bryce",
@@ -14,10 +14,10 @@ export default {
     destLabel: "Las Vegas", // gateway shown for an "Other airport" origin / drive
     ui: {
       eyebrow:
-        'Apr 18 → Apr 24, 2027 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
+        'May 14 → May 20, 2028 · <span class="traveler-count-lbl">2</span> travelers · self-booked road trip',
       planTitle: "Zion Deep-Dive",
       planSub:
-        "No rushing through — four nights based in Springdale to actually work through Zion (Angels Landing, the Narrows, Kolob Canyons, the east side), then one night at Bryce for the hoodoos on the way out. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2027 planning estimate.",
+        "No rushing through — four nights based in Springdale to actually work through Zion (Angels Landing, the Narrows, Kolob Canyons, the east side), then one night at Bryce for the hoodoos on the way out. Pick a lodge tier per stop; the rental SUV, fuel, and park pass fold into the total. Every figure is a researched 2028 planning estimate.",
       flightsTitle: "Getting there — flights to the gateway",
       flightsIntro:
         "Two travelers converging on Las Vegas. Pick a routing for each — fares fold into the grand total. Fly into and out of Las Vegas (LAS); the rental car handles the rest.",
@@ -334,7 +334,7 @@ export default {
         move: "arrive",
         lodging: "springdale",
         cityTag: "Las Vegas — arrive",
-        sun: "20:01",
+        sun: "20:23",
         title: "Into red rock country",
         rows: [
           {
@@ -356,7 +356,7 @@ export default {
       {
         id: "s-angels",
         cityTag: "Zion Canyon",
-        sun: "20:02",
+        sun: "20:24",
         title: "Angels Landing and the canyon floor",
         rows: [
           {
@@ -387,7 +387,7 @@ export default {
       {
         id: "s-narrows",
         cityTag: "Zion Canyon",
-        sun: "20:03",
+        sun: "20:25",
         title: "Wading the Narrows",
         rows: [
           {
@@ -410,7 +410,7 @@ export default {
       {
         id: "s-kolob",
         cityTag: "Zion — Kolob & the east side",
-        sun: "20:04",
+        sun: "20:26",
         title: "Kolob Canyons and the east side",
         rows: [
           {
@@ -440,7 +440,7 @@ export default {
       {
         id: "s-mellow",
         cityTag: "Zion Canyon",
-        sun: "20:05",
+        sun: "20:27",
         title: "A slow morning among the cottonwoods",
         rows: [
           {
@@ -468,7 +468,7 @@ export default {
         move: "s-b",
         lodging: "bryce",
         cityTag: "Springdale → Bryce",
-        sun: "20:07",
+        sun: "20:28",
         title: "Up onto the plateau",
         rows: [
           {
@@ -500,7 +500,7 @@ export default {
       {
         id: "b-sunrise",
         cityTag: "Bryce Canyon",
-        sun: "20:08",
+        sun: "20:29",
         title: "A slower morning among the hoodoos",
         rows: [
           {
@@ -520,7 +520,7 @@ export default {
     id: "depart",
     travel: true,
     move: "depart",
-    sun: "20:09",
+    sun: "20:30",
     cityTag: "Bryce → home",
     title: "Drive to Las Vegas and fly out",
     rows: [
