@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Thailand — Bangkok, Chiang Mai & Phuket — Jan 2027",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 6,
+      emoji: "🛕",
+      title: "Thailand",
+      meta: "Bangkok · Chiang Mai · Phuket",
+      go: "Thailand",
+      blurb:
+        "Temples, night markets, and southern beaches, linked by cheap domestic flights — hostel-chic to beach-resort tiers, street food the whole way down.",
+    },
     route: ["bangkok", "chiangMai", "phuket"],
     optionalCities: [],
     flexNightDefault: "phuket",

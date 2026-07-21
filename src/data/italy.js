@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Classic Italy by Rail — Sep 2028",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 4,
+      emoji: "🏛️",
+      title: "Italy by Rail",
+      meta: "Rome · Florence · Venice",
+      go: "Italy",
+      blurb:
+        "The classic triangle by high-speed Frecciarossa train — open-jaw into Rome and out of Venice, city hotels from pensione to palazzo, Colosseum to canals.",
+    },
     route: ["rome", "florence", "venice"],
     optionalCities: [],
     flexNightDefault: "rome",

@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Japan — Nov 2026",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 1,
+      emoji: "🗼",
+      title: "Japan",
+      meta: "Tokyo · Hakone · Kyoto · optional Osaka",
+      go: "Japan",
+      blurb:
+        "Nine days by train through Tokyo, a Hakone onsen night, and old Kyoto — flights from two origins, ryokan-to-hotel lodging tiers, and a flexible ninth night.",
+    },
     route: ["tokyo", "hakone", "kyoto"], // ordered city keys (osaka is optional)
     optionalCities: ["osaka"], // add-on cities offered as the flexible night
     flexNightDefault: "kyoto", // which flex-night option is selected by default

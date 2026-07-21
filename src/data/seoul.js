@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Seoul & Busan by Rail — Oct 2027",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 10,
+      emoji: "🏯",
+      title: "Seoul & Busan",
+      meta: "Seoul · DMZ · KTX · Busan",
+      go: "Seoul",
+      blurb:
+        "Joseon palaces and night markets in Seoul, a day at the DMZ, then the KTX bullet train south to Busan's beaches, cliffside temples, and seafood markets — open-jaw, no rental car.",
+    },
     route: ["seoul", "busan"],
     optionalCities: [],
     flexNightDefault: "seoul",
