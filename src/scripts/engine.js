@@ -2207,7 +2207,19 @@ const TRIP = window.TRIP;
         }
         show(renderBriefing(data));
       } catch (err) {
-        show('<p class="replan-err">Couldn’t get a briefing: ' + esc(err && err.message ? err.message : err) + "</p>");
+        if (err instanceof TypeError) {
+          // fetch() itself failed. With the API up this is almost always a
+          // browser that hasn't signed in to Cloudflare Access yet (the
+          // cookie is missing, so the request dies before CORS) — show the
+          // sign-in path instead of a cryptic "Failed to fetch".
+          show(
+            '<p class="replan-note">One-time setup: this browser needs to sign in before it can reach the trip API. ' +
+              '<a href="' + API + '/api/health" target="_blank" rel="noopener">Sign in here</a> with your invited email ' +
+              "(you’ll get a one-time PIN by email, and the page will show a wall of data — that means it worked), then come back and try again.</p>",
+          );
+        } else {
+          show('<p class="replan-err">Couldn’t get a briefing: ' + esc(err && err.message ? err.message : err) + "</p>");
+        }
       } finally {
         btn.disabled = false;
         btn.textContent = label;
