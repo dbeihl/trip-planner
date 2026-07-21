@@ -2555,6 +2555,51 @@ const TRIP = window.TRIP;
     });
   }
 
+  // ── "Live" strip (progressive enhancement) ────────────────────────
+  // When the API base is configured, show what changed since the back
+  // end's previous data pulls (the daily cron keeps them fresh): advisory
+  // level moves, new events/holidays in the window, fare and nightly-rate
+  // deltas. Silent on any error — a static planner never fetches.
+  async function initLiveStrip() {
+    const API = (window.__API_BASE || "").replace(/\/+$/, "");
+    const mount = document.getElementById("liveMount");
+    if (!API || !mount) return;
+    const slug = (location.pathname.split("/").pop() || "")
+      .replace(/-trip-planner\.html$/, "")
+      .replace(/\.html$/, "");
+    let data;
+    try {
+      const res = await fetch(
+        API + "/api/changes?trip=" + encodeURIComponent(slug),
+        { credentials: "include" },
+      );
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (e) {
+      return; // signed out / offline — the strip just doesn't render
+    }
+    if (!data || !data.last_pull_at) return; // nothing pulled yet
+    const esc = (s) =>
+      String(s == null ? "" : s).replace(
+        /[&<>"]/g,
+        (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+      );
+    const ago = (() => {
+      const s = Math.max(0, Math.floor(Date.now() / 1000) - data.last_pull_at);
+      if (s < 5400) return Math.max(1, Math.round(s / 60)) + "m ago";
+      if (s < 129600) return Math.round(s / 3600) + "h ago";
+      return Math.round(s / 86400) + "d ago";
+    })();
+    const parts = (data.changes || []).map((c) => esc(c.detail));
+    mount.innerHTML =
+      '<div class="live-strip"><span class="ls-dot" aria-hidden="true"></span>' +
+      "<span class=\"ls-h\">Live</span> " +
+      (parts.length
+        ? parts.map((p) => "<span class=\"ls-item\">" + p + "</span>").join("")
+        : '<span class="ls-item ls-quiet">no changes since the last check</span>') +
+      '<span class="ls-meta">checked ' + esc(ago) + "</span></div>";
+  }
+
   function initPlanner() {
     const problems = validateTrip();
     if (problems.length) {
@@ -2748,6 +2793,7 @@ const TRIP = window.TRIP;
       .addEventListener("input", renderItinerary);
     renderItinerary();
     initReplan(); // opt-in "re-plan these dates" panel (no-op if no API base)
+    initLiveStrip(); // opt-in "what changed" strip (no-op if no API base)
     initScenarioSync(); // opt-in shared scenarios (no-op if no API base)
     // A shared "#itinerary" link opens straight to the day-by-day.
     if (location.hash === "#itinerary") showTab("itin");

@@ -18,9 +18,12 @@ GET /api/flights?trip=<slug>       -> round-trip fares, 2-adult total (Duffel/Se
 GET /api/lodging?trip=<slug>       -> representative nightly hotel rate (SerpAPI)
 GET /api/context?trip=<slug>       -> all of the above for one trip, in parallel
 GET /api/replan?trip=<slug>&start=&end=  -> AI briefing: compare proposed dates to the trip's
+GET /api/changes?trip=<slug>       -> what changed since the previous pulls (diff-on-read)
 GET /api/weather?lat=&lon=&start=&end=   -> explicit coords + ISO window (weather)
 ...&fresh=1                        -> bypass the cache on any data route
 ```
+
+**Daily cron.** A `[triggers]` cron (11:00 UTC) re-pulls advisories, holidays, and events for every trip departing within 180 days — plus flights/lodging within 90 days of departure when the pricing keys are set (that gate protects SerpAPI's 100-searches/month quota). Each cron pull is `fresh`, so `data_pull` accumulates a per-trip daily history; `/api/changes` diffs the two newest pulls per source (advisory level moves, new holidays/events in the window, fare and nightly-rate deltas) and the planner shows them as a "Live" strip. Test locally with `wrangler dev --test-scheduled` then `curl "localhost:8787/__scheduled?cron=0+11+*+*+*"`.
 
 Sources and their cache TTLs: weather 30d, holidays 30d, advisories 1d, events 6h, flights 6h, lodging 24h. Every call that reaches an external API inserts one `data_pull` row (provenance); the read path (`dedup_key` + TTL) is the cache. `data_pull` never stores API keys — secret query params (e.g. SerpAPI's `api_key`) are redacted before the endpoint is logged, keys never appear in the cache-key params, and the Duffel bearer key rides in a header, never in the stored URL.
 
