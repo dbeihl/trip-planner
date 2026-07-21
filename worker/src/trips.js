@@ -17,8 +17,8 @@ import philippines from "../../src/data/philippines.js";
 // country: ISO 3166-1 alpha-2 (for Nager.Date holidays).
 // countryName + advisoryMatch: how to find this country in the U.S. State Dept
 // advisory feed (foreign trips only; domestic US trips skip advisories).
-// destAirport: IATA arrival code for Amadeus flight pricing (city codes ok).
-// cityCode: IATA city code for Amadeus hotel pricing (gateway-area rate).
+// destAirport: IATA arrival code for flight pricing (city codes ok).
+// cityCode: legacy IATA city code (kept for reference; lodging now prices label).
 // originAirport defaults to IND (the owner's home) — override per query.
 const COORDS = {
   japan: { lat: 35.68, lon: 139.76, label: "Tokyo", country: "JP", countryName: "Japan", advisoryMatch: ["japan"], destAirport: "TYO", cityCode: "TYO" },
@@ -36,11 +36,19 @@ const COORDS = {
 
 const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul, philippines };
 
-// slug -> { lat, lon, label, country, countryName, advisoryMatch?, arrive, depart }
+// slug -> { lat, lon, label, country, countryName, advisoryMatch?, arrive,
+// depart, cities, optionalCities, cityLabels }. The city keys/labels give the
+// re-plan's NL-edit vocabulary — the only city names proposed_changes may use.
 export const TRIPS = Object.fromEntries(
   Object.entries(MODULES).map(([slug, data]) => {
     const c = COORDS[slug] || {};
-    const d = (data.meta && data.meta.dates) || {};
-    return [slug, { ...c, arrive: d.arrive, depart: d.depart }];
+    const m = data.meta || {};
+    const d = m.dates || {};
+    const cities = m.route || [];
+    const optionalCities = m.optionalCities || [];
+    const cityLabels = Object.fromEntries(
+      cities.concat(optionalCities).map((k) => [k, (data.hotels && data.hotels[k] && data.hotels[k].label) || k]),
+    );
+    return [slug, { ...c, arrive: d.arrive, depart: d.depart, cities, optionalCities, cityLabels }];
   }),
 );

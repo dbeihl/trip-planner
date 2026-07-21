@@ -1,0 +1,30 @@
+{
+  "data": {
+    "offers": [
+      {
+        "total_amount": "1240.40",
+        "total_currency": "USD",
+        "owner": { "iata_code": "AA", "name": "American Airlines" },
+        "slices": [
+          { "segments": [{ "id": "seg1" }, { "id": "seg2" }] },
+          { "segments": [{ "id": "seg3" }] }
+        ]
+      },
+      {
+        "total_amount": "980.10",
+        "total_currency": "USD",
+        "owner": { "iata_code": "UA", "name": "United Airlines" },
+        "slices": [
+          { "segments": [{ "id": "seg4" }] },
+          { "segments": [{ "id": "seg5" }, { "id": "seg6" }, { "id": "seg7" }] }
+        ]
+      },
+      {
+        "total_amount": "not-a-number",
+        "total_currency": "USD",
+        "owner": { "iata_code": "ZZ" },
+        "slices": []
+      }
+    ]
+  }
+}

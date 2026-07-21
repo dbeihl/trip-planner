@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "California Redwoods Road Trip — Jun 2027",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 7,
+      emoji: "🌲",
+      title: "California Redwoods",
+      meta: "Mendocino · Avenue of the Giants · Crescent City",
+      go: "Redwoods",
+      blurb:
+        "A coastal loop out of San Francisco under the tallest trees on Earth — foggy coves, the Avenue of the Giants, Fern Canyon, and Roosevelt elk, with a rental SUV and park fees folded in.",
+    },
     route: ["mendocino", "humboldt", "crescentCity"],
     optionalCities: [],
     flexNightDefault: "humboldt",

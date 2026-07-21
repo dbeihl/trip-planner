@@ -13,6 +13,12 @@ database_name = "trip-planner"
 database_id = "96495dd1-a991-4742-b6b5-c482522e8e38"
 migrations_dir = "migrations"
 
+# Daily refresh of advisories/holidays/events (and near-departure pricing)
+# for upcoming trips — see the scheduled() handler. 11:00 UTC = early morning
+# US Eastern, before anyone looks at the planner.
+[triggers]
+crons = ["0 11 * * *"]
+
 [vars]
 # The GitHub Pages origin allowed to call this API (CORS).
 ALLOWED_ORIGIN = "https://dbeihl.github.io"
@@ -26,11 +32,8 @@ CF_ACCESS_TEAM_DOMAIN = "delicate-dust-d38a.cloudflareaccess.com"
 # Optional model override for the Phase 3 re-plan (defaults to claude-haiku-4-5).
 #   CLAUDE_MODEL = "claude-sonnet-5"
 
-# Amadeus host: defaults to the free test host; set the production host once
-# you're on the production tier (and have re-checked the caching terms).
-#   AMADEUS_BASE = "https://api.amadeus.com"
-
 # Secrets (set with `wrangler secret put`, never in this file):
-#   TICKETMASTER_API_KEY                    enables /api/events
-#   ANTHROPIC_API_KEY                       enables /api/replan (the AI briefing)
-#   AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET   enable /api/flights + /api/lodging (Amadeus pricing)
+#   TICKETMASTER_API_KEY   enables /api/events
+#   ANTHROPIC_API_KEY      enables /api/replan (the AI briefing)
+#   DUFFEL_API_KEY         enables /api/flights (Duffel fares; duffel_test_* keys return synthetic data)
+#   SERPAPI_KEY            enables /api/lodging (Google Hotels) + is the /api/flights fallback (Google Flights)

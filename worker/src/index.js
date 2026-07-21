@@ -7,8 +7,9 @@
 // week" panel.
 // Phase 3: the AI layer — /api/replan asks Claude to compare a proposed window
 // to the trip's original and explain what changed.
-// Phase 4: flight pricing via Amadeus Self-Service (/api/flights), folded into
-// the context panel and the re-plan so the briefing is fare-aware.
+// Phase 4: flight + lodging pricing (/api/flights, /api/lodging) — Duffel
+// fares with SerpAPI Google Flights fallback, SerpAPI Google Hotels rates —
+// folded into the context panel and the re-plan so the briefing is fare-aware.
 //
 // Routes (all /api/* require an authenticated caller):
 //   GET /  |  /api/health   -> service status, known trips + sources
@@ -16,15 +17,24 @@
 //   GET /api/holidays       -> public holidays in the window (?trip=<slug>)
 //   GET /api/events         -> events near the gateway (?trip=<slug>)
 //   GET /api/advisories     -> U.S. State Dept advisory level (?trip=<slug>)
-//   GET /api/flights        -> Amadeus round-trip fares (?trip=<slug>&origin=<IATA>)
-//   GET /api/lodging        -> Amadeus nightly hotel rate for the window (?trip=<slug>)
+//   GET /api/flights        -> round-trip fares, 2-adult total (?trip=<slug>&origin=<IATA>)
+//   GET /api/lodging        -> representative nightly hotel rate (?trip=<slug>)
 //   GET /api/context        -> all of the above for one trip, in parallel
 //   GET /api/replan         -> AI date-change briefing (?trip=<slug>&start=&end=)
+//   GET /api/changes        -> what changed since the previous pulls (?trip=<slug>)
+//   GET /api/scenario       -> saved selections: mine + the other travelers' (?trip=<slug>)
+//   PUT /api/scenario       -> upsert my saved selections (?trip=<slug>, JSON body)
 //   ...&fresh=1             -> bypass the cache on any data route
+//
+// A daily cron (wrangler.toml [triggers]) re-pulls advisories/holidays/events
+// for upcoming trips (fares too, close to departure), turning data_pull into a
+// per-trip history that /api/changes diffs.
 
 import { TRIPS } from "./trips.js";
 import { verifyAccess } from "./access.js";
 import { SourceError } from "./store.js";
+import { computeChanges } from "./changes.js";
+import { getScenarios, putScenario } from "./scenario.js";
 import { weather } from "./sources/weather.js";
 import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
@@ -33,14 +43,14 @@ import { flights } from "./sources/flights.js";
 import { lodging } from "./sources/lodging.js";
 import { replan } from "./sources/replan.js";
 
-const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory", "amadeus", "amadeus-hotels", "amadeus-lodging"];
+const SOURCES = ["open-meteo", "nager", "ticketmaster", "state-advisory", "duffel", "serpapi-flights", "serpapi-hotels"];
 
 function corsHeaders(env) {
   const origin = env.ALLOWED_ORIGIN || "*";
   const h = {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": "Content-Type, X-Dev-User",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, PUT, POST, OPTIONS",
     Vary: "Origin",
   };
   // Credentialed requests (the planner UI sends the Access cookie) require a
@@ -100,7 +110,8 @@ export default {
         access: env.CF_ACCESS_TEAM_DOMAIN ? "enforced" : "dev-mode",
         sources: SOURCES,
         events_configured: !!env.TICKETMASTER_API_KEY,
-        flights_configured: !!(env.AMADEUS_CLIENT_ID && env.AMADEUS_CLIENT_SECRET),
+        flights_configured: !!(env.DUFFEL_API_KEY || env.SERPAPI_KEY),
+        lodging_configured: !!env.SERPAPI_KEY,
         replan_configured: !!env.ANTHROPIC_API_KEY,
         replan_model: env.CLAUDE_MODEL || "claude-haiku-4-5",
         trips: Object.keys(TRIPS),
@@ -113,6 +124,19 @@ export default {
 
     const q = url.searchParams;
     const ctx = { trip: q.get("trip") || null, requestedBy: auth.email, fresh: q.get("fresh") === "1", origin: q.get("origin") || null };
+
+    // Saved scenarios: each traveler's planner selections, shared with the
+    // other travelers on the same trip.
+    if (url.pathname === "/api/scenario") {
+      const slug = q.get("trip");
+      if (!slug || !TRIPS[slug])
+        return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
+      if (request.method === "PUT") {
+        const r = await putScenario(env, slug, auth.email, await request.text());
+        return json(r.error ? { error: r.error } : r, { status: r.status || 200, env });
+      }
+      return json(await getScenarios(env, slug, auth.email), { env });
+    }
 
     // Single-source data routes.
     const routes = {
@@ -155,20 +179,77 @@ export default {
       }, { env });
     }
 
-    // AI date-change briefing (Phase 3). Needs a baseline trip + new dates.
-    if (url.pathname === "/api/replan") {
+    // "What changed" strip: diff the two newest logged pulls per source.
+    if (url.pathname === "/api/changes") {
       const slug = q.get("trip");
       const info = slug ? TRIPS[slug] : null;
       if (!info) return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
-      const start = q.get("start"), end = q.get("end");
+      return json(await computeChanges(env, slug, info), { env });
+    }
+
+    // AI date-change briefing (Phase 3). GET for a plain date comparison;
+    // POST additionally carries a free-text edit instruction (and the
+    // currently selected nights) in a JSON body.
+    if (url.pathname === "/api/replan") {
+      let slug, start, end;
+      const edit = {};
+      if (request.method === "POST") {
+        let body;
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "POST body must be JSON" }, { status: 400, env });
+        }
+        slug = body.trip;
+        start = body.start;
+        end = body.end;
+        if (typeof body.instruction === "string" && body.instruction.trim())
+          edit.instruction = body.instruction.trim().slice(0, 500);
+        if (body.nights && typeof body.nights === "object" && !Array.isArray(body.nights))
+          edit.currentNights = body.nights;
+      } else {
+        slug = q.get("trip");
+        start = q.get("start");
+        end = q.get("end");
+      }
+      const info = slug ? TRIPS[slug] : null;
+      if (!info) return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
       if (!start || !end) return json({ error: "need &start=&end= (ISO YYYY-MM-DD) — the proposed dates" }, { status: 400, env });
+      ctx.trip = slug; // POST carries the slug in the body, not the query
       try {
-        return json(await replan(env, info, ctx, { start, end }), { env });
+        return json(await replan(env, info, ctx, { start, end }, edit), { env });
       } catch (err) {
         return json({ error: err.message || "replan failed", http_status: err.httpStatus }, { status: err.status || 500, env });
       }
     }
 
     return json({ error: "not found" }, { status: 404, env });
+  },
+
+  // Daily cron (wrangler.toml [triggers]): refresh the free signals for every
+  // upcoming trip — and pricing close to departure, where it matters and the
+  // SerpAPI quota (100 searches/mo) can afford it. fresh:true forces a new
+  // data_pull row per source, so the log becomes a per-trip daily history.
+  async scheduled(event, env, ctx) {
+    const now = Date.now();
+    const today = new Date(now).toISOString().slice(0, 10);
+    const daysUntil = (iso) => (Date.parse(`${iso}T00:00:00Z`) - now) / 86400000;
+    const upcoming = Object.entries(TRIPS).filter(
+      ([, t]) => t.arrive && t.depart >= today && daysUntil(t.arrive) <= 180,
+    );
+
+    const work = (async () => {
+      for (const [slug, info] of upcoming) {
+        const cronCtx = { trip: slug, requestedBy: "cron", fresh: true, origin: null };
+        const jobs = [advisories(env, info, cronCtx), holidays(env, info, cronCtx), events(env, info, cronCtx)];
+        if (daysUntil(info.arrive) <= 90) {
+          if (env.DUFFEL_API_KEY || env.SERPAPI_KEY) jobs.push(flights(env, info, cronCtx));
+          if (env.SERPAPI_KEY) jobs.push(lodging(env, info, cronCtx));
+        }
+        // one failing source (or trip) must not kill the sweep
+        await Promise.allSettled(jobs);
+      }
+    })();
+    ctx.waitUntil(work);
   },
 };

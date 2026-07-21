@@ -16,13 +16,15 @@ Deployed 2026-07-21. This captures what's live and how to operate it. Setup deta
 
 `ANTHROPIC_API_KEY` (AI briefing), `TICKETMASTER_API_KEY` (events), `CF_ACCESS_AUD` (Access JWT check). Rotate any of them with `cd worker && npx wrangler secret put <NAME>`.
 
-`AMADEUS_CLIENT_ID`/`AMADEUS_CLIENT_SECRET` are **not** set: the Amadeus self-service portal was decommissioned 2026-07-17, so flight/lodging pricing reports `configured: false` and the briefing omits fares. To restore pricing, swap `worker/src/sources/flights.js` + `lodging.js` to another provider (Duffel or SerpAPI are candidates) — the rest of the app doesn't care.
+Flight/lodging pricing now uses **Duffel** (fares) + **SerpAPI** (Google Hotels, and the Google Flights fallback) — the Amadeus adapter was removed after its self-service portal was decommissioned 2026-07-17. Pricing reports `configured: false` until the keys are set: create a free account at duffel.com and serpapi.com, then `cd worker && npx wrangler secret put DUFFEL_API_KEY` and `npx wrangler secret put SERPAPI_KEY` and redeploy. A `duffel_test_*` key returns synthetic fares (the response is labeled); swap in a live key when ready.
 
 ## Who can use it
 
-The four travelers, via the Cloudflare Access allow policy `travelers` (emails). Sign-in is Cloudflare-hosted: hit any API URL, enter your email, type the one-time PIN it sends. The panel shows a sign-in link automatically if the browser hasn't done this yet. Sessions last 24h.
+The four travelers, via the Cloudflare Access allow policy `travelers` (emails). Sign-in is Cloudflare-hosted: hit any API URL, enter your email, type the one-time PIN it sends. The panel shows a sign-in link automatically if the browser hasn't done this yet. Sessions last **1 month** (raised from the 24h default so the PIN dance is rare — for a four-person family app the convenience wins; any session can be revoked instantly from the dashboard).
 
 - **Add/remove a traveler:** Zero Trust → Access controls → Applications → `trip-planner-api` → policy `travelers` → edit the email list.
+- **Session duration (owner action, one-time):** Zero Trust → Access controls → Applications → `trip-planner-api` → Settings → **Session Duration** → set to 1 month. Until that's done, sessions stay at the 24h default.
+- **Revoke sessions:** same Application page → Revoke existing sessions (or remove the email from the `travelers` policy).
 - **Gotcha (already configured, don't undo):** the app's Additional settings → CORS headers → **Bypass OPTIONS requests** must stay ON, or browser preflights get 403 and the panel dies with "Failed to fetch".
 
 ## Health check

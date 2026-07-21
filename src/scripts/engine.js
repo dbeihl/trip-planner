@@ -2,6 +2,7 @@
 // layout before this module loads). One copy shared by every trip page.
 import { xlEsc, xlCol, xlCrc32, xlZip, buildXlsx, visaDate } from "./xlsx.js";
 import { buildIcsCalendar } from "./ics.js";
+import { validateTrip } from "./validate.js";
 
 const TRIP = window.TRIP;
   // ─────────────────────────────────────────────────────────────────
@@ -22,7 +23,7 @@ const TRIP = window.TRIP;
   const TRANSPORT = TRIP.transport;
   const ACTIVITIES = TRIP.activities;
   const ROUTE_DETAIL = TRIP.routeDetail;
-  const TRIP_START = TRIP.meta.dates.arrive; // fixed arrival date, ISO
+  let TRIP_START = TRIP.meta.dates.arrive; // arrival date, ISO; applyDates() can shift it
   const REFERENCE_TOTAL = TRIP.meta.reference ? TRIP.meta.reference.total : 0;
   const LODGING_TAX_BUFFER = TRIP.meta.lodgingTaxBuffer;
   // display name for exports: "Japan — Nov 2026" → "Japan"
@@ -555,6 +556,335 @@ const TRIP = window.TRIP;
     return Math.round(n).toLocaleString("en-US");
   }
 
+  // ── scenario persistence (localStorage) ───────────────────────────
+  // Selections survive a reload: recalc() snapshots the current picks
+  // into localStorage (one key per trip) and initPlanner() restores them
+  // on load. Fail-soft by design: a snapshot saved against an older data
+  // module restores whatever still matches and silently drops the rest;
+  // an unrestorable snapshot is cleared and the defaults load instead.
+  const SCENARIO_VERSION = 1;
+  function tripSlug() {
+    return (location.pathname.split("/").pop() || "")
+      .replace(/-trip-planner\.html$/, "")
+      .replace(/\.html$/, "");
+  }
+  const SCENARIO_KEY = "tripPlanner:scenario:" + (tripSlug() || "index");
+  const SCENARIO_FIELDS = [
+    "travelerCount",
+    "minRating",
+    "driveMiles",
+    "driveMpg",
+    "driveDays",
+    "driveStopRate",
+  ];
+  let __restoringScenario = false;
+  let __persistTimer = null;
+  let __localSavedAt = 0; // savedAt of the snapshot found at page load (0 = none)
+
+  function captureScenario() {
+    const radios = {};
+    document
+      .querySelectorAll('input[type="radio"]:checked')
+      .forEach((el) => (radios[el.name] = el.value));
+    const fields = {};
+    SCENARIO_FIELDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) fields[id] = el.value;
+    });
+    const sp = document.getElementById("showPrices");
+    fields.showPrices = !!(sp && sp.checked);
+    const other = {};
+    document.querySelectorAll(".other-code").forEach((el) => {
+      other[el.dataset.slot] = { code: el.value };
+    });
+    document.querySelectorAll(".other-fare").forEach((el) => {
+      (other[el.dataset.slot] = other[el.dataset.slot] || {}).fare = el.value;
+    });
+    return {
+      v: SCENARIO_VERSION,
+      trip: tripSlug(),
+      savedAt: Date.now(),
+      radios,
+      fields,
+      nights: Object.assign({}, NIGHT_STATE),
+      origins: {
+        solo: originChoice.solo,
+        slots: originChoice.slots.slice(),
+        pax: originChoice.pax.slice(),
+        other,
+      },
+      datesOverride: null,
+      grand: window.__state ? window.__state.grand : null,
+    };
+  }
+
+  function persistScenario() {
+    if (__restoringScenario) return;
+    clearTimeout(__persistTimer);
+    __persistTimer = setTimeout(() => {
+      try {
+        localStorage.setItem(SCENARIO_KEY, JSON.stringify(captureScenario()));
+      } catch (e) {} // storage blocked/full — persistence is best-effort
+      scheduleScenarioPush();
+    }, 500);
+  }
+
+  function applyScenario(snap) {
+    const setRadio = (name, value) => {
+      const el = document.querySelector(
+        'input[name="' + name + '"][value="' + value + '"]',
+      );
+      if (el) el.checked = true;
+    };
+    const radios = snap.radios || {};
+    // structural radios first — the origin/drive DOM depends on them
+    ["sameAirport", "arriveMode", "renting"].forEach((n) => {
+      if (radios[n] != null) setRadio(n, radios[n]);
+    });
+    const nights = snap.nights || {};
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
+      const n = parseInt(nights[c], 10);
+      if (!isNaN(n))
+        NIGHT_STATE[c] = Math.min(NIGHT_MAX, Math.max(nightMin(c), n));
+    });
+    const o = snap.origins || {};
+    const validOrigin = (k) => k === "__other" || ALL_ORIGINS.includes(k);
+    if (validOrigin(o.solo)) originChoice.solo = o.solo;
+    if (Array.isArray(o.slots))
+      o.slots.forEach((k, i) => {
+        if (i < originChoice.slots.length && validOrigin(k))
+          originChoice.slots[i] = k;
+      });
+    if (Array.isArray(o.pax))
+      o.pax.forEach((p, i) => {
+        const n = parseInt(p, 10);
+        if (i < originChoice.pax.length && !isNaN(n))
+          originChoice.pax[i] = Math.max(0, n);
+      });
+    // rebuild the dependent DOM, then lay the remaining picks onto it
+    applyArriveMode();
+    renderOrigins();
+    renderNightSteppers();
+    Object.keys(radios).forEach((n) => setRadio(n, radios[n]));
+    const fields = snap.fields || {};
+    SCENARIO_FIELDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && fields[id] != null) el.value = fields[id];
+    });
+    const sp = document.getElementById("showPrices");
+    if (sp && typeof fields.showPrices === "boolean")
+      sp.checked = fields.showPrices;
+    if (sp) SHOW_PRICES = sp.checked;
+    const pace = selectedValue("itinpace");
+    if (pace) ITIN_PACE = pace;
+    const other = o.other || {};
+    Object.keys(other).forEach((slot) => {
+      const code = document.querySelector(
+        '.other-code[data-slot="' + slot + '"]',
+      );
+      const fare = document.querySelector(
+        '.other-fare[data-slot="' + slot + '"]',
+      );
+      if (code && other[slot].code != null) code.value = other[slot].code;
+      if (fare && other[slot].fare != null) fare.value = other[slot].fare;
+    });
+    recalc();
+  }
+
+  function restoreScenario() {
+    let snap = null;
+    try {
+      snap = JSON.parse(localStorage.getItem(SCENARIO_KEY) || "null");
+    } catch (e) {
+      try {
+        localStorage.removeItem(SCENARIO_KEY); // corrupt — clear it
+      } catch (e2) {}
+    }
+    if (!snap || snap.v !== SCENARIO_VERSION) return;
+    __localSavedAt = snap.savedAt || 0;
+    __restoringScenario = true;
+    try {
+      applyScenario(snap);
+    } catch (e) {
+      // a snapshot this data module can't restore — drop it, load defaults
+      try {
+        localStorage.removeItem(SCENARIO_KEY);
+      } catch (e2) {}
+      console.error("scenario restore failed, using defaults:", e);
+    } finally {
+      __restoringScenario = false;
+    }
+  }
+
+  // ── shared scenarios (progressive enhancement) ────────────────────
+  // When the API base is configured, the snapshot above also syncs to
+  // the back end (keyed by each traveler's Access sign-in), and the Plan
+  // tab shows the other travelers' saved picks. Without an API base
+  // nothing here runs — the localStorage layer stands alone and the
+  // planner stays fully static.
+  const __scenarioSync = { api: null, slug: null, timer: null };
+
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+    );
+  }
+
+  function scheduleScenarioPush() {
+    if (!__scenarioSync.api) return;
+    clearTimeout(__scenarioSync.timer);
+    __scenarioSync.timer = setTimeout(() => {
+      try {
+        fetch(
+          __scenarioSync.api +
+            "/api/scenario?trip=" +
+            encodeURIComponent(__scenarioSync.slug),
+          {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(captureScenario()),
+          },
+        ).catch(() => {}); // offline/signed-out — local copy still saved
+      } catch (e) {}
+    }, 2000);
+  }
+
+  // human summary of a traveler's snapshot, decoded against this trip's data
+  function describeScenario(snap) {
+    const lines = [];
+    const radios = (snap && snap.radios) || {};
+    const nights = (snap && snap.nights) || {};
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
+      if (!HOTELS[c]) return;
+      const n = nights[c] != null ? nights[c] : "?";
+      const idx = parseInt(radios[c + "Tier"], 10);
+      const opt = HOTELS[c].options[isNaN(idx) ? 0 : idx];
+      lines.push(
+        HOTELS[c].label +
+          ": " +
+          n +
+          " night" +
+          (n === 1 ? "" : "s") +
+          (opt ? " — " + opt.name + " ($" + opt.rate + "/night/room)" : ""),
+      );
+    });
+    const f = (snap && snap.fields) || {};
+    if (f.travelerCount) lines.push("Travelers: " + f.travelerCount);
+    if (snap && snap.grand != null)
+      lines.push("Their grand total: " + fmt(snap.grand));
+    if (snap && snap.savedAt)
+      lines.push("Saved: " + new Date(snap.savedAt).toLocaleString());
+    return lines.join("\n");
+  }
+
+  function agoText(epochSec) {
+    const s = Math.max(0, Math.floor(Date.now() / 1000) - epochSec);
+    if (s < 90) return "just now";
+    if (s < 5400) return Math.round(s / 60) + "m ago";
+    if (s < 129600) return Math.round(s / 3600) + "h ago";
+    return Math.round(s / 86400) + "d ago";
+  }
+
+  function renderScenarioChips(others) {
+    const mount = document.getElementById("scenarioMount");
+    if (!mount) return;
+    if (!others.length) {
+      mount.innerHTML = "";
+      return;
+    }
+    mount.innerHTML =
+      '<section class="scenario-strip"><span class="ss-h">Also planning:</span>' +
+      others
+        .map((o, i) => {
+          const g =
+            o.snapshot && o.snapshot.grand != null
+              ? " · est. " + fmt(o.snapshot.grand)
+              : "";
+          return (
+            '<span class="ss-chip"><strong>' +
+            escHtml(o.name) +
+            "</strong> — " +
+            agoText(o.updated_at) +
+            escHtml(g) +
+            ' <button type="button" class="ss-btn" data-ss-view="' + i + '">View</button>' +
+            '<button type="button" class="ss-btn" data-ss-load="' + i + '">Load</button></span>'
+          );
+        })
+        .join("") +
+      "</section>";
+    mount.querySelectorAll("[data-ss-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const o = others[+btn.dataset.ssView];
+        modalTitle.textContent = o.name + "’s picks";
+        modalNote.style.display = "none";
+        shareOutput.value = describeScenario(o.snapshot);
+        modalOverlay.classList.add("open");
+      });
+    });
+    mount.querySelectorAll("[data-ss-load]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const o = others[+btn.dataset.ssLoad];
+        if (
+          !window.confirm(
+            "Load " + o.name + "’s picks? This replaces your current selections.",
+          )
+        )
+          return;
+        try {
+          applyScenario(o.snapshot);
+          renderItinerary();
+        } catch (e) {
+          console.error("couldn’t load " + o.name + "’s picks:", e);
+        }
+      });
+    });
+  }
+
+  async function initScenarioSync() {
+    const API = (window.__API_BASE || "").replace(/\/+$/, "");
+    if (!API || !document.getElementById("scenarioMount")) return;
+    __scenarioSync.api = API;
+    __scenarioSync.slug = tripSlug();
+    let data;
+    try {
+      const res = await fetch(
+        API + "/api/scenario?trip=" + encodeURIComponent(__scenarioSync.slug),
+        { credentials: "include" },
+      );
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (e) {
+      return; // signed out / offline — the strip just doesn't render
+    }
+    // A newer copy of my own picks on the server (saved from another
+    // device). Compared against the snapshot found at page load — not the
+    // current localStorage — so the default-state snapshot the debounced
+    // save writes moments after load can't shadow the server copy.
+    const mine = data && data.mine;
+    if (
+      mine &&
+      mine.snapshot &&
+      mine.snapshot.v === SCENARIO_VERSION &&
+      (mine.snapshot.savedAt || 0) > __localSavedAt
+    ) {
+      __restoringScenario = true;
+      try {
+        applyScenario(mine.snapshot);
+        renderItinerary();
+      } catch (e) {
+        console.error("couldn’t apply the server copy of your picks:", e);
+      } finally {
+        __restoringScenario = false;
+      }
+      persistScenario();
+    } else {
+      scheduleScenarioPush(); // make sure the server has my latest
+    }
+    renderScenarioChips((data && data.others) || []);
+  }
+
   function recalc() {
     applyRatingFilter();
 
@@ -912,6 +1242,7 @@ const TRIP = window.TRIP;
     TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
       window.__state[c] = HOTELS[c].options[selectedIndex(c + "Tier")];
     });
+    persistScenario();
   }
 
   function toDate(iso) {
@@ -2129,38 +2460,6 @@ const TRIP = window.TRIP;
     window.scrollTo(0, 0);
   }
 
-  // ── validate the TRIP data model (issue #5) ───────────────────────
-  // Checks the key alignment that a generated trip can silently get wrong:
-  // every route/optional city has hotels + itinerary days, the flex-night
-  // default is a real city, and every itinPool day's lodging/move references
-  // an existing hotel/leg. Returns a list of human-readable problems.
-  function validateTrip() {
-    const problems = [];
-    const legIds = TRIP.transport.legs.map((l) => l.id);
-    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
-      if (!HOTELS[c]) problems.push(`city "${c}" has no hotels entry`);
-      if (!ITIN_POOL[c])
-        problems.push(`city "${c}" has no itinerary (itinPool) entry`);
-    });
-    if (!TRIP.meta.route.includes(TRIP.meta.flexNightDefault))
-      problems.push(
-        `flexNightDefault "${TRIP.meta.flexNightDefault}" is not a route city`,
-      );
-    Object.keys(ITIN_POOL).forEach((city) => {
-      ITIN_POOL[city].forEach((day) => {
-        if (day.lodging && !HOTELS[day.lodging])
-          problems.push(
-            `itinPool ${day.id}: lodging "${day.lodging}" has no hotel`,
-          );
-        if (day.move && !legIds.includes(day.move))
-          problems.push(
-            `itinPool ${day.id}: move "${day.move}" is not a transport leg`,
-          );
-      });
-    });
-    return problems;
-  }
-
   // ── "Re-plan these dates" panel (progressive enhancement) ─────────
   // Opt-in only: nothing fetches on load, so a static planner with no
   // API base configured behaves exactly as before. When window.__API_BASE
@@ -2172,9 +2471,7 @@ const TRIP = window.TRIP;
     const mount = document.getElementById("replanMount");
     if (!API || !mount) return; // feature off — planner stays fully static
 
-    const slug = (location.pathname.split("/").pop() || "")
-      .replace(/-trip-planner\.html$/, "")
-      .replace(/\.html$/, "");
+    const slug = tripSlug();
     const d = (TRIP.meta && TRIP.meta.dates) || {};
     const esc = (s) =>
       String(s == null ? "" : s).replace(/[&<>"]/g, (c) =>
@@ -2189,6 +2486,12 @@ const TRIP = window.TRIP;
       '<label class="replan-field">New start<input type="date" id="replanStart" value="' + esc(d.arrive) + '"></label>' +
       '<label class="replan-field">New end<input type="date" id="replanEnd" value="' + esc(d.depart) + '"></label>' +
       '<button type="button" id="replanBtn" class="generate-btn">Get AI briefing</button>' +
+      "</div>" +
+      '<div class="replan-row">' +
+      '<label class="replan-field replan-instr">Or describe a change' +
+      '<input type="text" id="replanInstr" maxlength="500" placeholder="e.g. one less night in ' +
+      esc(HOTELS[TRIP.meta.route[0]] ? HOTELS[TRIP.meta.route[0]].label : "the first stop") +
+      ', or swap a city"></label>' +
       "</div>" +
       '<div class="replan-out" id="replanOut" hidden></div>' +
       "</section>";
@@ -2241,6 +2544,38 @@ const TRIP = window.TRIP;
           (est.subtotal != null ? ' · <span class="rb-sub">≈ ' + money(est.subtotal) + " flights + lodging</span>" : "") +
           "</div>"
         : "";
+      // AI-proposed edits (from a free-text instruction) with Apply buttons
+      const cityLabel = (k) => (HOTELS[k] && HOTELS[k].label) || k;
+      const describeDelta = (c) => {
+        if (c.op === "set_dates") return "Dates → " + esc(c.start) + " to " + esc(c.end);
+        if (c.op === "set_nights")
+          return esc(cityLabel(c.city)) + " → " + c.nights + " night" + (c.nights === 1 ? "" : "s");
+        if (c.op === "add_city") return "Add " + esc(cityLabel(c.city));
+        if (c.op === "remove_city") return "Remove " + esc(cityLabel(c.city));
+        return esc(c.reason || c.op);
+      };
+      const pcs = b.proposed_changes || [];
+      const deltasHtml = pcs.length
+        ? '<div class="replan-deltas"><span class="rd-h">Proposed edits</span><ul>' +
+          pcs
+            .map(
+              (c, i) =>
+                '<li><span class="rd-desc">' + describeDelta(c) + "</span>" +
+                (c.reason && c.op !== "note" ? ' <span class="rd-why">' + esc(c.reason) + "</span>" : "") +
+                (c.op !== "note"
+                  ? ' <button type="button" class="ss-btn" data-apply-delta="' + i + '">Apply</button>'
+                  : "") +
+                "</li>",
+            )
+            .join("") +
+          "</ul>" +
+          (pcs.filter((c) => c.op !== "note").length > 1
+            ? '<button type="button" class="ss-btn" id="applyAllDeltas">Apply all</button>'
+            : "") +
+          "</div>"
+        : "";
+      const applyDatesHtml =
+        '<button type="button" class="ss-btn" id="applyDatesBtn">Apply these dates to the planner</button>';
       return (
         '<div class="replan-brief">' +
         '<div class="replan-verdict v-' + esc(b.verdict) + '">' + esc(b.verdict || "") +
@@ -2250,10 +2585,44 @@ const TRIP = window.TRIP;
         (flags ? '<div class="replan-flags"><span class="rf-h">Watch:</span><ul>' + flags + "</ul></div>" : "") +
         (b.recommendation ? '<p class="replan-rec"><strong>Recommendation:</strong> ' + esc(b.recommendation) + "</p>" : "") +
         budgetHtml +
+        deltasHtml +
+        '<p class="replan-apply-row">' + applyDatesHtml + "</p>" +
         '<p class="replan-meta">' + esc(data.model || "") + cost +
         " · grounded in weather, holidays, events, the travel advisory, flight fares &amp; lodging rates (when enabled) for the new dates. Estimate covers flights + lodging only; verify before booking.</p>" +
         "</div>"
       );
+    }
+
+    // Wire the Apply buttons after a briefing lands in the DOM.
+    function wireBriefingActions(data) {
+      const b = data.briefing || {};
+      const pcs = b.proposed_changes || [];
+      const applyBtn = document.getElementById("applyDatesBtn");
+      if (applyBtn && data.to && data.to.start && data.to.end) {
+        applyBtn.addEventListener("click", () => {
+          applyDates(data.to.start, data.to.end);
+          applyBtn.textContent = "Applied ✓";
+          applyBtn.disabled = true;
+        });
+      } else if (applyBtn) {
+        applyBtn.remove();
+      }
+      const runDelta = (i, btn) => {
+        const problem = applyDelta(pcs[i]);
+        btn.textContent = problem ? "✕ " + problem : "Applied ✓";
+        btn.disabled = true;
+      };
+      out.querySelectorAll("[data-apply-delta]").forEach((btn) => {
+        btn.addEventListener("click", () => runDelta(+btn.dataset.applyDelta, btn));
+      });
+      const all = document.getElementById("applyAllDeltas");
+      if (all)
+        all.addEventListener("click", () => {
+          out.querySelectorAll("[data-apply-delta]").forEach((btn) => {
+            if (!btn.disabled) runDelta(+btn.dataset.applyDelta, btn);
+          });
+          all.disabled = true;
+        });
     }
 
     btn.addEventListener("click", async () => {
@@ -2262,14 +2631,32 @@ const TRIP = window.TRIP;
       if (!start || !end) return show('<p class="replan-err">Pick a start and an end date.</p>');
       if (end <= start) return show('<p class="replan-err">The end date needs to be after the start.</p>');
 
+      const instr = (document.getElementById("replanInstr") || { value: "" }).value.trim();
       const label = btn.textContent;
       btn.disabled = true;
       btn.textContent = "Thinking…";
       show('<p class="replan-loading">Pulling weather, holidays, events and the advisory for ' + esc(start) + " → " + esc(end) + "…</p>");
       try {
-        const url = API + "/api/replan?trip=" + encodeURIComponent(slug) +
-          "&start=" + encodeURIComponent(start) + "&end=" + encodeURIComponent(end);
-        const res = await fetch(url, { credentials: "include" });
+        // A free-text instruction rides in a POST body (with the currently
+        // selected nights, so "one less night in X" resolves to a target).
+        const res = instr
+          ? await fetch(API + "/api/replan", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                trip: slug,
+                start,
+                end,
+                instruction: instr,
+                nights: (window.__state && window.__state.nights) || null,
+              }),
+            })
+          : await fetch(
+              API + "/api/replan?trip=" + encodeURIComponent(slug) +
+                "&start=" + encodeURIComponent(start) + "&end=" + encodeURIComponent(end),
+              { credentials: "include" },
+            );
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
         if (data.configured === false) {
@@ -2277,6 +2664,7 @@ const TRIP = window.TRIP;
           return;
         }
         show(renderBriefing(data));
+        wireBriefingActions(data);
       } catch (err) {
         if (err instanceof TypeError) {
           // fetch() itself failed. With the API up this is almost always a
@@ -2298,8 +2686,138 @@ const TRIP = window.TRIP;
     });
   }
 
+  // ── apply proposed dates / AI edit deltas to the live planner ─────
+  // Everything routes through existing user-reachable state (dates,
+  // NIGHT_STATE) — costs, hotels, and itinPool are never written, so the
+  // 2-adult and experience-only invariants hold by construction.
+  function applyDates(start, end) {
+    TRIP.meta.dates.arrive = start;
+    TRIP.meta.dates.depart = end;
+    TRIP.meta.dates.nights = Math.round((toDate(end) - toDate(start)) / 86400000);
+    TRIP_START = start;
+    // keep the selected nights matching the new window via the flex city
+    const target = TRIP.meta.dates.nights;
+    const current = Object.values(NIGHT_STATE).reduce((a, b) => a + b, 0);
+    const flex = TRIP.meta.flexNightDefault;
+    if (target !== current && flex && NIGHT_STATE[flex] != null) {
+      NIGHT_STATE[flex] = Math.min(
+        NIGHT_MAX,
+        Math.max(nightMin(flex), NIGHT_STATE[flex] + (target - current)),
+      );
+    }
+    renderNightSteppers();
+    recalc();
+    renderItinerary();
+    const rs = document.getElementById("replanStart");
+    const re = document.getElementById("replanEnd");
+    if (rs) rs.value = start;
+    if (re) re.value = end;
+    showDatesBanner(start, end);
+  }
+
+  function showDatesBanner(start, end) {
+    const mount = document.getElementById("replanMount");
+    if (!mount) return;
+    let b = document.getElementById("datesBanner");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "datesBanner";
+      b.className = "dates-banner no-print";
+      mount.insertBefore(b, mount.firstChild);
+    }
+    b.innerHTML =
+      "Planner shifted to <strong>" +
+      fmtDate(toDate(start)) + " → " + fmtDate(toDate(end)) +
+      "</strong> — reload the page to reset. " +
+      '<button type="button" id="datesBannerClose" aria-label="dismiss">✕</button>';
+    document
+      .getElementById("datesBannerClose")
+      .addEventListener("click", () => b.remove());
+  }
+
+  // One AI-proposed edit. Returns null on success, or a human-readable
+  // reason it couldn't be applied. Unknown city keys are refused, never
+  // guessed.
+  function applyDelta(c) {
+    if (!c || typeof c !== "object") return "not a change";
+    if (c.op === "note") return null; // informational — nothing to apply
+    if (c.op === "set_dates") {
+      if (c.start && c.end && c.end > c.start) {
+        applyDates(c.start, c.end);
+        return null;
+      }
+      return "needs a valid start and end date";
+    }
+    const cities = TRIP.meta.route.concat(TRIP.meta.optionalCities);
+    if (!cities.includes(c.city)) return 'unknown city "' + (c.city || "?") + '"';
+    if (c.op === "set_nights") {
+      NIGHT_STATE[c.city] = Math.min(
+        NIGHT_MAX,
+        Math.max(nightMin(c.city), Math.round(c.nights) || 0),
+      );
+    } else if (c.op === "add_city") {
+      if (!TRIP.meta.optionalCities.includes(c.city)) return "not an optional city";
+      NIGHT_STATE[c.city] = Math.max(1, NIGHT_STATE[c.city] || 0);
+    } else if (c.op === "remove_city") {
+      if (!TRIP.meta.optionalCities.includes(c.city))
+        return "route cities can't be removed (try set_nights instead)";
+      NIGHT_STATE[c.city] = 0;
+    } else {
+      return 'unknown operation "' + c.op + '"';
+    }
+    renderNightSteppers();
+    recalc();
+    renderItinerary();
+    return null;
+  }
+
+  // ── "Live" strip (progressive enhancement) ────────────────────────
+  // When the API base is configured, show what changed since the back
+  // end's previous data pulls (the daily cron keeps them fresh): advisory
+  // level moves, new events/holidays in the window, fare and nightly-rate
+  // deltas. Silent on any error — a static planner never fetches.
+  async function initLiveStrip() {
+    const API = (window.__API_BASE || "").replace(/\/+$/, "");
+    const mount = document.getElementById("liveMount");
+    if (!API || !mount) return;
+    const slug = (location.pathname.split("/").pop() || "")
+      .replace(/-trip-planner\.html$/, "")
+      .replace(/\.html$/, "");
+    let data;
+    try {
+      const res = await fetch(
+        API + "/api/changes?trip=" + encodeURIComponent(slug),
+        { credentials: "include" },
+      );
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (e) {
+      return; // signed out / offline — the strip just doesn't render
+    }
+    if (!data || !data.last_pull_at) return; // nothing pulled yet
+    const esc = (s) =>
+      String(s == null ? "" : s).replace(
+        /[&<>"]/g,
+        (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+      );
+    const ago = (() => {
+      const s = Math.max(0, Math.floor(Date.now() / 1000) - data.last_pull_at);
+      if (s < 5400) return Math.max(1, Math.round(s / 60)) + "m ago";
+      if (s < 129600) return Math.round(s / 3600) + "h ago";
+      return Math.round(s / 86400) + "d ago";
+    })();
+    const parts = (data.changes || []).map((c) => esc(c.detail));
+    mount.innerHTML =
+      '<div class="live-strip"><span class="ls-dot" aria-hidden="true"></span>' +
+      "<span class=\"ls-h\">Live</span> " +
+      (parts.length
+        ? parts.map((p) => "<span class=\"ls-item\">" + p + "</span>").join("")
+        : '<span class="ls-item ls-quiet">no changes since the last check</span>') +
+      '<span class="ls-meta">checked ' + esc(ago) + "</span></div>";
+  }
+
   function initPlanner() {
-    const problems = validateTrip();
+    const problems = validateTrip(TRIP); // shared with scripts/validate-trip.mjs
     if (problems.length) {
       console.error("TRIP validation failed:", problems);
       const banner = document.createElement("div");
@@ -2311,6 +2829,7 @@ const TRIP = window.TRIP;
         problems.join("\n• ");
       document.body.insertBefore(banner, document.body.firstChild);
     }
+    restoreScenario(); // saved picks (if any) before the first itinerary paint
     // optional packaged-quote comparison note (hidden for DIY trips)
     const rn = document.getElementById("referenceNote");
     if (TRIP.meta.reference && TRIP.meta.reference.blurb)
@@ -2491,6 +3010,8 @@ const TRIP = window.TRIP;
       .addEventListener("input", renderItinerary);
     renderItinerary();
     initReplan(); // opt-in "re-plan these dates" panel (no-op if no API base)
+    initLiveStrip(); // opt-in "what changed" strip (no-op if no API base)
+    initScenarioSync(); // opt-in shared scenarios (no-op if no API base)
     // A shared "#itinerary" link opens straight to the day-by-day.
     if (location.hash === "#itinerary") showTab("itin");
   }

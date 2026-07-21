@@ -1,6 +1,16 @@
 export default {
     meta: {
       title: "Yellowstone & Grand Teton — Sep 2027",
+      // hub card (index page): emoji, display title, stops line, blurb, sort order
+      hub: {
+        order: 2,
+        emoji: "🏔️",
+        title: "Yellowstone & Grand Teton",
+        meta: "Jackson · Old Faithful · Canyon · Mammoth",
+        go: "Yellowstone",
+        blurb:
+          "A driving loop through the Tetons and the Yellowstone grand loop — open-jaw flights, park-lodge or cabin tiers, and a rental SUV with fuel and park pass folded into the total.",
+      },
       route: ["jackson", "oldFaithful", "canyon", "mammoth"],
       optionalCities: [],
       flexNightDefault: "jackson",

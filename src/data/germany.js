@@ -1,6 +1,16 @@
 export default {
   meta: {
     title: "Christmas Markets in Germany by Rail — Dec 2027",
+    // hub card (index page): emoji, display title, stops line, blurb, sort order
+    hub: {
+      order: 9,
+      emoji: "🎄",
+      title: "Christmas in Germany",
+      meta: "Nuremberg · Rothenburg · Munich",
+      go: "Germany",
+      blurb:
+        "Christmas markets by rail — the Christkindlesmarkt, Rothenburg's walled old town at dusk, and Marienplatz under the lights, with glühwein at every stop.",
+    },
     route: ["nuremberg", "rothenburg", "munich"],
     optionalCities: [],
     flexNightDefault: "munich",
