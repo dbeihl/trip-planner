@@ -29,8 +29,10 @@ ALLOWED_ORIGIN = "https://dbeihl.github.io"
 # CF_ACCESS_AUD is set as a secret.
 CF_ACCESS_TEAM_DOMAIN = "delicate-dust-d38a.cloudflareaccess.com"
 
-# Optional model override for the Phase 3 re-plan (defaults to claude-haiku-4-5).
-#   CLAUDE_MODEL = "claude-sonnet-5"
+# Model for the Phase 3 re-plan briefing (default claude-haiku-4-5). Sonnet 5
+# chosen 2026-07-21 — at ~50 briefings/month the cost delta is cents and the
+# recommendations get meaningfully sharper.
+CLAUDE_MODEL = "claude-sonnet-5"
 
 # Secrets (set with `wrangler secret put`, never in this file):
 #   TICKETMASTER_API_KEY   enables /api/events
