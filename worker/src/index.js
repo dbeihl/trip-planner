@@ -21,11 +21,17 @@
 //   GET /api/lodging        -> representative nightly hotel rate (?trip=<slug>)
 //   GET /api/context        -> all of the above for one trip, in parallel
 //   GET /api/replan         -> AI date-change briefing (?trip=<slug>&start=&end=)
+//   GET /api/changes        -> what changed since the previous pulls (?trip=<slug>)
 //   ...&fresh=1             -> bypass the cache on any data route
+//
+// A daily cron (wrangler.toml [triggers]) re-pulls advisories/holidays/events
+// for upcoming trips (fares too, close to departure), turning data_pull into a
+// per-trip history that /api/changes diffs.
 
 import { TRIPS } from "./trips.js";
 import { verifyAccess } from "./access.js";
 import { SourceError } from "./store.js";
+import { computeChanges } from "./changes.js";
 import { weather } from "./sources/weather.js";
 import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
@@ -157,6 +163,14 @@ export default {
       }, { env });
     }
 
+    // "What changed" strip: diff the two newest logged pulls per source.
+    if (url.pathname === "/api/changes") {
+      const slug = q.get("trip");
+      const info = slug ? TRIPS[slug] : null;
+      if (!info) return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
+      return json(await computeChanges(env, slug, info), { env });
+    }
+
     // AI date-change briefing (Phase 3). Needs a baseline trip + new dates.
     if (url.pathname === "/api/replan") {
       const slug = q.get("trip");
@@ -172,5 +186,32 @@ export default {
     }
 
     return json({ error: "not found" }, { status: 404, env });
+  },
+
+  // Daily cron (wrangler.toml [triggers]): refresh the free signals for every
+  // upcoming trip — and pricing close to departure, where it matters and the
+  // SerpAPI quota (100 searches/mo) can afford it. fresh:true forces a new
+  // data_pull row per source, so the log becomes a per-trip daily history.
+  async scheduled(event, env, ctx) {
+    const now = Date.now();
+    const today = new Date(now).toISOString().slice(0, 10);
+    const daysUntil = (iso) => (Date.parse(`${iso}T00:00:00Z`) - now) / 86400000;
+    const upcoming = Object.entries(TRIPS).filter(
+      ([, t]) => t.arrive && t.depart >= today && daysUntil(t.arrive) <= 180,
+    );
+
+    const work = (async () => {
+      for (const [slug, info] of upcoming) {
+        const cronCtx = { trip: slug, requestedBy: "cron", fresh: true, origin: null };
+        const jobs = [advisories(env, info, cronCtx), holidays(env, info, cronCtx), events(env, info, cronCtx)];
+        if (daysUntil(info.arrive) <= 90) {
+          if (env.DUFFEL_API_KEY || env.SERPAPI_KEY) jobs.push(flights(env, info, cronCtx));
+          if (env.SERPAPI_KEY) jobs.push(lodging(env, info, cronCtx));
+        }
+        // one failing source (or trip) must not kill the sweep
+        await Promise.allSettled(jobs);
+      }
+    })();
+    ctx.waitUntil(work);
   },
 };

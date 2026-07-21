@@ -13,6 +13,12 @@ database_name = "trip-planner"
 database_id = "96495dd1-a991-4742-b6b5-c482522e8e38"
 migrations_dir = "migrations"
 
+# Daily refresh of advisories/holidays/events (and near-departure pricing)
+# for upcoming trips — see the scheduled() handler. 11:00 UTC = early morning
+# US Eastern, before anyone looks at the planner.
+[triggers]
+crons = ["0 11 * * *"]
+
 [vars]
 # The GitHub Pages origin allowed to call this API (CORS).
 ALLOWED_ORIGIN = "https://dbeihl.github.io"

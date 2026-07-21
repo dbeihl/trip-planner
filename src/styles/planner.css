@@ -1662,3 +1662,46 @@
   font-weight: 700;
   color: var(--indigo);
 }
+
+/* ── "Live" what-changed strip (progressive enhancement) ─────────────
+   Rendered by engine.js initLiveStrip() into #liveMount, only when a
+   back-end base URL is configured and the cron has pulled data. */
+.live-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.8rem;
+  margin: 0 0 1.5rem;
+  padding: 0.55rem 0.9rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.live-strip .ls-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--indigo);
+  flex: 0 0 auto;
+}
+.live-strip .ls-h {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.live-strip .ls-item + .ls-item::before {
+  content: "· ";
+  color: var(--ink-soft);
+}
+.live-strip .ls-quiet {
+  color: var(--ink-soft);
+}
+.live-strip .ls-meta {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
