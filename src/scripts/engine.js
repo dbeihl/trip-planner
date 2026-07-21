@@ -554,6 +554,163 @@ const TRIP = window.TRIP;
     return Math.round(n).toLocaleString("en-US");
   }
 
+  // ── scenario persistence (localStorage) ───────────────────────────
+  // Selections survive a reload: recalc() snapshots the current picks
+  // into localStorage (one key per trip) and initPlanner() restores them
+  // on load. Fail-soft by design: a snapshot saved against an older data
+  // module restores whatever still matches and silently drops the rest;
+  // an unrestorable snapshot is cleared and the defaults load instead.
+  const SCENARIO_VERSION = 1;
+  function tripSlug() {
+    return (location.pathname.split("/").pop() || "")
+      .replace(/-trip-planner\.html$/, "")
+      .replace(/\.html$/, "");
+  }
+  const SCENARIO_KEY = "tripPlanner:scenario:" + (tripSlug() || "index");
+  const SCENARIO_FIELDS = [
+    "travelerCount",
+    "minRating",
+    "driveMiles",
+    "driveMpg",
+    "driveDays",
+    "driveStopRate",
+  ];
+  let __restoringScenario = false;
+  let __persistTimer = null;
+
+  function captureScenario() {
+    const radios = {};
+    document
+      .querySelectorAll('input[type="radio"]:checked')
+      .forEach((el) => (radios[el.name] = el.value));
+    const fields = {};
+    SCENARIO_FIELDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) fields[id] = el.value;
+    });
+    const sp = document.getElementById("showPrices");
+    fields.showPrices = !!(sp && sp.checked);
+    const other = {};
+    document.querySelectorAll(".other-code").forEach((el) => {
+      other[el.dataset.slot] = { code: el.value };
+    });
+    document.querySelectorAll(".other-fare").forEach((el) => {
+      (other[el.dataset.slot] = other[el.dataset.slot] || {}).fare = el.value;
+    });
+    return {
+      v: SCENARIO_VERSION,
+      trip: tripSlug(),
+      savedAt: Date.now(),
+      radios,
+      fields,
+      nights: Object.assign({}, NIGHT_STATE),
+      origins: {
+        solo: originChoice.solo,
+        slots: originChoice.slots.slice(),
+        pax: originChoice.pax.slice(),
+        other,
+      },
+      datesOverride: null,
+      grand: window.__state ? window.__state.grand : null,
+    };
+  }
+
+  function persistScenario() {
+    if (__restoringScenario) return;
+    clearTimeout(__persistTimer);
+    __persistTimer = setTimeout(() => {
+      try {
+        localStorage.setItem(SCENARIO_KEY, JSON.stringify(captureScenario()));
+      } catch (e) {} // storage blocked/full — persistence is best-effort
+    }, 500);
+  }
+
+  function applyScenario(snap) {
+    const setRadio = (name, value) => {
+      const el = document.querySelector(
+        'input[name="' + name + '"][value="' + value + '"]',
+      );
+      if (el) el.checked = true;
+    };
+    const radios = snap.radios || {};
+    // structural radios first — the origin/drive DOM depends on them
+    ["sameAirport", "arriveMode", "renting"].forEach((n) => {
+      if (radios[n] != null) setRadio(n, radios[n]);
+    });
+    const nights = snap.nights || {};
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
+      const n = parseInt(nights[c], 10);
+      if (!isNaN(n))
+        NIGHT_STATE[c] = Math.min(NIGHT_MAX, Math.max(nightMin(c), n));
+    });
+    const o = snap.origins || {};
+    const validOrigin = (k) => k === "__other" || ALL_ORIGINS.includes(k);
+    if (validOrigin(o.solo)) originChoice.solo = o.solo;
+    if (Array.isArray(o.slots))
+      o.slots.forEach((k, i) => {
+        if (i < originChoice.slots.length && validOrigin(k))
+          originChoice.slots[i] = k;
+      });
+    if (Array.isArray(o.pax))
+      o.pax.forEach((p, i) => {
+        const n = parseInt(p, 10);
+        if (i < originChoice.pax.length && !isNaN(n))
+          originChoice.pax[i] = Math.max(0, n);
+      });
+    // rebuild the dependent DOM, then lay the remaining picks onto it
+    applyArriveMode();
+    renderOrigins();
+    renderNightSteppers();
+    Object.keys(radios).forEach((n) => setRadio(n, radios[n]));
+    const fields = snap.fields || {};
+    SCENARIO_FIELDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && fields[id] != null) el.value = fields[id];
+    });
+    const sp = document.getElementById("showPrices");
+    if (sp && typeof fields.showPrices === "boolean")
+      sp.checked = fields.showPrices;
+    if (sp) SHOW_PRICES = sp.checked;
+    const pace = selectedValue("itinpace");
+    if (pace) ITIN_PACE = pace;
+    const other = o.other || {};
+    Object.keys(other).forEach((slot) => {
+      const code = document.querySelector(
+        '.other-code[data-slot="' + slot + '"]',
+      );
+      const fare = document.querySelector(
+        '.other-fare[data-slot="' + slot + '"]',
+      );
+      if (code && other[slot].code != null) code.value = other[slot].code;
+      if (fare && other[slot].fare != null) fare.value = other[slot].fare;
+    });
+    recalc();
+  }
+
+  function restoreScenario() {
+    let snap = null;
+    try {
+      snap = JSON.parse(localStorage.getItem(SCENARIO_KEY) || "null");
+    } catch (e) {
+      try {
+        localStorage.removeItem(SCENARIO_KEY); // corrupt — clear it
+      } catch (e2) {}
+    }
+    if (!snap || snap.v !== SCENARIO_VERSION) return;
+    __restoringScenario = true;
+    try {
+      applyScenario(snap);
+    } catch (e) {
+      // a snapshot this data module can't restore — drop it, load defaults
+      try {
+        localStorage.removeItem(SCENARIO_KEY);
+      } catch (e2) {}
+      console.error("scenario restore failed, using defaults:", e);
+    } finally {
+      __restoringScenario = false;
+    }
+  }
+
   function recalc() {
     applyRatingFilter();
 
@@ -911,6 +1068,7 @@ const TRIP = window.TRIP;
     TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
       window.__state[c] = HOTELS[c].options[selectedIndex(c + "Tier")];
     });
+    persistScenario();
   }
 
   function toDate(iso) {
@@ -2101,9 +2259,7 @@ const TRIP = window.TRIP;
     const mount = document.getElementById("replanMount");
     if (!API || !mount) return; // feature off — planner stays fully static
 
-    const slug = (location.pathname.split("/").pop() || "")
-      .replace(/-trip-planner\.html$/, "")
-      .replace(/\.html$/, "");
+    const slug = tripSlug();
     const d = (TRIP.meta && TRIP.meta.dates) || {};
     const esc = (s) =>
       String(s == null ? "" : s).replace(/[&<>"]/g, (c) =>
@@ -2240,6 +2396,7 @@ const TRIP = window.TRIP;
         problems.join("\n• ");
       document.body.insertBefore(banner, document.body.firstChild);
     }
+    restoreScenario(); // saved picks (if any) before the first itinerary paint
     // optional packaged-quote comparison note (hidden for DIY trips)
     const rn = document.getElementById("referenceNote");
     if (TRIP.meta.reference && TRIP.meta.reference.blurb)
