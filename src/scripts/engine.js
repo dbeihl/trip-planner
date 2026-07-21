@@ -577,6 +577,7 @@ const TRIP = window.TRIP;
   ];
   let __restoringScenario = false;
   let __persistTimer = null;
+  let __localSavedAt = 0; // savedAt of the snapshot found at page load (0 = none)
 
   function captureScenario() {
     const radios = {};
@@ -622,6 +623,7 @@ const TRIP = window.TRIP;
       try {
         localStorage.setItem(SCENARIO_KEY, JSON.stringify(captureScenario()));
       } catch (e) {} // storage blocked/full — persistence is best-effort
+      scheduleScenarioPush();
     }, 500);
   }
 
@@ -697,6 +699,7 @@ const TRIP = window.TRIP;
       } catch (e2) {}
     }
     if (!snap || snap.v !== SCENARIO_VERSION) return;
+    __localSavedAt = snap.savedAt || 0;
     __restoringScenario = true;
     try {
       applyScenario(snap);
@@ -709,6 +712,175 @@ const TRIP = window.TRIP;
     } finally {
       __restoringScenario = false;
     }
+  }
+
+  // ── shared scenarios (progressive enhancement) ────────────────────
+  // When the API base is configured, the snapshot above also syncs to
+  // the back end (keyed by each traveler's Access sign-in), and the Plan
+  // tab shows the other travelers' saved picks. Without an API base
+  // nothing here runs — the localStorage layer stands alone and the
+  // planner stays fully static.
+  const __scenarioSync = { api: null, slug: null, timer: null };
+
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+    );
+  }
+
+  function scheduleScenarioPush() {
+    if (!__scenarioSync.api) return;
+    clearTimeout(__scenarioSync.timer);
+    __scenarioSync.timer = setTimeout(() => {
+      try {
+        fetch(
+          __scenarioSync.api +
+            "/api/scenario?trip=" +
+            encodeURIComponent(__scenarioSync.slug),
+          {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(captureScenario()),
+          },
+        ).catch(() => {}); // offline/signed-out — local copy still saved
+      } catch (e) {}
+    }, 2000);
+  }
+
+  // human summary of a traveler's snapshot, decoded against this trip's data
+  function describeScenario(snap) {
+    const lines = [];
+    const radios = (snap && snap.radios) || {};
+    const nights = (snap && snap.nights) || {};
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
+      if (!HOTELS[c]) return;
+      const n = nights[c] != null ? nights[c] : "?";
+      const idx = parseInt(radios[c + "Tier"], 10);
+      const opt = HOTELS[c].options[isNaN(idx) ? 0 : idx];
+      lines.push(
+        HOTELS[c].label +
+          ": " +
+          n +
+          " night" +
+          (n === 1 ? "" : "s") +
+          (opt ? " — " + opt.name + " ($" + opt.rate + "/night/room)" : ""),
+      );
+    });
+    const f = (snap && snap.fields) || {};
+    if (f.travelerCount) lines.push("Travelers: " + f.travelerCount);
+    if (snap && snap.grand != null)
+      lines.push("Their grand total: " + fmt(snap.grand));
+    if (snap && snap.savedAt)
+      lines.push("Saved: " + new Date(snap.savedAt).toLocaleString());
+    return lines.join("\n");
+  }
+
+  function agoText(epochSec) {
+    const s = Math.max(0, Math.floor(Date.now() / 1000) - epochSec);
+    if (s < 90) return "just now";
+    if (s < 5400) return Math.round(s / 60) + "m ago";
+    if (s < 129600) return Math.round(s / 3600) + "h ago";
+    return Math.round(s / 86400) + "d ago";
+  }
+
+  function renderScenarioChips(others) {
+    const mount = document.getElementById("scenarioMount");
+    if (!mount) return;
+    if (!others.length) {
+      mount.innerHTML = "";
+      return;
+    }
+    mount.innerHTML =
+      '<section class="scenario-strip"><span class="ss-h">Also planning:</span>' +
+      others
+        .map((o, i) => {
+          const g =
+            o.snapshot && o.snapshot.grand != null
+              ? " · est. " + fmt(o.snapshot.grand)
+              : "";
+          return (
+            '<span class="ss-chip"><strong>' +
+            escHtml(o.name) +
+            "</strong> — " +
+            agoText(o.updated_at) +
+            escHtml(g) +
+            ' <button type="button" class="ss-btn" data-ss-view="' + i + '">View</button>' +
+            '<button type="button" class="ss-btn" data-ss-load="' + i + '">Load</button></span>'
+          );
+        })
+        .join("") +
+      "</section>";
+    mount.querySelectorAll("[data-ss-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const o = others[+btn.dataset.ssView];
+        modalTitle.textContent = o.name + "’s picks";
+        modalNote.style.display = "none";
+        shareOutput.value = describeScenario(o.snapshot);
+        modalOverlay.classList.add("open");
+      });
+    });
+    mount.querySelectorAll("[data-ss-load]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const o = others[+btn.dataset.ssLoad];
+        if (
+          !window.confirm(
+            "Load " + o.name + "’s picks? This replaces your current selections.",
+          )
+        )
+          return;
+        try {
+          applyScenario(o.snapshot);
+          renderItinerary();
+        } catch (e) {
+          console.error("couldn’t load " + o.name + "’s picks:", e);
+        }
+      });
+    });
+  }
+
+  async function initScenarioSync() {
+    const API = (window.__API_BASE || "").replace(/\/+$/, "");
+    if (!API || !document.getElementById("scenarioMount")) return;
+    __scenarioSync.api = API;
+    __scenarioSync.slug = tripSlug();
+    let data;
+    try {
+      const res = await fetch(
+        API + "/api/scenario?trip=" + encodeURIComponent(__scenarioSync.slug),
+        { credentials: "include" },
+      );
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (e) {
+      return; // signed out / offline — the strip just doesn't render
+    }
+    // A newer copy of my own picks on the server (saved from another
+    // device). Compared against the snapshot found at page load — not the
+    // current localStorage — so the default-state snapshot the debounced
+    // save writes moments after load can't shadow the server copy.
+    const mine = data && data.mine;
+    if (
+      mine &&
+      mine.snapshot &&
+      mine.snapshot.v === SCENARIO_VERSION &&
+      (mine.snapshot.savedAt || 0) > __localSavedAt
+    ) {
+      __restoringScenario = true;
+      try {
+        applyScenario(mine.snapshot);
+        renderItinerary();
+      } catch (e) {
+        console.error("couldn’t apply the server copy of your picks:", e);
+      } finally {
+        __restoringScenario = false;
+      }
+      persistScenario();
+    } else {
+      scheduleScenarioPush(); // make sure the server has my latest
+    }
+    renderScenarioChips((data && data.others) || []);
   }
 
   function recalc() {
@@ -2576,6 +2748,7 @@ const TRIP = window.TRIP;
       .addEventListener("input", renderItinerary);
     renderItinerary();
     initReplan(); // opt-in "re-plan these dates" panel (no-op if no API base)
+    initScenarioSync(); // opt-in shared scenarios (no-op if no API base)
     // A shared "#itinerary" link opens straight to the day-by-day.
     if (location.hash === "#itinerary") showTab("itin");
   }

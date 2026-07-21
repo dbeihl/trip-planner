@@ -20,11 +20,14 @@
 //   GET /api/lodging        -> Amadeus nightly hotel rate for the window (?trip=<slug>)
 //   GET /api/context        -> all of the above for one trip, in parallel
 //   GET /api/replan         -> AI date-change briefing (?trip=<slug>&start=&end=)
+//   GET /api/scenario       -> saved selections: mine + the other travelers' (?trip=<slug>)
+//   PUT /api/scenario       -> upsert my saved selections (?trip=<slug>, JSON body)
 //   ...&fresh=1             -> bypass the cache on any data route
 
 import { TRIPS } from "./trips.js";
 import { verifyAccess } from "./access.js";
 import { SourceError } from "./store.js";
+import { getScenarios, putScenario } from "./scenario.js";
 import { weather } from "./sources/weather.js";
 import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
@@ -40,7 +43,7 @@ function corsHeaders(env) {
   const h = {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": "Content-Type, X-Dev-User",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, PUT, POST, OPTIONS",
     Vary: "Origin",
   };
   // Credentialed requests (the planner UI sends the Access cookie) require a
@@ -113,6 +116,19 @@ export default {
 
     const q = url.searchParams;
     const ctx = { trip: q.get("trip") || null, requestedBy: auth.email, fresh: q.get("fresh") === "1", origin: q.get("origin") || null };
+
+    // Saved scenarios: each traveler's planner selections, shared with the
+    // other travelers on the same trip.
+    if (url.pathname === "/api/scenario") {
+      const slug = q.get("trip");
+      if (!slug || !TRIPS[slug])
+        return json({ error: "need ?trip=<slug>", known: Object.keys(TRIPS) }, { status: 400, env });
+      if (request.method === "PUT") {
+        const r = await putScenario(env, slug, auth.email, await request.text());
+        return json(r.error ? { error: r.error } : r, { status: r.status || 200, env });
+      }
+      return json(await getScenarios(env, slug, auth.email), { env });
+    }
 
     // Single-source data routes.
     const routes = {
