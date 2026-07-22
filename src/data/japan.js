@@ -26,6 +26,7 @@ export default {
     },
     lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
     destLabel: "Tokyo", // gateway shown for an "Other airport" origin
+    visaForm: true, // emit the Japan MOFA "Travel Itinerary" sheet in the .xlsx
   },
   flights: {
     us: {

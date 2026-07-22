@@ -9,6 +9,7 @@
     --paper-raised: #f7f5ef;
     --ink: #201f1a;
     --ink-soft: #5a5648;
+    --ink-faint: #6b6656;
     --indigo: #26456b;
     --indigo-deep: #16293f;
     --indigo-wash: rgba(38, 69, 107, 0.08);
@@ -26,6 +27,7 @@
       --paper-raised: #201f19;
       --ink: #ece8dc;
       --ink-soft: #b0aa98;
+    --ink-faint: #8b8674;
       --indigo: #86a7cd;
       --indigo-deep: #b9cfe8;
       --indigo-wash: rgba(134, 167, 205, 0.12);
@@ -42,6 +44,7 @@
     --paper-raised: #201f19;
     --ink: #ece8dc;
     --ink-soft: #b0aa98;
+    --ink-faint: #8b8674;
     --indigo: #86a7cd;
     --indigo-deep: #b9cfe8;
     --indigo-wash: rgba(134, 167, 205, 0.12);
@@ -57,6 +60,7 @@
     --paper-raised: #f7f5ef;
     --ink: #201f1a;
     --ink-soft: #5a5648;
+    --ink-faint: #6b6656;
     --indigo: #26456b;
     --indigo-deep: #16293f;
     --indigo-wash: rgba(38, 69, 107, 0.08);
@@ -66,6 +70,12 @@
     --line-strong: #b7b09a;
     --good: #3f6b4a;
     --focus: #26456b;
+  }
+
+  :root {
+    /* height of the sticky site nav — sticky toolbars offset by this so they
+       pin *below* the nav instead of scrolling behind it */
+    --nav-h: 3.4rem;
   }
 
   * {
@@ -380,7 +390,6 @@
   /* --- leg connector --- */
   .leg {
     position: relative;
-    padding-left: 2rem;
     padding: 0.9rem 0 0.9rem 2rem;
     margin-bottom: 0.2rem;
   }
@@ -542,7 +551,7 @@
   /* --- summary panel --- */
   .summary {
     position: sticky;
-    top: 1.5rem;
+    top: calc(var(--nav-h) + 0.75rem);
     background: var(--paper-raised);
     border: 1px solid var(--line-strong);
     border-radius: 5px;
@@ -663,9 +672,13 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .sum-drawer,
-    .chev {
-      transition: none;
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
     }
   }
 
@@ -1033,7 +1046,7 @@
     padding: 0.85rem 1.05rem;
     margin-bottom: 1.5rem;
     position: sticky;
-    top: 0;
+    top: var(--nav-h);
     z-index: 20;
     box-shadow: 0 6px 20px -14px rgba(0, 0, 0, 0.4);
   }
@@ -1752,8 +1765,8 @@
     color: var(--ink);
   }
   .nightstep .ns-btn {
-    width: 1.55rem;
-    height: 1.55rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
     background: var(--paper-raised);
