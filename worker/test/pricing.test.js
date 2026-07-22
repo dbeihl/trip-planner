@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { distillDuffel, distillSerpFlights, flightsProvider } from "../src/sources/flights.js";
+import { condenseDuffel, distillDuffel, distillSerpFlights, flightsProvider } from "../src/sources/flights.js";
 import { distillSerpHotels, nightsBetween } from "../src/sources/lodging.js";
 
 const fixture = (name) =>
@@ -78,4 +78,28 @@ test("flightsProvider: Duffel wins, SerpAPI falls back, else null", () => {
 test("nightsBetween: whole nights from ISO dates", () => {
   assert.equal(nightsBetween("2026-11-14", "2026-11-22"), 8);
   assert.equal(nightsBetween("2028-05-14", "2028-05-20"), 6);
+});
+
+test("condenseDuffel: shrinks a huge body without changing what distillDuffel sees", () => {
+  const original = fixture("duffel-offers.json");
+  // inflate: pad each offer with the junk fields real Duffel responses carry
+  const bloated = {
+    data: {
+      offers: original.data.offers.map((o) => ({
+        ...o,
+        conditions: { x: "y".repeat(5000) },
+        passengers: Array.from({ length: 10 }, () => ({ blob: "z".repeat(2000) })),
+      })),
+    },
+  };
+  const condensed = condenseDuffel(JSON.stringify(bloated));
+  assert.ok(condensed.length < JSON.stringify(bloated).length / 5, "should shrink dramatically");
+  assert.deepStrictEqual(distillDuffel(JSON.parse(condensed)), distillDuffel(original));
+});
+
+test("condenseDuffel: caps at 50 offers and survives junk input", () => {
+  const many = { data: { offers: Array.from({ length: 200 }, (_, i) => ({ total_amount: String(100 + i), total_currency: "USD", owner: { iata_code: "AA" }, slices: [] })) } };
+  const out = JSON.parse(condenseDuffel(JSON.stringify(many)));
+  assert.strictEqual(out.data.offers.length, 50);
+  assert.strictEqual(condenseDuffel("not json{"), "not json{");
 });

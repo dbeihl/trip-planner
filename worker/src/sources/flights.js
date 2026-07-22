@@ -38,6 +38,26 @@ function shape(offers) {
   };
 }
 
+// Shrink a Duffel offer_requests body to what distillDuffel reads, capped at
+// 50 offers. Raw responses run 1–5MB and overflow a D1 parameter — the log
+// stores this condensed form instead (cache hits distill identically).
+// Pure — unit-tested. On unparsable input, returns the input unchanged.
+export function condenseDuffel(body) {
+  let j;
+  try {
+    j = JSON.parse(body);
+  } catch {
+    return body;
+  }
+  const offers = (((j || {}).data || {}).offers || []).slice(0, 50).map((o) => ({
+    total_amount: o.total_amount,
+    total_currency: o.total_currency,
+    owner: { iata_code: (o.owner && o.owner.iata_code) || null },
+    slices: (o.slices || []).map((s) => ({ segments: (s.segments || []).map(() => ({})) })),
+  }));
+  return JSON.stringify({ data: { offers } });
+}
+
 // Cheapest offers from a Duffel offer_requests response. Pure — unit-tested.
 export function distillDuffel(data) {
   const offers = (((data || {}).data || {}).offers || []).map((o) => ({
@@ -85,6 +105,7 @@ export async function flights(env, info, ctx) {
       endpoint: `${DUFFEL_BASE}/air/offer_requests?return_offers=true`,
       params,
       ...common,
+      condense: condenseDuffel,
       init: {
         method: "POST",
         headers: {
