@@ -101,8 +101,24 @@ export async function cachedFetch(env, opts) {
     throw new SourceError(`source error: ${source}`, { httpStatus });
   }
 
-  await insertPull(env, { ...base, response_json: body, status: "ok", http_status: httpStatus });
-  return { cached: false, raw: body, fetched_at: base.fetched_at, http_status: httpStatus };
+  // condense (optional): shrink a huge body before it's stored — the caller
+  // still gets the condensed raw back, so cache hits and misses look alike.
+  const stored = opts.condense ? opts.condense(body) : body;
+  try {
+    await insertPull(env, { ...base, response_json: stored, status: "ok", http_status: httpStatus });
+  } catch (err) {
+    // The log must never kill the request (a >~1MB body overflows a D1
+    // parameter and the INSERT throws — the Duffel bug of 2026-07-21).
+    // Record a stub as status "error" so it's never served as a cache hit.
+    await insertPull(env, {
+      ...base,
+      response_json: JSON.stringify({ error: "response too large to store", size: stored.length, detail: String(err) }),
+      status: "error",
+      http_status: httpStatus,
+    }).catch(() => {});
+    return { cached: false, raw: body, fetched_at: base.fetched_at, http_status: httpStatus };
+  }
+  return { cached: false, raw: stored, fetched_at: base.fetched_at, http_status: httpStatus };
 }
 
 export { SourceError };
