@@ -1137,11 +1137,16 @@ const TRIP = window.TRIP;
             " (scaled from the 2-traveler " +
             TRIP.meta.reference.label +
             ")";
-      deltaEl.textContent =
+      // Split into a short lead and the parenthetical caveat so the collapsed
+      // mobile price bar can show just the glanceable lead (the caveat is
+      // hidden there via CSS); desktop and the expanded view show both.
+      deltaEl.innerHTML =
+        '<span class="delta-lead">' +
         fmt(Math.abs(delta)) +
         (delta < 0 ? " under the " : " over the ") +
         refLabel +
-        " reference (ground only; flights extra)";
+        " reference</span> " +
+        '<span class="delta-caveat">(ground only; flights extra)</span>';
       deltaEl.className = delta < 0 ? "delta save" : "delta";
     } else {
       deltaEl.textContent = "";
@@ -2436,8 +2441,19 @@ const TRIP = window.TRIP;
       const a = root.getAttribute("data-theme");
       return a ? a === "dark" : mq.matches;
     };
-    // icon shows the mode you'd switch TO
-    const paint = () => (btn.textContent = isDark() ? "☀" : "☾");
+    // icon shows the mode you'd switch TO; the label only shows inside the
+    // mobile hamburger menu (hidden on desktop's round icon button).
+    const icon = btn.querySelector(".tt-icon");
+    const label = btn.querySelector(".tt-label");
+    const paint = () => {
+      const dark = isDark();
+      const glyph = dark ? "☀" : "☾";
+      const text = dark ? "Switch to light mode" : "Switch to dark mode";
+      if (icon) icon.textContent = glyph;
+      else btn.textContent = glyph;
+      if (label) label.textContent = text;
+      btn.setAttribute("aria-label", text);
+    };
     btn.addEventListener("click", () => {
       const next = isDark() ? "light" : "dark";
       root.setAttribute("data-theme", next);
@@ -2451,6 +2467,67 @@ const TRIP = window.TRIP;
       if (!root.getAttribute("data-theme")) paint();
     });
     paint();
+  }
+
+  // Mobile: the nav collapses behind a ☰ button that drops a menu with the
+  // tabs, theme switch, and trip picker. Desktop keeps the full inline nav
+  // (the wrapper is display:contents there), so this is a no-op above 620px.
+  function initNav() {
+    const nav = document.getElementById("siteNav");
+    const toggle = document.getElementById("navToggle");
+    const backdrop = document.getElementById("navBackdrop");
+    if (!nav || !toggle) return;
+    const mq = window.matchMedia("(max-width: 620px)");
+    const setOpen = (open) => {
+      nav.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      if (backdrop) backdrop.hidden = !open;
+    };
+    toggle.addEventListener("click", () =>
+      setOpen(!nav.classList.contains("open")),
+    );
+    if (backdrop) backdrop.addEventListener("click", () => setOpen(false));
+    // Choosing a tab or a different trip closes the menu; toggling the theme
+    // leaves it open so the change is visible in place.
+    nav.addEventListener("click", (e) => {
+      if (!mq.matches) return;
+      if (e.target.closest(".tab") || e.target.closest(".trip-menu a"))
+        setOpen(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setOpen(false);
+    });
+    // Leaving mobile width drops the open state so desktop is never stuck.
+    mq.addEventListener("change", () => {
+      if (!mq.matches) setOpen(false);
+    });
+  }
+
+  // Mobile: the fixed price bar collapses to a single line (total + delta +
+  // chevron); tapping it expands the drawer with the breakdown, reference
+  // note, and export buttons. Desktop keeps the full panel always open, so
+  // the tap is a no-op there. Starts collapsed on every mobile load.
+  function initSummaryCollapse() {
+    const panel = document.getElementById("summaryPanel");
+    const bar = document.getElementById("summaryToggle");
+    if (!panel || !bar) return;
+    const mq = window.matchMedia("(max-width: 860px)");
+    const sync = () =>
+      bar.setAttribute(
+        "aria-expanded",
+        String(mq.matches ? panel.classList.contains("open") : true),
+      );
+    bar.addEventListener("click", () => {
+      if (!mq.matches) return; // desktop panel is always open
+      panel.classList.toggle("open");
+      sync();
+    });
+    // Leaving mobile width drops the collapsed state so desktop is never stuck.
+    mq.addEventListener("change", () => {
+      if (!mq.matches) panel.classList.remove("open");
+      sync();
+    });
+    sync();
   }
 
   function showTab(t) {
@@ -2900,6 +2977,8 @@ const TRIP = window.TRIP;
       if (list) list.innerHTML = fp.map((x) => "<li>" + x + "</li>").join("");
     }
     themeInit();
+    initNav();
+    initSummaryCollapse();
     document
       .querySelectorAll(".tab")
       .forEach((t) =>

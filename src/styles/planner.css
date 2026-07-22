@@ -549,6 +549,28 @@
     padding: 1.25rem 1.3rem;
   }
 
+  /* The header row. On desktop it's a plain stacked header (button chrome
+     reset away) and the drawer below is always visible; on mobile it becomes
+     the tap target that expands/collapses the drawer. */
+  .sum-bar {
+    display: block;
+    width: 100%;
+    padding: 0;
+    text-align: left;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+  }
+  .sum-figure {
+    display: flex;
+    flex-direction: column;
+  }
+  .chev {
+    display: none;
+  }
+
   @media (max-width: 860px) {
     .summary {
       position: fixed;
@@ -559,10 +581,91 @@
       border-radius: 0;
       border-width: 1px 0 0;
       z-index: 10;
-      padding: 0.9rem 1.2rem;
+      padding: 0;
+    }
+    .sum-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      cursor: pointer;
+      padding: 0.7rem 1.2rem calc(0.7rem + env(safe-area-inset-bottom));
+    }
+    .summary.open .sum-bar {
+      padding-bottom: 0.7rem;
+    }
+    .sum-bar .sum-figure {
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+    .sum-bar .grand-total {
+      white-space: nowrap;
+    }
+    .sum-bar .eyebrow {
+      font-size: 0.62rem;
+      margin-bottom: 0;
+    }
+    /* Keep the collapsed bar terse: drop the "· N travelers" tail and the
+       delta's parenthetical caveat, leaving the glanceable lead. */
+    .sum-bar .gt-pax,
+    .sum-bar .delta-caveat {
+      display: none;
+    }
+    /* The delta can be a long sentence; let it shrink and clamp to two lines
+       so it never overflows the fixed bar horizontally. */
+    .sum-bar .delta {
+      margin: 0 0 0 auto;
+      text-align: right;
+      min-width: 0;
+      flex: 0 1 auto;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .chev {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      background: var(--paper);
+      color: var(--ink-soft);
+      transition: transform 0.2s ease;
+    }
+    .chev svg {
+      width: 0.85rem;
+      height: 0.85rem;
+    }
+    .summary.open .chev {
+      transform: rotate(180deg);
+    }
+    .sum-drawer {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 1.2rem;
+      transition: max-height 0.28s ease;
+    }
+    .summary.open .sum-drawer {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-bottom: calc(0.9rem + env(safe-area-inset-bottom));
     }
     .summary .breakdown {
-      display: none;
+      margin-top: 0.7rem;
+      padding-top: 0.7rem;
+    }
+    .sum-bar:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: -2px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sum-drawer,
+    .chev {
+      transition: none;
     }
   }
 
@@ -1422,6 +1525,175 @@
   }
   .trip-menu .tm-emoji {
     font-size: 1rem;
+  }
+
+  /* --- mobile hamburger nav ---
+     Narrow phones can't fit the wordmark + tabs + theme + change-trip on one
+     row (the change-trip button used to clip off the edge). Below 620px the
+     nav collapses to the wordmark + a ☰ button that drops a menu holding the
+     tabs, the theme switch, and the trip picker. Desktop is untouched:
+     .nav-collapse is display:contents so its children stay inline. */
+  .nav-toggle {
+    display: none;
+    flex: 0 0 auto;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-toggle svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  .nav-toggle:hover {
+    border-color: var(--indigo);
+    color: var(--indigo);
+  }
+  .nav-toggle:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .nav-collapse {
+    display: contents;
+  }
+  .theme-toggle .tt-label {
+    display: none;
+  }
+  .nav-backdrop {
+    display: none;
+  }
+
+  @media (max-width: 620px) {
+    .nav-toggle {
+      display: flex;
+      margin-left: auto;
+    }
+    .site-nav {
+      gap: 0.5rem;
+    }
+
+    .nav-collapse {
+      display: none;
+      position: absolute;
+      top: calc(100% + 1px);
+      left: 0.6rem;
+      right: 0.6rem;
+      flex-direction: column;
+      gap: 0.15rem;
+      padding: 0.4rem;
+      background: var(--paper-raised);
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+      z-index: 60;
+    }
+    .site-nav.open .nav-collapse {
+      display: flex;
+    }
+
+    /* tabs → full-width menu rows */
+    .nav-collapse .tabs {
+      flex-direction: column;
+      gap: 0.15rem;
+      margin: 0;
+      width: 100%;
+    }
+    .nav-collapse .tab {
+      width: 100%;
+      text-align: left;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      color: var(--ink);
+      padding: 0.6rem 0.65rem;
+      font-size: 0.95rem;
+      letter-spacing: normal;
+    }
+    .nav-collapse .tab.active {
+      background: var(--indigo-wash);
+      color: var(--indigo-deep);
+      font-weight: 600;
+    }
+
+    /* theme toggle → labeled row */
+    .nav-collapse .theme-toggle {
+      width: 100%;
+      height: auto;
+      border: none;
+      border-top: 1px solid var(--line);
+      border-radius: 0;
+      background: none;
+      color: var(--ink);
+      justify-content: flex-start;
+      gap: 0.6rem;
+      padding: 0.65rem;
+      margin-top: 0.15rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+    .nav-collapse .theme-toggle:hover {
+      background: var(--indigo-wash);
+      color: var(--ink);
+    }
+    .theme-toggle .tt-label {
+      display: inline;
+    }
+    .theme-toggle .tt-icon {
+      width: 1.25rem;
+      text-align: center;
+    }
+
+    /* change trip → inline heading + always-visible list */
+    .site-changewrap {
+      width: 100%;
+      border-top: 1px solid var(--line);
+      margin-top: 0.15rem;
+      padding-top: 0.3rem;
+    }
+    #changeTripBtn {
+      width: 100%;
+      border: none;
+      background: none;
+      pointer-events: none;
+      color: var(--ink-faint);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.65rem 0.25rem;
+    }
+    #changeTripBtn .ct-icon,
+    #changeTripBtn .ct-caret {
+      display: none;
+    }
+    .trip-menu,
+    .trip-menu[hidden] {
+      display: flex;
+      position: static;
+      width: 100%;
+      min-width: 0;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      background: none;
+      max-height: 9rem;
+      overflow-y: auto;
+    }
+
+    .nav-backdrop:not([hidden]) {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.35);
+    }
   }
 
   /* --- book the selected hotel (shows on the checked tier) --- */
