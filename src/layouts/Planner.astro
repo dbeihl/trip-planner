@@ -16,7 +16,16 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
       rel="manifest"
       href={import.meta.env.BASE_URL.replace(/\/?$/, "/") + "manifest.webmanifest"}
     />
-    <meta name="theme-color" content="#26456b" />
+    <meta
+      name="theme-color"
+      content="#eeebe3"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#171813"
+      media="(prefers-color-scheme: dark)"
+    />
     <script is:inline>
   // Apply a saved theme before paint to avoid a flash of the wrong mode.
   try {
@@ -63,10 +72,17 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
        nav flex exactly as before. -->
   <div class="nav-collapse" id="navCollapse">
     <nav class="tabs" aria-label="Planner sections">
-      <button class="tab active" data-tab="plan" type="button">
+      <button
+        class="tab active"
+        data-tab="plan"
+        type="button"
+        aria-pressed="true"
+      >
         Plan &amp; Budget
       </button>
-      <button class="tab" data-tab="itin" type="button">Itinerary</button>
+      <button class="tab" data-tab="itin" type="button" aria-pressed="false">
+        Itinerary
+      </button>
     </nav>
     <button
       class="theme-toggle"
@@ -90,7 +106,13 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
         <span class="change-label">Change trip</span>
         <span class="ct-caret" aria-hidden="true">▾</span>
       </button>
-      <div class="trip-menu" id="tripMenu" role="menu" hidden></div>
+      <div
+        class="trip-menu"
+        id="tripMenu"
+        role="menu"
+        aria-label="Change trip"
+        hidden
+      ></div>
     </div>
   </div>
 </header>
@@ -292,7 +314,13 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
             · <span class="traveler-count-lbl">2</span> travelers</span
           >
         </span>
-        <span class="grand-total" id="grandTotal">$0</span>
+        <span
+          class="grand-total"
+          id="grandTotal"
+          aria-live="polite"
+          aria-atomic="true"
+          >$0</span
+        >
       </span>
       <span class="delta" id="deltaLine"></span>
       <span class="chev" aria-hidden="true">
@@ -330,7 +358,12 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
   </aside>
 
   <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-box">
+    <div
+      class="modal-box"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
       <div class="modal-head">
         <h2 id="modalTitle">Shareable itinerary</h2>
         <button class="modal-close" id="modalClose" type="button">
@@ -338,7 +371,12 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
         </button>
       </div>
       <div class="modal-note" id="modalNote" style="display: none"></div>
-      <textarea id="shareOutput" readonly spellcheck="false"></textarea>
+      <textarea
+        id="shareOutput"
+        readonly
+        spellcheck="false"
+        aria-labelledby="modalTitle"
+      ></textarea>
       <div class="modal-actions">
         <button id="copyBtn" type="button">Copy to clipboard</button>
         <button class="secondary" id="modalCloseBottom" type="button">

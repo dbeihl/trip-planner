@@ -488,10 +488,21 @@ const TRIP = window.TRIP;
     const btn = e.target.closest(".ns-btn");
     if (!btn) return;
     const c = btn.dataset.city;
-    const next = (NIGHT_STATE[c] || 0) + parseInt(btn.dataset.delta, 10);
+    const delta = btn.dataset.delta;
+    const next = (NIGHT_STATE[c] || 0) + parseInt(delta, 10);
     if (next < nightMin(c) || next > NIGHT_MAX) return;
     NIGHT_STATE[c] = next;
     renderNightSteppers();
+    // renderNightSteppers rebuilds innerHTML, destroying the focused button;
+    // return focus to the same control (or its enabled sibling if this press
+    // hit a bound and disabled it) so keyboard stepping keeps working.
+    const seg = document.getElementById("extraNightSeg");
+    let refocus = seg.querySelector(
+      `.ns-btn[data-city="${c}"][data-delta="${delta}"]`,
+    );
+    if (!refocus || refocus.disabled)
+      refocus = seg.querySelector(`.ns-btn[data-city="${c}"]:not([disabled])`);
+    if (refocus) refocus.focus();
     recalc();
     renderItinerary();
   });
@@ -825,7 +836,7 @@ const TRIP = window.TRIP;
         modalTitle.textContent = o.name + "’s picks";
         modalNote.style.display = "none";
         shareOutput.value = describeScenario(o.snapshot);
-        modalOverlay.classList.add("open");
+        openModal();
       });
     });
     mount.querySelectorAll("[data-ss-load]").forEach((btn) => {
@@ -1052,7 +1063,10 @@ const TRIP = window.TRIP;
         parseFloat((document.getElementById("driveMpg") || {}).value) || 25,
       );
       const gallons = (miles * 2 * DRIVE_PAD) / mpg; // round trip + detour padding
-      fuelCost = Math.round(gallons * FUEL_PRICE);
+      // one vehicle seats up to 4 (vehicleFactor); a bigger party drives a
+      // second car and burns proportionally more fuel — mirrors en-route
+      // lodging (× rooms) below and the private-transfer scaling.
+      fuelCost = Math.round(gallons * FUEL_PRICE * vehicleFactor);
       const driveDays = Math.max(
         1,
         parseInt((document.getElementById("driveDays") || {}).value, 10) || 1,
@@ -1119,6 +1133,28 @@ const TRIP = window.TRIP;
     const hotelTotal = hotelSubtotal + lodgingBuffer;
     const groundTotal = transportTotal + hotelTotal + activitiesCost;
     const grand = groundTotal + flightsCost;
+
+    // Backstop: any non-finite total means a data gap slipped past validation
+    // (e.g. a missing lodgingTaxBuffer or a malformed leg). Surface it loudly
+    // once instead of shipping "$NaN" to the UI, the .xlsx <v> cells, or CSV.
+    if (!Number.isFinite(grand)) {
+      console.error("recalc produced a non-finite grand total:", {
+        transportTotal,
+        hotelTotal,
+        activitiesCost,
+        flightsCost,
+      });
+      if (!document.getElementById("recalcNanBanner")) {
+        const b = document.createElement("div");
+        b.id = "recalcNanBanner";
+        b.setAttribute("role", "alert");
+        b.style.cssText =
+          "background:#a8481f;color:#fff;padding:0.75rem 1rem;font-family:ui-monospace,monospace;font-size:0.8rem;line-height:1.5;";
+        b.textContent =
+          "⚠ This trip's total couldn't be computed (bad data — see console). Figures below may be wrong.";
+        document.body.insertBefore(b, document.body.firstChild);
+      }
+    }
 
     document.getElementById("grandTotal").textContent = fmt(grand);
 
@@ -1425,10 +1461,12 @@ const TRIP = window.TRIP;
     );
     lines.push("");
     if (TRIP.meta.reference) {
+      const ref = TRIP.meta.reference;
+      const refBase = `Reference: ${ref.label} — $${fmt2(REFERENCE_TOTAL)}${ref.caveat ? ` (${ref.caveat})` : ""}.`;
       lines.push(
         s.N === 2
-          ? `Reference: Kensington Tours quoted $9,644 for this route (placeholder Nov 7–14 dates, not the actual Nov 14–22 travel window).`
-          : `Reference: Kensington Tours quoted $9,644 for 2 travelers on this route (placeholder Nov 7–14 dates) — scaled linearly to $${fmt2((REFERENCE_TOTAL * s.N) / 2)} for ${s.N} travelers as a rough comparison, not a real quote.`,
+          ? refBase
+          : `${refBase} Scaled linearly to $${fmt2((REFERENCE_TOTAL * s.N) / 2)} for ${s.N} travelers — a rough comparison, not a real quote.`,
       );
       lines.push("");
     }
@@ -1578,11 +1616,12 @@ const TRIP = window.TRIP;
     out.push([]);
     out.push(["", "", "", "TOTAL", Math.round(s.grand)]);
     if (TRIP.meta.reference) {
+      const ref = TRIP.meta.reference;
       out.push([
         "",
         "",
         "",
-        `Kensington reference (2 travelers, placeholder Nov 7–14 dates)`,
+        `${ref.label}${ref.caveat ? ` — ${ref.caveat}` : ""}`,
         REFERENCE_TOTAL,
       ]);
       if (s.N !== 2)
@@ -1590,7 +1629,7 @@ const TRIP = window.TRIP;
           "",
           "",
           "",
-          `Kensington reference scaled to ${s.N} travelers (rough, not a real quote)`,
+          `${ref.label} scaled to ${s.N} travelers (rough, not a real quote)`,
           Math.round((REFERENCE_TOTAL * s.N) / 2),
         ]);
     }
@@ -1625,18 +1664,56 @@ const TRIP = window.TRIP;
     .getElementById("downloadXlsxBtn")
     .addEventListener("click", () => downloadExcel(true));
 
+  // The share modal is a real dialog (role/aria in the markup): opening records
+  // the trigger, moves focus in and traps Tab; closing restores focus to the
+  // trigger. All four open sites (share / scenario / CSV / ICS) route through
+  // openModal() so the behavior is uniform.
+  let modalReturnFocus = null;
+  function modalFocusables() {
+    return Array.from(
+      document
+        .querySelector(".modal-box")
+        .querySelectorAll(
+          'button, [href], textarea, input, select, [tabindex]:not([tabindex="-1"])',
+        ),
+    ).filter((el) => !el.disabled && el.offsetParent !== null);
+  }
+  function openModal() {
+    modalReturnFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    modalOverlay.classList.add("open");
+    shareOutput.focus();
+    shareOutput.setSelectionRange(0, 0);
+  }
+  function closeModal() {
+    modalOverlay.classList.remove("open");
+    if (modalReturnFocus && document.contains(modalReturnFocus))
+      modalReturnFocus.focus();
+    modalReturnFocus = null;
+  }
+  modalOverlay.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab" || !modalOverlay.classList.contains("open")) return;
+    const f = modalFocusables();
+    if (!f.length) return;
+    const first = f[0],
+      last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
   document.getElementById("generateBtn").addEventListener("click", () => {
     modalTitle.textContent = "Shareable itinerary";
     modalNote.style.display = "none";
     shareOutput.value = buildItinerary();
-    modalOverlay.classList.add("open");
-    shareOutput.focus();
-    shareOutput.setSelectionRange(0, 0);
+    openModal();
   });
-
-  function closeModal() {
-    modalOverlay.classList.remove("open");
-  }
   document.getElementById("modalClose").addEventListener("click", closeModal);
   document
     .getElementById("modalCloseBottom")
@@ -2190,7 +2267,7 @@ const TRIP = window.TRIP;
   // Officer-friendly, literal one-liners for the visa form (the
   // itinerary's own titles are deliberately poetic — wrong register here).
 
-  const VISA_PLAN = TRIP.visaPlan;
+  const VISA_PLAN = TRIP.visaPlan || {};
 
 
   function buildExcelWorkbook(forceBudget) {
@@ -2292,7 +2369,10 @@ const TRIP = window.TRIP;
       sheets.push({ name: "Budget", rows: bud, cols: [16, 14, 30, 40, 14] });
     }
 
-    // --- Final sheet: Japan MOFA "Travel Itinerary" visa form ---
+    // --- Optional final sheet: Japan MOFA "Travel Itinerary" visa form ---
+    // Only trips that set meta.visaForm (Japan) emit it; a domestic-US trip
+    // shouldn't ship an Excel with a Japanese-consulate visa sheet.
+    if (TRIP.meta.visaForm) {
     const v = [];
     v.push([]); // row 1 spacer
     v.push([null, null, null, cell("(Year)      (Month)      (Day)", 5)]); // row 2, top-right
@@ -2325,6 +2405,7 @@ const TRIP = window.TRIP;
       cols: [16, 52, 20, 30],
       merges: ["A4:D4"],
     });
+    }
 
     return buildXlsx(sheets);
   }
@@ -2344,9 +2425,7 @@ const TRIP = window.TRIP;
       modalNote.textContent =
         "This embedded preview blocks file downloads. Open the site at its own web address to get the real .xlsx — or copy the text below into Excel / Google Sheets (it auto-splits into columns).";
       shareOutput.value = buildCSV();
-      modalOverlay.classList.add("open");
-      shareOutput.focus();
-      shareOutput.setSelectionRange(0, 0);
+      openModal();
       return;
     }
     const data = buildExcelWorkbook(forceBudget);
@@ -2422,9 +2501,7 @@ const TRIP = window.TRIP;
         "This embedded preview blocks file downloads. Open the site at its own web address to get the real .ics — or paste the text below into a file named " +
         exportSlug() + "-itinerary.ics and import it into your calendar.";
       shareOutput.value = ics;
-      modalOverlay.classList.add("open");
-      shareOutput.focus();
-      shareOutput.setSelectionRange(0, 0);
+      openModal();
       return;
     }
     triggerDownload(
@@ -2476,12 +2553,30 @@ const TRIP = window.TRIP;
     const nav = document.getElementById("siteNav");
     const toggle = document.getElementById("navToggle");
     const backdrop = document.getElementById("navBackdrop");
+    const changeBtn = document.getElementById("changeTripBtn");
     if (!nav || !toggle) return;
     const mq = window.matchMedia("(max-width: 620px)");
     const setOpen = (open) => {
+      const was = nav.classList.contains("open");
       nav.classList.toggle("open", open);
       toggle.setAttribute("aria-expanded", String(open));
       if (backdrop) backdrop.hidden = !open;
+      // closing while focus is still inside the menu → return it to the toggle
+      // so keyboard users aren't dropped at <body>.
+      if (was && !open && nav.contains(document.activeElement)) toggle.focus();
+    };
+    // On mobile the CSS turns #changeTripBtn into a static heading and the trip
+    // list is always shown; make it non-interactive to AT/keyboard too so it
+    // isn't a dead, mislabeled button. It's a real button again on desktop.
+    const syncChangeBtn = () => {
+      if (!changeBtn) return;
+      if (mq.matches) {
+        changeBtn.setAttribute("tabindex", "-1");
+        changeBtn.setAttribute("aria-hidden", "true");
+      } else {
+        changeBtn.removeAttribute("tabindex");
+        changeBtn.removeAttribute("aria-hidden");
+      }
     };
     toggle.addEventListener("click", () =>
       setOpen(!nav.classList.contains("open")),
@@ -2500,7 +2595,9 @@ const TRIP = window.TRIP;
     // Leaving mobile width drops the open state so desktop is never stuck.
     mq.addEventListener("change", () => {
       if (!mq.matches) setOpen(false);
+      syncChangeBtn();
     });
+    syncChangeBtn();
   }
 
   // Mobile: the fixed price bar collapses to a single line (total + delta +
@@ -2512,11 +2609,16 @@ const TRIP = window.TRIP;
     const bar = document.getElementById("summaryToggle");
     if (!panel || !bar) return;
     const mq = window.matchMedia("(max-width: 860px)");
-    const sync = () =>
+    const sync = () => {
+      const mobile = mq.matches;
       bar.setAttribute(
         "aria-expanded",
-        String(mq.matches ? panel.classList.contains("open") : true),
+        String(mobile ? panel.classList.contains("open") : true),
       );
+      // desktop: the drawer is always open, so the header isn't an interactive
+      // control — take it out of the tab order.
+      bar.tabIndex = mobile ? 0 : -1;
+    };
     bar.addEventListener("click", () => {
       if (!mq.matches) return; // desktop panel is always open
       panel.classList.toggle("open");
@@ -2531,9 +2633,12 @@ const TRIP = window.TRIP;
   }
 
   function showTab(t) {
-    document
-      .querySelectorAll(".tab")
-      .forEach((b) => b.classList.toggle("active", b.dataset.tab === t));
+    document.querySelectorAll(".tab").forEach((b) => {
+      const on = b.dataset.tab === t;
+      b.classList.toggle("active", on);
+      // active state must not be colour-only — expose it to AT
+      b.setAttribute("aria-pressed", String(on));
+    });
     document.getElementById("planPane").style.display =
       t === "plan" ? "" : "none";
     document.getElementById("itinPane").style.display =

@@ -3,18 +3,6 @@
 // travel windows across a 12-month grid, so the whole year of trips is
 // visible in one place. Fully data-driven: add a trip module below and it
 // shows up here automatically.
-import japan from "../data/japan.js";
-import yellowstone from "../data/yellowstone.js";
-import sw from "../data/sw.js";
-import italy from "../data/italy.js";
-import hawaii from "../data/hawaii.js";
-import thailand from "../data/thailand.js";
-import redwoods from "../data/redwoods.js";
-import zion from "../data/zion.js";
-import germany from "../data/germany.js";
-import seoul from "../data/seoul.js";
-import philippines from "../data/philippines.js";
-
 // slug → presentation (emoji, short label, planner href).
 const REGISTRY = {
   japan: { emoji: "🗼", label: "Japan", href: "japan-trip-planner.html" },
@@ -57,7 +45,14 @@ const TRIP_GROUP = {
   philippines: "couple",
 };
 
-const MODULES = { japan, yellowstone, sw, italy, hawaii, thailand, redwoods, zion, germany, seoul, philippines };
+// Auto-discover every trip data module (same pattern as index.astro), so a new
+// trip appears here without editing this file. REGISTRY/TRIP_GROUP above only
+// add presentation and fall back gracefully for any slug they don't list.
+const MODULES = Object.fromEntries(
+  Object.entries(import.meta.glob("../data/*.js", { eager: true })).map(
+    ([path, mod]) => [path.split("/").pop().replace(/\.js$/, ""), mod.default],
+  ),
+);
 
 // Build the trip list from the data modules; skip any without dates.
 const trips = Object.entries(MODULES)

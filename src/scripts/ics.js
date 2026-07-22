@@ -37,7 +37,20 @@ export function icsYmd(date) {
 
 // events: [{ uid, date (Date, all-day), summary, description? }]
 export function buildIcsCalendar(name, events) {
-  const stamp = icsYmd(new Date()) + "T000000Z";
+  // DTSTAMP is a UTC instant — build it from real UTC fields, not the local
+  // calendar date (icsYmd is local, which near midnight labels the wrong day Z).
+  const now = new Date();
+  const uz = (n) => String(n).padStart(2, "0");
+  const stamp =
+    "" +
+    now.getUTCFullYear() +
+    uz(now.getUTCMonth() + 1) +
+    uz(now.getUTCDate()) +
+    "T" +
+    uz(now.getUTCHours()) +
+    uz(now.getUTCMinutes()) +
+    uz(now.getUTCSeconds()) +
+    "Z";
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",

@@ -4,8 +4,11 @@
   "description": "A self-contained, single-file trip planner — a cost **budget ledger** and a sendable **day-by-day itinerary** over one shared state, with PDF / Excel / text export (including a Japan visa-form sheet). The goal is to turn it from one hardcoded trip into a **\"pick a destination → describe the trip → get a planner\"** tool.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "validate": "node scripts/validate-trip.mjs"
+    "validate": "node scripts/validate-trip.mjs src/data/*.js",
+    "test": "node --test test/*.test.mjs && npm run validate"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "repository": {
     "type": "git",
