@@ -3,6 +3,15 @@
 import { xlEsc, xlCol, xlCrc32, xlZip, buildXlsx, visaDate } from "./xlsx.js";
 import { buildIcsCalendar } from "./ics.js";
 import { validateTrip } from "./validate.js";
+import {
+  partyFactors,
+  legCostMap,
+  driveCosts,
+  flightsTotal,
+  rentalTotal,
+  cityLodging,
+  budgetTotals,
+} from "./budget.js";
 
 const TRIP = window.TRIP;
   // ─────────────────────────────────────────────────────────────────
@@ -76,8 +85,6 @@ const TRIP = window.TRIP;
   const ALL_ORIGINS = Object.keys(FLIGHTS);
   const DEFAULT_ORIGINS = ALL_ORIGINS.filter((k) => !FLIGHTS[k].preset);
   const DEST_LABEL = TRIP.meta.destLabel || "destination";
-  const FUEL_PRICE = 5; // premium fuel, top-end $/gal
-  const DRIVE_PAD = 1.15; // +15% over route miles for real-world detours
   const originChoice = {
     solo: DEFAULT_ORIGINS[0],
     slots: DEFAULT_ORIGINS.slice(),
@@ -904,17 +911,10 @@ const TRIP = window.TRIP;
   function recalc() {
     applyRatingFilter();
 
-    // Hotel rooms cap at 2 adults each (per the researched room types), so party size
-    // determines rooms needed, not a per-head multiplier. Public transit fares are
-    // genuinely per-passenger (linear with N). Private transfers are a flat per-vehicle
-    // rate — this models 1 vehicle covering up to 4 people, a simplifying assumption.
-    const N = Math.max(
-      1,
-      parseInt(document.getElementById("travelerCount").value, 10) || 2,
+    // party-size scaling (rooms of 2, vehicles of 4) — see budget.js
+    const { N, rooms, personFactor, vehicleFactor } = partyFactors(
+      parseInt(document.getElementById("travelerCount").value, 10),
     );
-    const rooms = Math.ceil(N / 2);
-    const personFactor = N / 2;
-    const vehicleFactor = Math.ceil(N / 4);
     document
       .querySelectorAll(".traveler-count-lbl")
       .forEach((el) => (el.textContent = N));
@@ -954,13 +954,13 @@ const TRIP = window.TRIP;
       totalNightsAll + " night" + (totalNightsAll !== 1 ? "s" : "") + " total";
 
     // lodging cost per city (route + optional), from the chosen tier
-    const hotelCost = {};
+    const tierRates = {};
     TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((c) => {
-      const rate = HOTELS[c].options[selectedIndex(c + "Tier")].rate;
-      hotelCost[c] = rate * (nights[c] || 0) * rooms;
+      tierRates[c] = HOTELS[c].options[selectedIndex(c + "Tier")].rate;
     });
+    const hotelCost = cityLodging(tierRates, nights, rooms);
 
-    // activities per route city (2-adult totals, scaled by personFactor)
+    // activities per route city (2-adult totals; budgetTotals() scales them)
     let activitiesTotal = 0;
     const chosenActivities = [];
     TRIP.meta.route.forEach((c) => {
@@ -968,35 +968,14 @@ const TRIP = window.TRIP;
       activitiesTotal += a.total;
       chosenActivities.push(...a.chosen);
     });
-    const activitiesCost = activitiesTotal * personFactor;
 
-    // legs are iterated from data; these helpers read a leg by id + scale a fare
-    const scaleOf = (scale) =>
-      scale === "vehicle" ? vehicleFactor : personFactor;
-
-    // Per-leg cost, computed generically by leg shape (2D terminal, mode
-    // toggle, flat, or fixed add-on). `when` gates the optional-detour legs,
-    // so a per-vehicle drive leg or per-person rail segment sums the same way.
-    const legCost = (leg) => {
-      if (leg.when === "osaka" && !osakaMode) return 0;
-      if (leg.when === "noOsaka" && osakaMode) return 0;
-      let c = 0;
-      if (leg.terminals) {
-        const t = selectedValue(leg.terminalControl);
-        const m = selectedValue(leg.modeControl);
-        c = leg.cost[t][m] * scaleOf(leg.modes[m].scale);
-      } else if (leg.modes) {
-        const m = selectedValue(leg.modeControl);
-        c = leg.cost[m] * scaleOf(leg.modes[m].scale);
-      } else if (leg.flat) {
-        c = leg.flat.cost * scaleOf(leg.flat.scale);
-      }
-      if (leg.fixed) c += leg.fixed.cost * scaleOf(leg.fixed.scale);
-      return c;
-    };
-    const legCosts = {};
-    TRIP.transport.legs.forEach((l) => {
-      legCosts[l.id] = legCost(l);
+    // per-leg costs, computed by leg shape in budget.js; the engine supplies
+    // the current control selections as the `sel` reader
+    const legCosts = legCostMap(TRIP.transport.legs, {
+      osakaMode,
+      personFactor,
+      vehicleFactor,
+      sel: selectedValue,
     });
 
     // set each toggle's two labels from its mode labels + costs — any leg
@@ -1062,11 +1041,6 @@ const TRIP = window.TRIP;
         1,
         parseFloat((document.getElementById("driveMpg") || {}).value) || 25,
       );
-      const gallons = (miles * 2 * DRIVE_PAD) / mpg; // round trip + detour padding
-      // one vehicle seats up to 4 (vehicleFactor); a bigger party drives a
-      // second car and burns proportionally more fuel — mirrors en-route
-      // lodging (× rooms) below and the private-transfer scaling.
-      fuelCost = Math.round(gallons * FUEL_PRICE * vehicleFactor);
       const driveDays = Math.max(
         1,
         parseInt((document.getElementById("driveDays") || {}).value, 10) || 1,
@@ -1076,9 +1050,11 @@ const TRIP = window.TRIP;
         parseInt((document.getElementById("driveStopRate") || {}).value, 10) ||
           0,
       );
-      enrouteNights = (driveDays - 1) * 2; // an overnight each way per extra day
-      enrouteLodging = enrouteNights * stopRate * rooms;
-      flightsCost = fuelCost + enrouteLodging;
+      const drive = driveCosts({ miles, mpg, driveDays, stopRate, rooms, vehicleFactor });
+      fuelCost = drive.fuelCost;
+      enrouteNights = drive.enrouteNights;
+      enrouteLodging = drive.enrouteLodging;
+      flightsCost = drive.total;
       const dco = document.getElementById("driveCostOut");
       if (dco) dco.textContent = "$" + fuelCost.toLocaleString("en-US");
       const dso = document.getElementById("driveStopsOut");
@@ -1089,7 +1065,7 @@ const TRIP = window.TRIP;
             : enrouteNights + " (" + enrouteNights / 2 + " each way)";
     } else {
       origins = computeActiveOrigins(N, sameAirport);
-      flightsCost = origins.reduce((s, o) => s + o.sel.fare * o.pax, 0);
+      flightsCost = flightsTotal(origins);
     }
     const originsLabel =
       origins.length === 1 ? "1 origin" : origins.length + " origins";
@@ -1104,13 +1080,8 @@ const TRIP = window.TRIP;
       !!TRIP.transport.rental &&
       (document.querySelector('input[name="renting"]:checked') || {}).value !==
         "no";
-    // Not renting still keeps the one-time extras (fuel + park pass) — you
-    // drove your own car; only the per-day rental drops.
     const R = TRIP.transport.rental;
-    const rentalCost = R
-      ? (renting ? R.perDay * totalNights + (R.oneTime || 0) : R.oneTime || 0) *
-        vehicleFactor
-      : 0;
+    const rentalCost = rentalTotal(R, renting, totalNights, vehicleFactor);
     const rentalLabel = R
       ? renting
         ? R.label
@@ -1126,13 +1097,23 @@ const TRIP = window.TRIP;
       if (el)
         el.innerHTML = legNameHtml(leg, arriveMode, renting, enrouteNights);
     });
-    const transportTotal =
-      Object.values(legCosts).reduce((s, c) => s + c, 0) + rentalCost;
-    const hotelSubtotal = Object.values(hotelCost).reduce((s, v) => s + v, 0);
-    const lodgingBuffer = hotelSubtotal * (LODGING_TAX_BUFFER - 1);
-    const hotelTotal = hotelSubtotal + lodgingBuffer;
-    const groundTotal = transportTotal + hotelTotal + activitiesCost;
-    const grand = groundTotal + flightsCost;
+    const {
+      transportTotal,
+      hotelSubtotal,
+      lodgingBuffer,
+      hotelTotal,
+      activitiesCost,
+      groundTotal,
+      grand,
+    } = budgetTotals({
+      legCosts,
+      rental: rentalCost,
+      hotelCost,
+      lodgingTaxBuffer: LODGING_TAX_BUFFER,
+      activitiesTotal,
+      personFactor,
+      flightsCost,
+    });
 
     // Backstop: any non-finite total means a data gap slipped past validation
     // (e.g. a missing lodgingTaxBuffer or a malformed leg). Surface it loudly
