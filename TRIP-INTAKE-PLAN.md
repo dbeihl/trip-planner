@@ -12,7 +12,7 @@ The design principle behind every choice below: **git stays the source of truth,
 
 | Question | Decision |
 | --- | --- |
-| Semantic validation (prerequisite 2) | **Yes** (2026-07-25). Extend `validateTrip` beyond key alignment — base nights sum to `nights − 1`, dates parse and order, rates/costs in sane ranges. Build it first (it's Phase 1) regardless of how the rest of this plan lands; it hardens hand-built trips today and becomes the reviewer for generated data later. |
+| Semantic validation (prerequisite 2) | **Yes** (2026-07-25) — **built** (same PR as this doc). `validateTrip` now checks dates (ISO, ordered, `nights` matches the span), the flex-night identity (`baseNights` sum to `nights − 1`), and cost sanity as hard errors with tight caps in `COST_CAPS` ($2,500/night lodging, $8,000 fares, $5,000 per activity/leg/rental item — ~2× the current data maxima; a legitimate outlier bumps the cap visibly). Impossible values (negative/NaN/non-numeric) fail everywhere. All 11 trips validate clean. |
 
 ## The flow
 
