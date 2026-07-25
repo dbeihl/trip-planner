@@ -8,6 +8,12 @@ Every flow in the product has a user-facing loop except one. A signed-in travele
 
 The design principle behind every choice below: **git stays the source of truth, and generated output is untrusted until CI proves otherwise.** We are not building a second way for trips to exist — we are building a second way for PRs to originate.
 
+## Decisions already made
+
+| Question | Decision |
+| --- | --- |
+| Semantic validation (prerequisite 2) | **Yes** (2026-07-25). Extend `validateTrip` beyond key alignment — base nights sum to `nights − 1`, dates parse and order, rates/costs in sane ranges. Build it first (it's Phase 1) regardless of how the rest of this plan lands; it hardens hand-built trips today and becomes the reviewer for generated data later. |
+
 ## The flow
 
 ```
@@ -84,7 +90,7 @@ Secrets: `ANTHROPIC_API_KEY`, `SERPAPI_KEY`, `DUFFEL_API_KEY` as Action secrets 
 ## Prerequisites (in order)
 
 1. **TripData JSON Schema** — the Phase 2 that GENERALIZATION-PLAN.md deferred: formalize the `TRIP` shape as a real JSON Schema. It becomes the generator's authoring contract; `validateTrip` stays the runtime gate. (Data modules can stay `.js` for now; the schema documents the object they export.)
-2. **Semantic validation** — extend `validateTrip` beyond key alignment: base nights must sum to `nights − 1` (documented as load-bearing in AI-RESEARCH-PLAN.md, currently unvalidated), dates must parse and order, rates/costs must fall in sane ranges. A generated trip can currently validate clean and still be nonsense.
+2. **Semantic validation** (**approved** — see [Decisions already made](#decisions-already-made)) — extend `validateTrip` beyond key alignment: base nights must sum to `nights − 1` (documented as load-bearing in AI-RESEARCH-PLAN.md, currently unvalidated), dates must parse and order, rates/costs must fall in sane ranges. A generated trip can currently validate clean and still be nonsense.
 3. **De-Japanize the remaining engine seams** — `moveData()`'s hardcoded Tokyo/Hakone/Kyoto cases and the single-bit optional-city model (`osakaMode`); generated trips will hit these first.
 
 ## Later complement — D1 draft tier (explicitly out of scope for v1)
