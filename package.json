@@ -6,7 +6,8 @@
   "scripts": {
     "validate": "node scripts/validate-trip.mjs src/data/*.js",
     "test": "node --test test/*.test.mjs && npm run validate && npm run test:worker",
-    "test:worker": "npm --prefix worker test"
+    "test:worker": "npm --prefix worker test",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=20"
@@ -25,5 +26,8 @@
   "type": "module",
   "dependencies": {
     "astro": "^7.0.9"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0"
   }
 }
