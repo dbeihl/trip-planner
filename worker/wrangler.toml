@@ -39,3 +39,10 @@ CLAUDE_MODEL = "claude-sonnet-5"
 #   ANTHROPIC_API_KEY      enables /api/replan (the AI briefing)
 #   DUFFEL_API_KEY         enables /api/flights (Duffel fares; duffel_test_* keys return synthetic data)
 #   SERPAPI_KEY            enables /api/lodging (Google Hotels) + is the /api/flights fallback (Google Flights)
+#   GITHUB_INTAKE_TOKEN    enables POST /api/trips (trip intake) — a fine-grained PAT
+#                          scoped to dbeihl/trip-planner only: contents RW, issues RW,
+#                          pull requests RW. See TRIP-INTAKE-PLAN.md.
+
+# Trip intake allowlist (deliberate opt-in — unset means intake is off even
+# for authenticated travelers). Comma-separated emails, set as a var:
+#   TRIP_CREATORS = "you@example.com, spouse@example.com"
