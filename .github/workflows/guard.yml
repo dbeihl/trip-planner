@@ -1,0 +1,72 @@
+name: Guard
+
+# Immutable-gates enforcement (TRIP-INTAKE-PLAN.md). Auto-merge-on-green is
+# only as trustworthy as the gates a PR cannot rewrite — so any PR that
+# touches the gates themselves (tests, workflows, schema, the validator, the
+# dependency manifests) fails this check until the repo owner approves it.
+# PRs that touch none of those (e.g. generated trips: research doc + data
+# module + page) pass instantly and stay auto-mergeable.
+#
+# Why pull_request_target: it always runs THIS file as it exists on the base
+# branch. A PR that edits guard.yml is judged by main's copy, not its own —
+# that is what makes the gate immutable from inside a PR. This job must never
+# check out or execute PR code; it only reads the GitHub API.
+#
+# One-time setup that gives this teeth (repo Settings):
+#   - Branch protection on main: require status checks "test", "smoke", "Guard".
+#   - General → allow auto-merge.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guard:
+    if: ${{ github.event.pull_request != null }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if protected paths changed without owner approval
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const PROTECTED = [
+              /^\.github\//,
+              /^test\//,
+              /^worker\/test\//,
+              /^e2e\//,
+              /^schema\//,
+              /^scripts\//,
+              /^src\/scripts\/validate\.js$/,
+              /^playwright\.config\.mjs$/,
+              /^astro\.config\.mjs$/,
+              /^package(-lock)?\.json$/,
+              /^worker\/package(-lock)?\.json$/,
+            ];
+            const files = await github.paginate(github.rest.pulls.listFiles,
+              { owner, repo, pull_number: pr.number, per_page: 100 });
+            const touched = files.map(f => f.filename).filter(n => PROTECTED.some(re => re.test(n)));
+            if (touched.length === 0) {
+              core.info("No protected paths touched — gates unchanged.");
+              return;
+            }
+            const reviews = await github.paginate(github.rest.pulls.listReviews,
+              { owner, repo, pull_number: pr.number, per_page: 100 });
+            // Latest review per user wins; an approval from the repo owner clears the gate.
+            const latest = new Map();
+            for (const r of reviews) if (r.user) latest.set(r.user.login, r.state);
+            if (latest.get(owner) === "APPROVED") {
+              core.info(`Protected paths changed with @${owner}'s approval:\n` + touched.join("\n"));
+              return;
+            }
+            core.setFailed(
+              `Protected paths changed without @${owner}'s approval — auto-merge is blocked until they review:\n` +
+              touched.join("\n"),
+            );

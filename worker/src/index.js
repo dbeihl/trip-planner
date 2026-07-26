@@ -35,6 +35,7 @@ import { verifyAccess } from "./access.js";
 import { SourceError } from "./store.js";
 import { computeChanges } from "./changes.js";
 import { getScenarios, putScenario } from "./scenario.js";
+import { createIntake, getIntake } from "./intake.js";
 import { weather } from "./sources/weather.js";
 import { holidays } from "./sources/holidays.js";
 import { events } from "./sources/events.js";
@@ -114,6 +115,7 @@ export default {
         lodging_configured: !!env.SERPAPI_KEY,
         replan_configured: !!env.ANTHROPIC_API_KEY,
         replan_model: env.CLAUDE_MODEL || "claude-haiku-4-5",
+        intake_configured: !!env.GITHUB_INTAKE_TOKEN,
         trips: Object.keys(TRIPS),
       }, { env });
     }
@@ -136,6 +138,18 @@ export default {
         return json(r.error ? { error: r.error } : r, { status: r.status || 200, env });
       }
       return json(await getScenarios(env, slug, auth.email), { env });
+    }
+
+    // Trip intake (TRIP-INTAKE-PLAN.md Phase 2): POST a brief, get back the
+    // request id + ledger issue; GET /api/trips/<id> polls its status.
+    if (url.pathname === "/api/trips" && request.method === "POST") {
+      const r = await createIntake(env, auth.email, await request.text());
+      return json(r.body, { status: r.status, env });
+    }
+    const intakeMatch = url.pathname.match(/^\/api\/trips\/([A-Za-z0-9-]+)$/);
+    if (intakeMatch && request.method === "GET") {
+      const row = await getIntake(env, intakeMatch[1]);
+      return json(row || { error: "unknown request id" }, { status: row ? 200 : 404, env });
     }
 
     // Single-source data routes.
