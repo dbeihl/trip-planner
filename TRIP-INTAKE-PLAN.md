@@ -93,7 +93,7 @@ Secrets: `ANTHROPIC_API_KEY`, `SERPAPI_KEY`, `DUFFEL_API_KEY` as Action secrets 
 
 ## Prerequisites (in order)
 
-1. **TripData JSON Schema** — the Phase 2 that GENERALIZATION-PLAN.md deferred: formalize the `TRIP` shape as a real JSON Schema. It becomes the generator's authoring contract; `validateTrip` stays the runtime gate. (Data modules can stay `.js` for now; the schema documents the object they export.)
+1. **TripData JSON Schema** — **built**: `schema/trip.schema.json` (draft 2020-12), derived from the field-presence union across all 11 shipped modules — universal fields are `required`, money is `number ≥ 0` with range policy staying in `validate.js` `COST_CAPS` (single source), and the two unexpressible invariants (2-adult totals, itinPool-holds-experience-only) ride in the descriptions the generator will read. `test/schema.test.mjs` keeps it honest: every shipped module must conform, and generator-shaped mistakes (string fares, misspelled scales, stray keys in cost shapes, non-ISO dates) must be rejected. Ajv is a devDependency — build/test-time only, nothing at view time. `validateTrip` stays the runtime gate; data modules stay `.js`.
 2. **Semantic validation** (**approved** — see [Decisions already made](#decisions-already-made)) — extend `validateTrip` beyond key alignment: base nights must sum to `nights − 1` (documented as load-bearing in AI-RESEARCH-PLAN.md, currently unvalidated), dates must parse and order, rates/costs must fall in sane ranges. A generated trip can currently validate clean and still be nonsense.
 3. **De-Japanize the remaining engine seams** — `moveData()`'s hardcoded Tokyo/Hakone/Kyoto cases and the single-bit optional-city model (`osakaMode`); generated trips will hit these first.
 
