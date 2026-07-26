@@ -12,7 +12,12 @@ The design principle behind every choice below: **git stays the source of truth,
 
 | Question | Decision |
 | --- | --- |
-| Semantic validation (prerequisite 2) | **Yes** (2026-07-25) — **built** (same PR as this doc). `validateTrip` now checks dates (ISO, ordered, `nights` matches the span), the flex-night identity (`baseNights` sum to `nights − 1`), and cost sanity as hard errors with tight caps in `COST_CAPS` ($2,500/night lodging, $8,000 fares, $5,000 per activity/leg/rental item — ~2× the current data maxima; a legitimate outlier bumps the cap visibly). Impossible values (negative/NaN/non-numeric) fail everywhere. All 11 trips validate clean. |
+| Semantic validation (prerequisite 2) | **Yes** (2026-07-25) — **built** (same PR as this doc). `validateTrip` now checks dates (ISO, ordered, `nights` matches the span), the flex-night identity (`baseNights` sum to `nights − 1`), and cost sanity as hard errors with tight caps in `COST_CAPS` ($2,500/night lodging, $8,000 fares, $5,000 per activity/leg/rental item — ~2× the current data maxima; a legitimate outlier bumps the cap visibly). Impossible values (negative/NaN/non-numeric) fail everywhere. All 11 trips validate clean. The caps stay tight on purpose: this is a budget-travel product with the occasional splurge item, not a luxury one. |
+| Generator runtime | **Hybrid** (2026-07-25). An API script does the research and emits a structured brief; a deterministic template writes the three files. Consequence: the TripData JSON Schema (prerequisite 1) is promoted from documentation to the literal output contract of the research call — the template is mechanical and cannot invent structure. |
+| Auto-merge policy | **Auto-merge on green** (2026-07-25). A generated PR that passes the full gate merges and deploys with no human in the loop. Compensating controls, since the gates check sanity not research quality: the Action posts a what-shipped summary (route, nightly rates, grand total, per-run cost) on the request issue for post-hoc review, and the live strip already surfaces drift between shipped numbers and current pulls. |
+| Regeneration | **New slug per request** (2026-07-25). A repeat destination gets a fresh slug (e.g. `portugal-nov-2028`); the pipeline never writes over an existing trip, which is what makes auto-merge safe for the curated catalog (Japan stays frozen). Update-in-place remains a manual, human-reviewed act outside this pipeline. |
+| Trip retirement | **`meta.archived` flag** (2026-07-25). The hub demotes archived trips to a collapsed section (or hides them); pages still build so shared links survive. One-line PR either direction. Required consequence of new-slug-per-request — explorations accumulate by design. |
+| Quotas | **2 requests/traveler/day, 10 generations/month globally** (2026-07-25), provisional. The Action posts each run's measured cost on the issue; revisit the numbers after the first month of real data. The global monthly cap is the control that actually protects the SerpAPI free tier (~100 searches/month), which is the binding constraint under the hybrid runtime, not dollars. |
 
 ## The flow
 
@@ -26,9 +31,8 @@ Traveler (signed in via Cloudflare Access)
                       + src/data/<slug>.js
                       + src/pages/<slug>-trip-planner.astro
     -> full gate: validateTrip + unit suites + astro build + Playwright smoke
-    -> draft PR ("Closes #NN")
-    -> human review -> merge -> Pages deploy
-    -> issue closes; traveler gets the live URL
+    -> PR ("Closes #NN") -> auto-merge on green -> Pages deploy
+    -> issue gets the what-shipped summary; traveler gets the live URL
 ```
 
 Latency is minutes, not seconds. That is fine — the use case is "we're considering Portugal," not autocomplete.
@@ -72,17 +76,17 @@ The alternative front door — GitHub issue forms as the *trigger*, no Worker en
 
 A new workflow, triggered by `repository_dispatch` (type `trip-request`):
 
-1. Derive the slug; fail early (comment on the issue) if it collides with an existing trip.
-2. Run the generation — the add-trip skill's flow as an Action step: live research with sources recorded into `research/<slug>.md`, then a `TRIP` data module honoring the 2-adult cost convention, then the 3-line page.
+1. Derive the slug; a repeat destination gets a fresh suffixed slug (`portugal-nov-2028`) — the pipeline never overwrites an existing trip.
+2. Run the generation, hybrid style: a research script calls the Claude API (web-searching one concern at a time, sources recorded into `research/<slug>.md`) and must emit a brief conforming to the TripData JSON Schema; a deterministic template turns that brief into `src/data/<slug>.js` and the 3-line page. The template cannot invent structure — everything creative is schema-constrained.
 3. Verify the diff touches **only** `research/<slug>.md`, `src/data/<slug>.js`, and `src/pages/<slug>-trip-planner.astro`. This is the prompt-injection containment: a malicious or confused "wish" must not be able to edit the engine, the workflows, or another trip.
 4. Run the full gate: `npm test` (validator + both unit suites) and `npm run test:e2e` extended to smoke the new page.
-5. Open a draft PR referencing the issue. Green + trusted requester may auto-merge later; the v1 default is human review.
+5. Open a PR referencing the issue with **auto-merge on green** enabled, and post the what-shipped summary (route, nightly rates, grand total, measured run cost) on the issue — that comment is the post-hoc review surface.
 
 Secrets: `ANTHROPIC_API_KEY`, `SERPAPI_KEY`, `DUFFEL_API_KEY` as Action secrets (research needs them); the Worker holds one new secret — a fine-grained GitHub token scoped to this repo only (contents, pull requests, issues).
 
 ## Guardrails
 
-- **Quota:** start at 2 requests/user/day, plus a global monthly cap. Each generation spends real Claude + SerpAPI + Duffel money; the Action comments a rough cost figure on the issue so spend stays visible.
+- **Quota:** 2 requests/traveler/day, 10 generations/month globally (provisional — see Decisions). The Action comments each run's measured cost on the issue so spend stays visible; the monthly cap is what protects the SerpAPI free tier.
 - **Diff containment:** step 3 above — generated changes are path-restricted, mechanically enforced.
 - **The gates are the contract:** nothing merges that the validator, the unit suites, the build, and the smoke test don't pass. The 81 tests from #79 are what make this plan safe to build.
 - **No second source of truth:** the pipeline produces PRs, never direct commits, and the site never reads trip data from anywhere but the built repo.
@@ -99,11 +103,11 @@ A second connection — `POST` a full TRIP JSON into D1, view it instantly on a 
 
 ## Open questions
 
-1. **Generator runtime** — a plain Claude API script in the Action vs. the Claude Code GitHub Action running the existing add-trip skill. The skill already encodes the research discipline; reusing it is less new prompt surface, but pins the Action to Claude Code's runner.
-2. **Auto-merge policy** — is green CI ever sufficient, or does every generated trip get human eyes first? (v1 assumes human review; revisit after a few real runs.)
-3. **Regeneration semantics** — a second request for an existing destination: new slug (`portugal-2`), update-in-place PR, or reject with a pointer to the existing trip?
-4. **Trip retirement** — trips that didn't pan out accumulate in the hub; is deletion a PR someone asks for, or a `meta.archived` flag the hub respects?
-5. **Cost figures** — confirm per-generation spend on a real run before setting the quota numbers.
+The original five were resolved 2026-07-25 — see [Decisions already made](#decisions-already-made). Still genuinely open:
+
+1. **Measured cost per run** — the quota numbers are provisional until Phase 3 measures a real generation (Claude tokens + SerpAPI/Duffel calls). Revisit after the first month.
+2. **Slug suffix convention** — the exact shape of repeat-destination slugs (`portugal-nov-2028` vs `portugal-2`); mechanical, decide when building the Action.
+3. **Auto-merge escape hatch** — if a plausible-but-wrong trip ever ships, what's the trigger to flip back to human review? Proposal: any archived-within-a-week generated trip counts as a strike; two strikes flips the default.
 
 ## Build phases
 
@@ -112,4 +116,4 @@ Each phase is independently useful; stop after any of them and something real ha
 1. **Contracts first** — TripData JSON Schema + semantic validator extensions. No server changes; immediately hardens even hand-built trips.
 2. **The spine, no AI** — Worker endpoint + allowlist + quota + issue + dispatch; an Action stub that just echoes the brief into a PR comment. Proves auth → ledger → dispatch → PR end-to-end for ~zero cost.
 3. **Real generation** — wire the generator for one destination end-to-end; measure cost; tune the prompt against the gates.
-4. **Polish** — status on the site (`GET /api/trips/:id`), quota tuning, auto-merge decision, and the hub badge for "requested by."
+4. **Polish** — status on the site (`GET /api/trips/:id`), quota tuning against the first month's measured costs, the `meta.archived` hub section, and the hub badge for "requested by."
