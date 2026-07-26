@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dbeihl.github.io/trip-planner/schema/trip.schema.json",
+  "title": "TripData",
+  "description": "The TRIP object a trip data module (src/data/<slug>.js) default-exports, and the output contract for the intake pipeline's research step (TRIP-INTAKE-PLAN.md). Structural contract only — semantic rules (flex-night identity, date ordering, COST_CAPS ranges) are enforced by src/scripts/validate.js, the runtime gate. Two invariants the schema cannot express but every producer must honor: (1) every cost is a 2-adult total — the engine scales by personFactor N/2 and vehicleFactor ceil(N/4); (2) itinPool holds experience only — hotels, transport modes, and costs are injected at render time from window.__state, never authored into days.",
+  "type": "object",
+  "required": ["meta", "flights", "hotels", "transport", "activities", "itinPool"],
+  "properties": {
+    "meta": { "$ref": "#/$defs/meta" },
+    "flights": {
+      "description": "Selectable origin journeys, keyed by journey id (e.g. \"us\", \"phl\").",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/flightJourney" }
+    },
+    "hotels": {
+      "description": "Lodging tiers, keyed by city key. Every meta.route and meta.optionalCities entry must have a key here (enforced by validate.js).",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/cityHotels" }
+    },
+    "transport": { "$ref": "#/$defs/transport" },
+    "activities": {
+      "description": "Per-city activity choices, keyed by city key. Costs are 2-adult totals.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/activity" }
+      }
+    },
+    "itinPool": {
+      "description": "Narrative day content, keyed by city key. Experience only — no hotel names, transport modes, or prices in the text; lodging/move reference keys and the renderer injects the live values.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/itinDay" }
+      }
+    },
+    "routeDetail": {
+      "description": "Optional walk/wait/ride sub-segment breakdowns for headline legs. Free-form; rendered verbatim.",
+      "type": "object"
+    },
+    "itinDepart": {
+      "description": "Optional departure-day narrative variants.",
+      "type": "object"
+    },
+    "visaPlan": {
+      "description": "Optional visa-form data (Japan MOFA sheet). Free-form; consumed by the Excel export.",
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "money": {
+      "description": "A researched USD amount, 2-adult total unless the field says otherwise. Upper sanity caps live in validate.js COST_CAPS, the single source for range policy.",
+      "type": "number",
+      "minimum": 0
+    },
+    "scale": {
+      "description": "How a fare scales with party size: per person (× N/2) or per vehicle of 4 (× ceil(N/4)).",
+      "enum": ["person", "vehicle"]
+    },
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "title",
+        "hub",
+        "route",
+        "optionalCities",
+        "flexNightDefault",
+        "dates",
+        "travelers",
+        "currency",
+        "lodgingTaxBuffer",
+        "destLabel"
+      ],
+      "properties": {
+        "title": {
+          "description": "Display title, \"<Destination> — <Mon YYYY>\" (the part before \" — \" names exports).",
+          "type": "string",
+          "minLength": 1
+        },
+        "hub": {
+          "description": "Hub-page card: order, emoji, title, meta line, blurb.",
+          "type": "object",
+          "required": ["title"],
+          "properties": {
+            "order": { "type": "number" },
+            "emoji": { "type": "string" },
+            "title": { "type": "string" },
+            "meta": { "type": "string" },
+            "blurb": { "type": "string" }
+          }
+        },
+        "route": {
+          "description": "Ordered city keys of the fixed route.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "optionalCities": {
+          "description": "City keys togglable via their night steppers (0 nights = off). May be empty, never absent.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "flexNightDefault": {
+          "description": "Route city that receives the movable night by default.",
+          "type": "string",
+          "minLength": 1
+        },
+        "dates": {
+          "type": "object",
+          "required": ["arrive", "depart", "nights"],
+          "properties": {
+            "arrive": { "$ref": "#/$defs/isoDate" },
+            "depart": { "$ref": "#/$defs/isoDate" },
+            "nights": {
+              "description": "Must equal the arrive→depart span; per-city baseNights must sum to nights − 1 (validate.js enforces both).",
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "travelers": {
+          "type": "object",
+          "required": ["count"],
+          "properties": {
+            "count": { "type": "integer", "minimum": 1 },
+            "note": { "type": "string" }
+          }
+        },
+        "currency": { "const": "USD" },
+        "lodgingTaxBuffer": {
+          "description": "Multiplier on the lodging subtotal only — a planning margin, not a sourced figure.",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "destLabel": {
+          "description": "Short destination label used in generic leg copy (\"the gateway\").",
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "description": "Optional packaged-quote comparison; explicitly not apples-to-apples. Omit when there is no quote and the UI hides the comparison.",
+          "type": "object",
+          "required": ["total", "label"],
+          "properties": {
+            "total": { "$ref": "#/$defs/money" },
+            "label": { "type": "string" },
+            "caveat": { "type": "string" },
+            "blurb": { "type": "string" }
+          }
+        },
+        "ui": { "type": "object" },
+        "visaForm": { "type": "boolean" }
+      }
+    },
+    "flightJourney": {
+      "type": "object",
+      "required": ["label", "traveler", "pax", "preference", "options"],
+      "properties": {
+        "label": { "type": "string" },
+        "traveler": { "type": "string" },
+        "pax": { "type": "integer", "minimum": 1 },
+        "preference": { "type": "string" },
+        "preset": {
+          "description": "Offered in the origin dropdown but not part of the default split.",
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "route", "stops", "cabin", "fare", "note"],
+            "properties": {
+              "name": { "type": "string" },
+              "route": { "type": "string" },
+              "stops": { "type": "integer", "minimum": 0 },
+              "cabin": { "type": "string" },
+              "fare": {
+                "description": "Per-person round trip, USD.",
+                "$ref": "#/$defs/money"
+              },
+              "note": { "type": "string" },
+              "current": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "cityHotels": {
+      "type": "object",
+      "required": ["label", "baseNights", "header", "options"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "baseNights": {
+          "description": "Default nights in this city; optional cities use 0. Sum across cities = nights − 1.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "header": { "type": "string" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "rate", "rating", "note"],
+            "properties": {
+              "name": { "type": "string" },
+              "rate": {
+                "description": "Per night for a 2-adult room, USD. 0 is valid (e.g. staying with family).",
+                "$ref": "#/$defs/money"
+              },
+              "rating": { "type": "string" },
+              "note": { "type": "string" },
+              "current": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "transport": {
+      "type": "object",
+      "required": ["legs"],
+      "properties": {
+        "legs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/leg" }
+        },
+        "rental": {
+          "description": "Optional rental car for road trips. Per-vehicle; not renting keeps oneTime only.",
+          "type": "object",
+          "required": ["perDay", "label"],
+          "properties": {
+            "perDay": { "$ref": "#/$defs/money" },
+            "oneTime": { "$ref": "#/$defs/money" },
+            "label": { "type": "string" },
+            "ownCarLabel": { "type": "string" },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "leg": {
+      "description": "One transport leg. Cost shape is one of: flat {cost, scale}; modes {public, private} with a cost map; terminals × modes with a 2D cost grid; plus an optional fixed add-on. validate.js requires at least one shape and checks every numeric leaf.",
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "routeName": { "type": "string" },
+        "note": { "type": "string" },
+        "role": {
+          "description": "arrival/departure legs follow the fly-vs-drive choice; optional legs are detours; cost legs fold into another leg's breakdown row.",
+          "enum": ["arrival", "departure", "optional", "cost"]
+        },
+        "when": {
+          "description": "Gates optional-city detour legs on the optional city being active.",
+          "enum": ["osaka", "noOsaka"]
+        },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "flat": {
+          "type": "object",
+          "required": ["cost", "scale"],
+          "additionalProperties": false,
+          "properties": {
+            "cost": { "$ref": "#/$defs/money" },
+            "scale": { "$ref": "#/$defs/scale" }
+          }
+        },
+        "fixed": {
+          "type": "object",
+          "required": ["cost", "scale"],
+          "additionalProperties": false,
+          "properties": {
+            "cost": { "$ref": "#/$defs/money" },
+            "scale": { "$ref": "#/$defs/scale" }
+          }
+        },
+        "modes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["scale"],
+            "properties": {
+              "label": { "type": "string" },
+              "scale": { "$ref": "#/$defs/scale" }
+            }
+          }
+        },
+        "terminals": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": { "label": { "type": "string" } }
+          }
+        },
+        "cost": {
+          "description": "Mode cost map ({mode: $}) or terminal grid ({terminal: {mode: $}}).",
+          "type": "object"
+        },
+        "modeControl": { "type": "string" },
+        "terminalControl": { "type": "string" },
+        "ctrlPrefix": { "type": "string" },
+        "dynamicNameId": { "type": "string" },
+        "breakdownLabel": { "type": "string" },
+        "routeDetail": { "type": "boolean" },
+        "toggles": { "type": "array" }
+      }
+    },
+    "activity": {
+      "type": "object",
+      "required": ["day", "title", "options"],
+      "properties": {
+        "day": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "cost", "note"],
+            "properties": {
+              "name": { "type": "string" },
+              "cost": {
+                "description": "2-adult total, USD; the free/self-guided default is cost 0.",
+                "$ref": "#/$defs/money"
+              },
+              "note": { "type": "string" },
+              "current": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "itinDay": {
+      "type": "object",
+      "required": ["id", "cityTag", "sun", "title", "rows"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "cityTag": { "type": "string" },
+        "sun": { "type": "string" },
+        "title": { "type": "string" },
+        "travel": { "type": "boolean" },
+        "move": {
+          "description": "Transport leg id rendered on this day (cost injected at render).",
+          "type": "string"
+        },
+        "lodging": {
+          "description": "Hotel city key whose chosen tier renders on this day (injected at render).",
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tag"],
+            "properties": {
+              "tag": { "type": "string" },
+              "kind": { "type": "string" },
+              "lead": { "type": "string" },
+              "detail": { "type": "string" },
+              "flag": { "type": "string" }
+            }
+          }
+        },
+        "ask": { "type": "string" },
+        "fuller": { "type": "string" }
+      }
+    }
+  }
+}
