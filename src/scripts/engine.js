@@ -19,7 +19,8 @@ const TRIP = window.TRIP;
   // The large literals are assigned into it below (kept in place, so
   // nothing is retyped); the engine reads them through the bindings at
   // the end of the data block — its code is otherwise unchanged.
-  // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
+  // Japan is a data module like any other now (src/data/japan.js) — it's
+  // the live, canonical trip, not a frozen reference; see GENERALIZATION-PLAN.md.
   // ─────────────────────────────────────────────────────────────────
 
 
@@ -70,12 +71,31 @@ const TRIP = window.TRIP;
 
   function renderRouteDetail(id, entry) {
     const el = document.getElementById(id);
+    if (!el || !entry) return;
     el.innerHTML = `
     <summary>Route detail — ${entry.label}</summary>
     <ol>${entry.steps.map((s) => `<li>${s}</li>`).join("")}</ol>
     <div class="rd-total">Total: ${entry.total}</div>
     ${entry.note ? `<div class="rd-note">${entry.note}</div>` : ""}
   `;
+  }
+
+  // Fills the <details id="rd-<leg.id>"> box (created by legHtml() whenever
+  // leg.routeDetail is true) for every leg id present in TRIP.routeDetail —
+  // any trip, not just Japan's four legacy legs. An entry with no `.steps`
+  // is a variant map (e.g. the arrival leg's {nrt, hnd}) and resolves
+  // through that leg's own terminal/mode control, the same selection the
+  // cost grid already reads.
+  function renderRouteDetails() {
+    if (!ROUTE_DETAIL) return;
+    TRIP.transport.legs.forEach((leg) => {
+      const entry = ROUTE_DETAIL[leg.id];
+      if (!entry) return;
+      const resolved = entry.steps
+        ? entry
+        : entry[selectedValue(leg.terminalControl || leg.modeControl)];
+      renderRouteDetail("rd-" + leg.id, resolved);
+    });
   }
 
   // ── origins questionnaire ────────────────────────────────────────
@@ -386,6 +406,12 @@ const TRIP = window.TRIP;
         if (l) html += legHtml(l);
       }
     });
+    // side-trip legs (no role, no from/to — e.g. a day trip out of the last
+    // base) aren't part of the inter-stop sequence; give each its own
+    // fixed-leg row right after the route stops, same as an inter-city leg.
+    legs.forEach((l) => {
+      if (!l.role && !l.from && !l.to) html += legHtml(l);
+    });
     TRIP.meta.optionalCities.forEach((oc) => {
       const oleg = legs.find((l) => l.role === "optional" && l.to === oc);
       html +=
@@ -407,11 +433,10 @@ const TRIP = window.TRIP;
 
   TRIP.meta.route.forEach((c) => renderActivities(c + "Activities", c));
 
-  // route-detail step breakdowns are optional per trip (Japan has them)
-  if (ROUTE_DETAIL && ROUTE_DETAIL.th)
-    renderRouteDetail("rd-th", ROUTE_DETAIL.th);
-  if (ROUTE_DETAIL && ROUTE_DETAIL.hk)
-    renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
+  // route-detail step breakdowns are optional per trip (Japan has them);
+  // rendered from recalc() via renderRouteDetails() — variant entries
+  // (e.g. the arrival leg's nrt/hnd) need the live toggle selection, and
+  // recalc() runs once on load plus on every input change.
 
   // ── generate the transport toggles from TRIP.transport.legs ───────
   // Builds the same radios/labels the engine expects (ids by ctrl prefix),
@@ -992,15 +1017,11 @@ const TRIP = window.TRIP;
       if (pri) pri.textContent = l.modes.private.label + " $" + costObj.private;
     });
 
-    // route-detail step breakdowns are Japan-specific; render only if present
     const airport = selectedValue("airport");
-    if (ROUTE_DETAIL && ROUTE_DETAIL.airport)
-      renderRouteDetail("rd-airport", ROUTE_DETAIL.airport[airport]);
-    if (ROUTE_DETAIL && ROUTE_DETAIL.final)
-      renderRouteDetail(
-        "rd-final",
-        osakaMode ? ROUTE_DETAIL.final.osaka : ROUTE_DETAIL.final.direct,
-      );
+    // route-detail step breakdowns are optional per trip; renders (or
+    // re-renders, for variant entries like the arrival leg's nrt/hnd) any
+    // leg id present in TRIP.routeDetail.
+    renderRouteDetails();
 
     // named leg values the itinerary/breakdown still read (Japan legs);
     // undefined for other trips, which use the generic paths downstream.
@@ -1528,6 +1549,47 @@ const TRIP = window.TRIP;
           );
         if (leg) legRow(leg.id);
       }
+    });
+    // side-trip legs (no role, no from/to — e.g. a day trip out of a base)
+    // aren't part of the arrival/inter-stop/departure sequence above — same
+    // selection renderRouteBody (engine.js legHtml loop) and recalc's
+    // generic breakdown use. The itinerary (assembleItinDays) places each on
+    // the pool day whose `move` matches the leg id; walk the same city-order
+    // + per-city-nights structure here (slicing each city's pool by its
+    // current night count, exactly like assembleItinDays does) so the
+    // exported row lands on the day the side trip actually happens instead
+    // of wherever the loop's cursor sits when this runs.
+    const sideTripLegs = TRIP.transport.legs.filter(
+      (l) => !l.role && !l.from && !l.to,
+    );
+    const placedSideTrips = new Set();
+    let dayOffset = 0;
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((city) => {
+      const pool = ITIN_POOL[city] || [];
+      const n = s.nights[city] || 0;
+      for (let idx = 0; idx < n; idx++) {
+        const poolDay = pool[idx];
+        const leg = poolDay && sideTripLegs.find((l) => l.id === poolDay.move);
+        if (leg) {
+          const m = moveData(leg.id, s);
+          if (m && m.lead)
+            rows.push({
+              date: addDays(toDate(TRIP_START), dayOffset),
+              category: "Transport",
+              title: m.lead,
+              detail: m.detail,
+              cost: m.cost || 0,
+            });
+          placedSideTrips.add(leg.id);
+        }
+        dayOffset++;
+      }
+    });
+    // fallback for a side-trip leg no pool day references — still gets a
+    // row (dated at the departure cursor, the prior behavior for all of
+    // them) rather than being dropped from the export.
+    sideTripLegs.forEach((l) => {
+      if (!placedSideTrips.has(l.id)) legRow(l.id);
     });
     const departureLeg = TRIP.transport.legs.find(
       (l) => l.role === "departure",

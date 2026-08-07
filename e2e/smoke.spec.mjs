@@ -1,8 +1,8 @@
 // Smoke test of built planner pages — the DOM wiring the unit tests
 // deliberately avoid. Guards the failure the engine's NaN banner exists for:
 // a data gap or renamed element that freezes or corrupts the grand total.
-// Two pages cover both engine paths: Japan (the reference dataset, named
-// legs) and Yellowstone (generic legs, fly/drive + rental).
+// Two pages cover distinct data shapes: Japan (routeDetail rendering, plus a
+// role-less side-trip leg) and Yellowstone (generic legs, fly/drive + rental).
 import { test, expect } from "@playwright/test";
 
 const MONEY = /^\$[\d,]+$/; // "$8,412" — and never "$NaN"

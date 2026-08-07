@@ -4,9 +4,9 @@ Guidance for AI assistants working in this repository.
 
 ## What this repository is
 
-A **"pick a destination → get a planner"** tool, live at `https://dbeihl.github.io/trip-planner/`. It was seeded from a working Japan planner (which lives in the private `japan-travel` repo and is in active use for a real trip). Here, **Japan is the reference dataset** — the engine is generalized without touching that live trip. The design is in `GENERALIZATION-PLAN.md`; work is tracked in Issues.
+A **"pick a destination → get a planner"** tool, live at `https://dbeihl.github.io/trip-planner/`. This repo is now the canonical home of the live Japan trip — Tokyo → Hakone → Osaka, Kyoto as a Keihan day trip, Nov 14–22 2026 — as well as the engine-generalization effort; `src/data/japan.js` isn't a frozen reference dataset seeded from elsewhere, it IS that trip, and the validator + unit tests + e2e are the regression gates now. The private `japan-travel` repo it was originally ported from was archived 2026-08-07 after its Osaka restructure merged there (`japan-travel`#12). The generalization design is in `GENERALIZATION-PLAN.md`; work is tracked in Issues.
 
-**Do not** treat this as the Japan trip's repo. Never push planner changes from here back to `japan-travel` or its live site (`dbeihl/japan-itinerary`) unless explicitly asked — that trip is frozen on purpose.
+The public `dbeihl/japan-itinerary` Pages repo (`https://dbeihl.github.io/japan-itinerary`) still serves `japan-travel`'s final deploy as the shareable link for the trip and has no auto-update path from here — pushing to it is a manual, ask-David-first act, never a side effect of work in this repo.
 
 ## Architecture (post-Astro migration)
 
@@ -17,6 +17,7 @@ The site is an **Astro project**: one shared engine + per-trip data modules, bui
 - `src/scripts/engine.js` — the ONE copy of the vanilla-JS engine, a real ES module (reads `window.TRIP`; functions are module-scoped, not globals; `window.__state` is still exposed).
 - `src/scripts/xlsx.js` — the dependency-free .xlsx primitives (pure functions), imported by the engine.
 - `src/data/<trip>.js` — one plain-data module per trip (default-exports the full `TRIP` object: `meta/flights/hotels/transport/activities/routeDetail?/itinPool/itinDepart/visaPlan`). **Adding a trip = adding a data module + a 3-line page.**
+- Leg model: `routeDetail` now renders for any leg id present in `TRIP.routeDetail`, not a hardcoded set; side-trip legs (no `from`/`to`, no `role` — e.g. a day trip out of the last base) render after the route's last stop.
 - `src/pages/<trip>-trip-planner.astro` — 3 lines: import data, import Planner, render. `src/pages/index.astro` is the hub.
 - `astro.config.mjs` — `site: 'https://dbeihl.github.io'`, `base: '/trip-planner'`, `build: { format: 'file' }` (preserves the `<name>-trip-planner.html` URLs).
 - `.github/workflows/deploy-astro.yml` — builds and deploys `dist/` to GitHub Pages via Actions on push to `main`.

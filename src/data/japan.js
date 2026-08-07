@@ -6,23 +6,24 @@ export default {
       order: 1,
       emoji: "🗼",
       title: "Japan",
-      meta: "Tokyo · Hakone · Kyoto · optional Osaka",
+      meta: "Tokyo · Hakone · Osaka · Kyoto day trip",
       go: "Japan",
       blurb:
-        "Nine days by train through Tokyo, a Hakone onsen night, and old Kyoto — flights from two origins, ryokan-to-hotel lodging tiers, and a flexible ninth night.",
+        "Nine days by train through Tokyo, a Hakone onsen night, and Osaka's neon streets — with a Kyoto day trip for the shrines and lanes, flights from two origins, ryokan-to-hotel lodging tiers, and a flexible ninth night.",
     },
-    route: ["tokyo", "hakone", "kyoto"], // ordered city keys (osaka is optional)
-    optionalCities: ["osaka"], // add-on cities offered as the flexible night
-    flexNightDefault: "kyoto", // which flex-night option is selected by default
+    route: ["tokyo", "hakone", "osaka"], // ordered city keys
+    optionalCities: [],
+    flexNightDefault: "osaka", // which flex-night option is selected by default
     dates: { arrive: "2026-11-14", depart: "2026-11-22", nights: 8 },
     travelers: { count: 2, note: "2 adults, separate arrival flights" },
     currency: "USD",
     reference: {
       total: 9644,
       label: "Kensington Tours quote",
-      caveat: "Placeholder dates Nov 7–14; not apples-to-apples.",
+      caveat:
+        "Placeholder Nov 7–14 dates and a different route (Kyoto base, no Osaka); ground-only comparison since Kensington's quote excluded airfare.",
       blurb:
-        "Kensington Tours quoted <b>$9,644</b> for this same route — but for placeholder dates (Nov 7–14) that predate locking in the real Nov 14–22 travel window. Treat it as a rough order-of-magnitude reference, not an apples-to-apples baseline: a Kensington re-quote for the actual dates would run higher given the season.",
+        "Kensington Tours quoted <b>$9,644</b> for a Tokyo–Hakone–Kyoto version of this trip — but for placeholder dates (Nov 7–14) that predate locking in the real Nov 14–22 window, and for a different route (Kyoto as the lodging base, no Osaka). Treat it as a rough order-of-magnitude reference only: neither the dates nor the route match what's priced here. The delta above compares ground costs only — Kensington's quote excluded airfare.",
     },
     lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
     destLabel: "Tokyo", // gateway shown for an "Other airport" origin
@@ -219,67 +220,35 @@ export default {
         },
       ],
     },
-    kyoto: {
-      baseNights: 3,
-      label: "Kyoto",
-      header: "Kyoto — Gion",
-      options: [
-        {
-          name: "OMO5 Kyoto Gion",
-          rate: 290,
-          rating: "8.8",
-          note: "Non-refundable rate · current pick",
-          current: true,
-        },
-        {
-          name: "Kyoto Granbell Hotel",
-          rate: 288,
-          rating: "8.9",
-          note: "Gion-Shijo — essentially same price as current",
-        },
-        {
-          name: "APA Hotel Kyoto Gion Excellent",
-          rate: 161,
-          rating: "8.2",
-          note: "Gion",
-        },
-        { name: "Kyoto Gion Hotel", rate: 154, rating: "8.3", note: "Gion" },
-        {
-          name: "KIORI Hotel Higashino Toin",
-          rate: 153,
-          rating: "9.3",
-          note: "Higashiyama — best value, highest rated",
-        },
-      ],
-    },
     osaka: {
-      baseNights: 0,
+      baseNights: 3,
       label: "Osaka",
       header: "Osaka — Namba",
       options: [
         {
           name: "Citadines Namba Osaka",
-          rate: 232,
-          rating: "9.1",
-          note: "Serviced apartment, Namba",
+          rate: 235,
+          rating: "9.0",
+          note: "Serviced apartment, Deluxe Twin/Double, no breakfast, Namba · current pick",
+          current: true,
         },
         {
           name: "Fairfield by Marriott Osaka Namba",
-          rate: 212,
+          rate: 164,
           rating: "8.8",
-          note: "Namba",
+          note: "King Room, no breakfast, Namba",
         },
         {
           name: "Hotel Forza Osaka Namba",
-          rate: 184,
+          rate: 150,
           rating: "8.8",
-          note: "Namba",
+          note: "Standard Double, no breakfast, Namba",
         },
         {
           name: "Henn na Hotel Express Osaka Namba Nipponbashi",
-          rate: 123,
+          rate: 109,
           rating: "8.7",
-          note: "Budget, Namba/Nipponbashi",
+          note: "Budget, breakfast included, Namba/Nipponbashi",
         },
       ],
     },
@@ -287,7 +256,7 @@ export default {
   transport: {
     legs: [
       {
-        id: "airport",
+        id: "airport-arrive",
         role: "arrival", // renders before the first stop
         routeName: "<strong>Airport</strong> → Tokyo (Gotanda)",
         toggles: ["terminal", "mode"],
@@ -306,7 +275,7 @@ export default {
         },
       },
       {
-        id: "th",
+        id: "t-h",
         from: "tokyo",
         to: "hakone",
         routeName: "Tokyo → <strong>Hakone</strong>",
@@ -320,53 +289,45 @@ export default {
         cost: { public: 30, private: 340 }, // Tokyo↔Hakone
       },
       {
-        id: "hk",
+        id: "h-o",
         from: "hakone",
-        to: "kyoto",
-        routeName: "Hakone → <strong>Kyoto</strong>",
-        note: "(Shinkansen, both adults, reserved seat: <b>$152</b> fixed)",
+        to: "osaka",
+        routeName: "Hakone → <strong>Osaka</strong>",
+        note: "(Shinkansen, both adults, reserved seat: <b>$163</b> fixed — must be a Hikari; Nozomi skips Odawara)",
         toggles: ["mode"],
         routeDetail: true,
-        modeControl: "hkmode",
+        ctrlPrefix: "ho",
+        modeControl: "homode",
         modes: {
           public: { label: "Bus/subway", scale: "person" },
           private: { label: "Taxi both ends", scale: "vehicle" },
         },
-        cost: { public: 12, private: 52 }, // bookend legs (hotel↔Odawara + Kyoto Stn↔Gion)
-        fixed: { cost: 152, scale: "person" }, // Shinkansen, always added
+        cost: { public: 15, private: 63 }, // bookends only: hotel↔Odawara + Shin-Osaka↔Namba
+        fixed: { cost: 163, scale: "person" }, // Hikari Odawara→Shin-Osaka, always added
       },
       {
-        id: "final",
-        role: "departure", // renders after the last stop
-        routeName: "<strong>Kyoto</strong> → Kansai Airport",
-        dynamicNameId: "finalLegName",
-        toggles: ["mode"],
-        routeDetail: true,
-        modeControl: "finalmode",
-        when: "noOsaka",
-        modes: {
-          public: { label: "JR Haruka", scale: "person" },
-          private: { label: "Private car", scale: "vehicle" },
-        },
-        cost: { public: 45, private: 160 }, // Kyoto↔Kansai Airport
-      },
-      {
-        id: "kyotoOsaka",
-        role: "optional", // arrival leg into an optional city
-        to: "osaka",
-        routeName: "Kyoto → <strong>Osaka</strong>",
-        note: "(Kintetsu Ltd. Express, both adults: <b>$28</b>, only public option researched)",
+        id: "daytrip",
+        // No role: it's a cost-only side trip, not an inter-stop move, so it's
+        // never placed in the route body (no from/to, no arrival/departure/
+        // optional role) — but role:"cost" would also drop it from the generic
+        // budget breakdown (engine.js only "folds" a cost-role leg into
+        // another leg's row via Japan-specific logic this data intentionally
+        // bypasses), so it stays unset and gets its own breakdown line.
+        routeName: "Osaka ⇄ <strong>Kyoto</strong> (day trip)",
+        note: "(round trip, both adults: <b>$17</b> fixed — Midosuji subway Namba → Yodoyabashi, then Keihan Main Line express → Gion-Shijo)",
         toggles: [],
-        routeDetail: false,
-        when: "osaka",
-        flat: { cost: 28, scale: "person" },
-      }, // Aoniyoshi Ltd. Express
+        routeDetail: true,
+        flat: { cost: 17, scale: "person" },
+      },
       {
-        id: "osakaAirport",
-        role: "cost", // cost-only; the departure leg UI covers this segment
-        when: "osaka",
-        flat: { cost: 18, scale: "person" },
-      }, // Nankai IC fare
+        id: "depart",
+        role: "departure", // renders after the last stop
+        routeName: "<strong>Osaka</strong> → Kansai Airport",
+        note: "(Nankai, both adults: <b>$18</b> fixed)",
+        toggles: [],
+        routeDetail: true,
+        flat: { cost: 18, scale: "person" }, // Nankai ticketless/IC fare
+      },
     ],
   },
   activities: {
@@ -399,7 +360,7 @@ export default {
         ],
       },
       {
-        day: 2,
+        day: 3,
         title: "Ramen exploration",
         options: [
           {
@@ -467,15 +428,15 @@ export default {
         ],
       },
     ],
-    kyoto: [
+    osaka: [
       {
-        day: 5,
-        title: "Higashiyama District",
+        day: 6,
+        title: "Kyoto day trip: Higashiyama District",
         options: [
           {
             name: "Self-guided (free)",
             cost: 0,
-            note: "Free public streets",
+            note: "Free public streets — steps from the Keihan Gion-Shijo stop",
             current: true,
           },
           {
@@ -492,35 +453,29 @@ export default {
       },
       {
         day: 6,
-        title:
-          "Cultural Kyoto (Kinkaku-ji, Ryoan-ji, Kitano Tenmangu, Kamishichiken)",
+        title: "Kyoto day trip: Fushimi Inari Shrine",
         options: [
           {
             name: "Self-guided (free)",
             cost: 0,
-            note: "The one day Kensington originally guided",
+            note: "Free, 24/7, well-marked trail — 2 stops past Gion-Shijo on the Keihan line",
             current: true,
           },
           {
-            name: "Kyoto Guided Walks",
-            cost: 278,
-            note: "4 hrs private, Kinkaku-ji + Ryoan-ji only · 4.9★ (48)",
-          },
-          {
-            name: "Viator private 6hr + Kamishichiken add-on",
-            cost: 378,
-            note: "Covers all 4 original sites, across 2 bookings",
+            name: "DMO Kyoto guided tour",
+            cost: 68,
+            note: "60 min, includes a Kagura dance viewing you can't get solo · 5.0★",
           },
         ],
       },
       {
         day: 6,
-        title: "Pontocho evening",
+        title: "Kyoto day trip: Pontocho evening",
         options: [
           {
             name: "Self-guided (free)",
             cost: 0,
-            note: "Real tourist-trap risk in this alley",
+            note: "Real tourist-trap risk in this alley; last Keihan back to Namba runs past 23:00",
             current: true,
           },
           {
@@ -535,44 +490,10 @@ export default {
           },
         ],
       },
-      {
-        day: 7,
-        title: "Arashiyama",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Entrance fees only, ~$14–18/2",
-            current: true,
-          },
-          {
-            name: "Japanify all-sites tour",
-            cost: 125,
-            note: "5–6 hrs, covers all 4 sites · 5.0★ (1,711)",
-          },
-        ],
-      },
-      {
-        day: 7,
-        title: "Fushimi Inari Shrine",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Free, 24/7, well-marked trail",
-            current: true,
-          },
-          {
-            name: "DMO Kyoto guided tour",
-            cost: 68,
-            note: "60 min, includes a Kagura dance viewing you can't get solo · 5.0★",
-          },
-        ],
-      },
     ],
   },
   routeDetail: {
-    airport: {
+    "airport-arrive": {
       nrt: {
         label: "Narita → Gotanda (N'EX + Yamanote)",
         steps: [
@@ -600,7 +521,7 @@ export default {
         note: "Matches OMO5's own published estimate almost exactly. Excludes immigration (faster than NRT with e-gates).",
       },
     },
-    th: {
+    "t-h": {
       label: "Gotanda → Hakone ryokan (Romancecar)",
       steps: [
         "6 min walk: hotel → Gotanda Station",
@@ -613,45 +534,33 @@ export default {
       total: "~150 min (2.5 hr) door-to-door",
       note: "Biggest lever is the Romancecar run — stopping pattern varies train to train. Shuttle timing is soft; confirm with your specific ryokan.",
     },
-    hk: {
-      label: "Hakone ryokan → Kyoto Gion (via Odawara Shinkansen)",
+    "h-o": {
+      label: "Hakone hotel → Odawara → Shin-Osaka → Namba",
       steps: [
-        "60–65 min: ryokan → Odawara (walk to Gora Stn + Tozan train to Hakone-Yumoto + transfer + Odakyu line to Odawara — this route requires a transfer at Hakone-Yumoto)",
-        "10–15 min transfer within Odawara Station to the Shinkansen platform",
-        "135–141 min: Shinkansen Odawara → Kyoto — must be a Hikari (Nozomi doesn't stop at Odawara); only ~6–8 direct departures/day, roughly every 2 hours",
-        "20–30 min: Kyoto Station → Gion hotel (bus or JR+Keihan via Tofukuji; both beat walking)",
+        "Hakone Tozan bus / taxi: hotel area → Odawara Station",
+        "135–150 min: Shinkansen Odawara → Shin-Osaka — must be a Hikari (Nozomi doesn't stop at Odawara); only ~6–8 direct departures/day, roughly every 2 hours",
+        "~15 min: Midosuji subway Shin-Osaka → Namba",
       ],
-      total: "~4 hours active transit (237–255 min)",
+      total:
+        "~150–165 min Odawara → Namba (Shinkansen + subway); hotel→Odawara bus/taxi time not itemized",
       note: "Plan the Odawara departure around the sparse direct-Hikari schedule (~every 2 hrs) — missing one costs real time, not just a short wait.",
     },
-    final: {
-      direct: {
-        label: "Kyoto Gion → Kansai Airport (JR Haruka)",
-        steps: [
-          "~30 min: hotel → Kyoto Station (distance estimate — every real source routes this by bus/subway, not on foot)",
-          "~7 min walk to the Haruka platform (far NW corner of the station)",
-          "75–80 min ride: JR Haruka Express, Kyoto → Kansai Airport",
-          "~7 min walk: platform → terminal",
-        ],
-        total: "~124 min (2h 4m)",
-        note: "",
-      },
-      osaka: {
-        label: "Kyoto Gion → Osaka Namba → Kansai Airport",
-        steps: [
-          "~30 min: hotel → Kyoto Station",
-          "~5 min walk to the Kintetsu platform (south/Hachijo side)",
-          "86 min ride: Kintetsu Aoniyoshi Ltd. Express, Kyoto → Kintetsu-Namba (direct)",
-          "~10 min walk: Kintetsu-Namba → Namba hotel",
-          "— (Osaka overnight stay) —",
-          "~10 min walk: Namba hotel → Nankai Namba platform",
-          "37 min ride: Nankai Rapi:t, Namba → Kansai Airport",
-          "~7 min walk: platform → terminal",
-        ],
-        total:
-          "~185 min (3h 5m) combined transit, excluding the Osaka overnight itself",
-        note: "",
-      },
+    daytrip: {
+      label: "Namba ⇄ Kyoto (day trip)",
+      steps: [
+        "Midosuji subway Namba → Yodoyabashi, then Keihan Main Line express → Gion-Shijo (Kyoto)",
+        "40–55 min each way depending on route",
+      ],
+      total: "~80–110 min round-trip transit (40–55 min each way)",
+      note: "Go early — Fushimi Inari before 9am beats the crowds; last trains back to Namba run past 23:00.",
+    },
+    depart: {
+      label: "Osaka Namba → Kansai Airport",
+      steps: [
+        "~40 min: Nankai from Namba Station to KIX (Rapi:t reserved or airport express)",
+      ],
+      total: "~40 min (Nankai, Namba Station → KIX)",
+      note: "Nankai ticketless/IC fare researched; Rapi:t reserved seat costs slightly more.",
     },
   },
   itinPool: {
@@ -661,7 +570,7 @@ export default {
         travel: true,
         cityTag: "Tokyo — arrive",
         sun: "16:35",
-        move: "airport",
+        move: "airport-arrive",
         lodging: "tokyo",
         title: "Land, get to Gotanda, and do almost nothing",
         rows: [
@@ -742,28 +651,35 @@ export default {
           "Golden Gai's tiny bars are famously locals-only. A <b>guided bar-hop</b> gets us in the doors — solves a real access problem, not just another stop.",
       },
       {
-        id: "t-daytrip",
+        id: "t-shopping",
         cityTag: "Tokyo — day out",
         sun: "16:32",
-        title: "A day out of the city — Kamakura",
+        title: "Shibuya, Harajuku, and a proper shopping day",
         rows: [
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "The Great Buddha &amp; Hase-dera.",
+            lead: "Shibuya first.",
             detail:
-              "~1 hr south by train: the bronze Daibutsu in the open air, then Hase-dera's hillside gardens and sea views. A real change of pace.",
+              "The scramble crossing, then the vertical retail — Shibuya Parco for streetwear and game-culture floors, Loft and Hands for the gifts you actually take home.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Harajuku &amp; Omotesando after.",
+            detail:
+              "Takeshita-dori for the chaos, then Omotesando's tree-lined flagships and the Cat Street vintage stretch between them — the full Tokyo retail spectrum in one walkable line.",
           },
           {
             tag: "Table",
             kind: "table",
-            lead: "Shirasu-don by the coast.",
+            lead: "Depachika dinner.",
             detail:
-              "Kamakura's specialty — a rice bowl of tiny local whitebait, fresh from Sagami Bay.",
+              "A department-store basement food hall (Shibuya's Tokyu or Shinjuku's Isetan) — assemble a spread from the counters and eat well without a reservation.",
           },
         ],
         fuller:
-          "Ride one stop to <b>Enoshima</b> for the island shrine, the sea caves, and a sunset over the water on the way back.",
+          "<b>Shinjuku at night</b> to close it out — Kabukicho neon, Golden Gai's tiny bars, or the free Metro Government observation deck for the skyline.",
       },
     ],
     hakone: [
@@ -772,7 +688,7 @@ export default {
         travel: true,
         cityTag: "Tokyo → Hakone",
         sun: "16:32",
-        move: "th",
+        move: "t-h",
         lodging: "hakone",
         title: "The mountain, and the best meal of the trip",
         rows: [
@@ -795,7 +711,7 @@ export default {
             kind: "soft",
             flag: "luggage",
             detail:
-              "This morning, forward the big suitcases <b>Tokyo → Kyoto hotel</b> by takkyūbin (~¥2,500/bag, next-day). Ride to Hakone with just an overnight bag; the cases meet us in Kyoto. <em>Confirm the Kyoto hotel accepts the delivery.</em>",
+              "This morning, forward the big suitcases <b>Tokyo → Osaka hotel</b> by takkyūbin (~¥2,500/bag, next-day). Ride to Hakone with just an overnight bag; the cases meet us in Osaka. <em>Confirm the Osaka hotel accepts the delivery.</em>",
           },
         ],
       },
@@ -828,111 +744,13 @@ export default {
         ],
       },
     ],
-    kyoto: [
-      {
-        id: "k-arrive",
-        travel: true,
-        cityTag: "Hakone → Kyoto",
-        sun: "16:50",
-        move: "hk",
-        lodging: "kyoto",
-        title: "Bullet train west, into old Kyoto",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Higashiyama at dusk.",
-            detail:
-              "The stone lanes of Sannenzaka &amp; Ninenzaka up to Kiyomizu-dera, arriving for sunset over the city. Old-Kyoto at its most cinematic. Daypacks only — the bags went ahead.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "First dinner in Gion or Pontochō.",
-            detail:
-              "Lantern-lit riverside alley; anything from yakitori to kaiseki.",
-          },
-        ],
-      },
-      {
-        id: "k-fushimi",
-        cityTag: "Kyoto",
-        sun: "16:49",
-        title: "Ten thousand torii gates, early",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Fushimi Inari — before 8 am.",
-            detail:
-              "The vermilion torii tunnels up the mountain. Going early is the whole game: by 10 it's shoulder-to-shoulder. Hike as far up as we feel like.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Pontochō food tour in the evening.",
-            detail:
-              "A well-reviewed small-group crawl (~13 tastes) is the easiest way into an alley that's otherwise a tourist-trap minefield.",
-          },
-        ],
-        fuller:
-          "One stop up the line is <b>Tōfuku-ji</b> — its maple valley is one of Kyoto's great autumn sights and peaks right about now. Pairs perfectly with an early Fushimi Inari.",
-        ask: "Fushimi Inari means a 7 am start. Worth it for empty gates, or trade sleep for crowds?",
-      },
-      {
-        id: "k-arashiyama",
-        cityTag: "Kyoto",
-        sun: "16:48",
-        title: "Bamboo, a Zen garden, and tofu",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Arashiyama — bamboo grove &amp; Tenryū-ji.",
-            detail:
-              "Go early before the grove fills. Tenryū-ji's garden (UNESCO) is stunning against peak-ish foliage.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Yudōfu (hot-pot tofu) lunch.",
-            detail:
-              "The local specialty — simple, warming, exactly right for a cool November day by the river.",
-          },
-          {
-            tag: "Evening",
-            kind: "soft",
-            detail: "Back to Gion, easy dinner.",
-          },
-        ],
-        fuller:
-          "The <b>Sagano Scenic Railway</b> through the autumn gorge is spectacular in late November — and books out. Say the word and I'll grab tickets now.",
-      },
-      {
-        id: "k-foliage",
-        cityTag: "Kyoto",
-        sun: "16:47",
-        title: "Peak foliage, and a slow last look",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "The Golden Pavilion, or a foliage temple at its peak.",
-            detail:
-              "Kinkaku-ji + Ryōan-ji's rock garden is the classic pairing; but late Nov is prime colour, so Eikandō or Tōfuku-ji (day or evening illumination) may be the better call. We'll pick from the foliage forecast closer in.",
-          },
-        ],
-        fuller:
-          "Kensington's guided <b>Cultural Kyoto</b> half-day covers Kinkaku-ji, Ryōan-ji, Kitano Tenmangū, and the quieter Kamishichiken geisha district with a guide who explains what we're seeing.",
-      },
-    ],
     osaka: [
       {
         id: "o-arrive",
         travel: true,
-        cityTag: "Kyoto → Osaka",
-        sun: "16:47",
-        move: "kyotoOsaka",
+        cityTag: "Hakone → Osaka",
+        sun: "16:52",
+        move: "h-o",
         lodging: "osaka",
         title: "Osaka — neon, canals, and street food",
         rows: [
@@ -941,7 +759,7 @@ export default {
             kind: "anchor",
             lead: "Dotonbori &amp; Namba after dark.",
             detail:
-              "The Glico running man, the canal lights, the roar of the arcades — Osaka is the loud, fun counterweight to Kyoto's quiet.",
+              "The Glico running man, the canal lights, the roar of the arcades — Osaka is the loud, fun counterweight to Hakone's quiet morning.",
           },
           {
             tag: "Table",
@@ -952,25 +770,136 @@ export default {
           },
         ],
         fuller:
-          "By day, <b>Osaka Castle</b> or the <b>Kuromon Ichiba market</b> before the train out.",
+          "Drop bags at the hotel first — Namba is minutes from the action, so an early check-in isn't critical.",
+      },
+      {
+        id: "o-daytrip",
+        travel: true,
+        cityTag: "Day trip — Kyoto",
+        sun: "16:51",
+        move: "daytrip",
+        title: "Kyoto in a day — shrines, lanes, and a market lunch",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Fushimi Inari first.",
+            detail:
+              "The vermilion torii tunnels are the trip's iconic walk — arrive before 9am and the crowds thin out within the first ten minutes of climbing.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "The eastern hills after lunch.",
+            detail:
+              "Kiyomizu-dera's veranda, then downhill through Sannenzaka and Ninenzaka's preserved lanes to Gion — late November is peak foliage, so the temple gardens earn their reputation this week.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Nishiki Market for lunch.",
+            detail:
+              "Kyoto's 400-year-old food arcade — tamagoyaki, yuba, matcha everything. Graze the stalls rather than committing to one seat.",
+          },
+        ],
+        fuller:
+          "If the foliage forecast is right, <b>Eikandō's evening illumination</b> is the best autumn ticket in Kyoto — it means a later train back to Namba, which runs past 23:00.",
+      },
+      {
+        id: "o-food",
+        cityTag: "Osaka",
+        sun: "16:51",
+        title: "Kuromon market, Shinsaibashi, and Japan's kitchen",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Kuromon Ichiba in the morning.",
+            detail:
+              "Osaka's covered market — grilled scallops, tuna cuts, fruit you eat standing up. Breakfast is the market itself.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shinsaibashi &amp; Amerikamura shopping.",
+            detail:
+              "The covered Shinsaibashi-suji arcade runs the gamut from department stores to streetwear; Amerikamura next door is the vintage and sneaker quarter.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Okonomiyaki, done properly.",
+            detail:
+              "Sit at a teppan counter and let them build it in front of you — the Osaka style (mixed, not layered) is the one to order here.",
+          },
+        ],
+        fuller:
+          "<b>Umeda Sky Building</b> at dusk — the open-air escalator ride and the city grid lighting up below.",
+      },
+      {
+        id: "o-shrines",
+        cityTag: "Osaka",
+        sun: "16:50",
+        title: "Sumiyoshi Taisha, Shitennoji, and old Osaka",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Sumiyoshi Taisha in the morning.",
+            detail:
+              "One of Japan's oldest shrines, pre-dating Buddhist influence — the arched Sorihashi bridge and pure sumiyoshi-zukuri halls are unlike anything in Kyoto. Ten minutes from Namba on the Nankai line.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shitennoji after.",
+            detail:
+              "Japan's oldest officially-administered temple (593 AD), with a five-story pagoda and a quiet turtle pond — the flea market (21st/22nd of the month) overlaps our dates.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Kushikatsu in Shinsekai.",
+            detail:
+              "The retro tower district next to Shitennoji is the home of deep-fried skewers — one rule: no double-dipping the sauce.",
+          },
+        ],
+        fuller:
+          "<b>Osaka Castle</b> park on the way back — the keep is a reconstruction, but the moats and gold-leaf details photograph best in late-afternoon light.",
       },
     ],
+  },
+  itinDepart: {
+    id: "depart",
+    travel: true,
+    move: "depart",
+    sun: "16:46",
+    cityTag: "Osaka → home",
+    title: "Kansai Airport, and the long way home",
+    rows: [
+      {
+        tag: "Note",
+        kind: "soft",
+        detail:
+          "~40 min to the gate — build in buffer and have Visit Japan Web ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy.",
+      },
+    ],
+    ask: "when do our flights home actually leave? That sets how much of the morning is ours.",
   },
   visaPlan: {
     "t-arrive": "Arrive in Tokyo; check in and rest.",
     "t-tsukiji": "Tsukiji Outer Market; Asakusa Senso-ji Temple & Nakamise St.",
     "t-gyoen": "Shinjuku Gyoen National Garden; Shinjuku district.",
-    "t-daytrip": "Day trip to Kamakura (Great Buddha, Hase-dera Temple).",
+    "t-shopping":
+      "Shibuya, Harajuku & Omotesando shopping districts; Shinjuku in the evening.",
     "h-arrive":
       "Travel to Hakone; Hakone Open-Air Museum; onsen (hot spring) ryokan.",
     "h-full": "Hakone loop — Lake Ashi, Owakudani, Hakone Shrine.",
-    "k-arrive":
-      "Travel to Kyoto by Shinkansen; Higashiyama & Kiyomizu-dera Temple.",
-    "k-fushimi": "Fushimi Inari Shrine; evening in Pontocho.",
-    "k-arashiyama": "Arashiyama bamboo grove & Tenryu-ji Temple.",
-    "k-foliage":
-      "Kinkaku-ji (Golden Pavilion) & Ryoan-ji; autumn foliage viewing.",
     "o-arrive": "Travel to Osaka; Dotonbori & Namba.",
+    "o-daytrip":
+      "Day trip to Kyoto by train; Fushimi Inari Shrine; Kiyomizu-dera Temple; Nishiki Market.",
+    "o-food": "Kuromon Ichiba Market; Shinsaibashi & Amerikamura shopping districts.",
+    "o-shrines": "Sumiyoshi Taisha Shrine; Shitennoji Temple; Osaka Castle.",
     depart: "Depart from Kansai International Airport.",
   },
 };
