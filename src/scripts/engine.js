@@ -1550,12 +1550,46 @@ const TRIP = window.TRIP;
         if (leg) legRow(leg.id);
       }
     });
-    // side-trip legs (no role, no from/to — e.g. a day trip out of the last
-    // base) aren't part of the arrival/inter-stop/departure sequence above,
-    // so give each its own row here — same selection renderRouteBody
-    // (engine.js legHtml loop) and recalc's generic breakdown use.
-    TRIP.transport.legs.forEach((l) => {
-      if (!l.role && !l.from && !l.to) legRow(l.id);
+    // side-trip legs (no role, no from/to — e.g. a day trip out of a base)
+    // aren't part of the arrival/inter-stop/departure sequence above — same
+    // selection renderRouteBody (engine.js legHtml loop) and recalc's
+    // generic breakdown use. The itinerary (assembleItinDays) places each on
+    // the pool day whose `move` matches the leg id; walk the same city-order
+    // + per-city-nights structure here (slicing each city's pool by its
+    // current night count, exactly like assembleItinDays does) so the
+    // exported row lands on the day the side trip actually happens instead
+    // of wherever the loop's cursor sits when this runs.
+    const sideTripLegs = TRIP.transport.legs.filter(
+      (l) => !l.role && !l.from && !l.to,
+    );
+    const placedSideTrips = new Set();
+    let dayOffset = 0;
+    TRIP.meta.route.concat(TRIP.meta.optionalCities).forEach((city) => {
+      const pool = ITIN_POOL[city] || [];
+      const n = s.nights[city] || 0;
+      for (let idx = 0; idx < n; idx++) {
+        const poolDay = pool[idx];
+        const leg = poolDay && sideTripLegs.find((l) => l.id === poolDay.move);
+        if (leg) {
+          const m = moveData(leg.id, s);
+          if (m && m.lead)
+            rows.push({
+              date: addDays(toDate(TRIP_START), dayOffset),
+              category: "Transport",
+              title: m.lead,
+              detail: m.detail,
+              cost: m.cost || 0,
+            });
+          placedSideTrips.add(leg.id);
+        }
+        dayOffset++;
+      }
+    });
+    // fallback for a side-trip leg no pool day references — still gets a
+    // row (dated at the departure cursor, the prior behavior for all of
+    // them) rather than being dropped from the export.
+    sideTripLegs.forEach((l) => {
+      if (!placedSideTrips.has(l.id)) legRow(l.id);
     });
     const departureLeg = TRIP.transport.legs.find(
       (l) => l.role === "departure",
