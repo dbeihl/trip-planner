@@ -12,7 +12,7 @@ The Japan planner started in a separate, private repo (`japan-travel`), archived
 
 | File                      | Role                                                                                                                                            |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `japan-trip-planner.html` | The seed engine + Japan reference data (single self-contained file: cost engine, itinerary view, exports). Phase 1 extracts the data out of it. |
+| `src/scripts/engine.js`   | The one shared planner engine (cost ledger, itinerary view, exports) — trip-agnostic, reading each trip's data from `src/data/<trip>.js` via `src/pages/<trip>-trip-planner.astro`. |
 | `GENERALIZATION-PLAN.md`  | The design/plan: architecture, the `TripData` schema, phased build, open decisions.                                                             |
 
 ## Running

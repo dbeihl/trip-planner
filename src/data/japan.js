@@ -360,7 +360,7 @@ export default {
         ],
       },
       {
-        day: 2,
+        day: 3,
         title: "Ramen exploration",
         options: [
           {

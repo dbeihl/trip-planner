@@ -19,7 +19,8 @@ const TRIP = window.TRIP;
   // The large literals are assigned into it below (kept in place, so
   // nothing is retyped); the engine reads them through the bindings at
   // the end of the data block — its code is otherwise unchanged.
-  // Japan is the reference dataset — see GENERALIZATION-PLAN.md.
+  // Japan is a data module like any other now (src/data/japan.js) — it's
+  // the live, canonical trip, not a frozen reference; see GENERALIZATION-PLAN.md.
   // ─────────────────────────────────────────────────────────────────
 
 
@@ -1548,6 +1549,13 @@ const TRIP = window.TRIP;
           );
         if (leg) legRow(leg.id);
       }
+    });
+    // side-trip legs (no role, no from/to — e.g. a day trip out of the last
+    // base) aren't part of the arrival/inter-stop/departure sequence above,
+    // so give each its own row here — same selection renderRouteBody
+    // (engine.js legHtml loop) and recalc's generic breakdown use.
+    TRIP.transport.legs.forEach((l) => {
+      if (!l.role && !l.from && !l.to) legRow(l.id);
     });
     const departureLeg = TRIP.transport.legs.find(
       (l) => l.role === "departure",
