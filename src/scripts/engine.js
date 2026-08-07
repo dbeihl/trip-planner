@@ -70,12 +70,31 @@ const TRIP = window.TRIP;
 
   function renderRouteDetail(id, entry) {
     const el = document.getElementById(id);
+    if (!el || !entry) return;
     el.innerHTML = `
     <summary>Route detail — ${entry.label}</summary>
     <ol>${entry.steps.map((s) => `<li>${s}</li>`).join("")}</ol>
     <div class="rd-total">Total: ${entry.total}</div>
     ${entry.note ? `<div class="rd-note">${entry.note}</div>` : ""}
   `;
+  }
+
+  // Fills the <details id="rd-<leg.id>"> box (created by legHtml() whenever
+  // leg.routeDetail is true) for every leg id present in TRIP.routeDetail —
+  // any trip, not just Japan's four legacy legs. An entry with no `.steps`
+  // is a variant map (e.g. the arrival leg's {nrt, hnd}) and resolves
+  // through that leg's own terminal/mode control, the same selection the
+  // cost grid already reads.
+  function renderRouteDetails() {
+    if (!ROUTE_DETAIL) return;
+    TRIP.transport.legs.forEach((leg) => {
+      const entry = ROUTE_DETAIL[leg.id];
+      if (!entry) return;
+      const resolved = entry.steps
+        ? entry
+        : entry[selectedValue(leg.terminalControl || leg.modeControl)];
+      renderRouteDetail("rd-" + leg.id, resolved);
+    });
   }
 
   // ── origins questionnaire ────────────────────────────────────────
@@ -386,6 +405,12 @@ const TRIP = window.TRIP;
         if (l) html += legHtml(l);
       }
     });
+    // side-trip legs (no role, no from/to — e.g. a day trip out of the last
+    // base) aren't part of the inter-stop sequence; give each its own
+    // fixed-leg row right after the route stops, same as an inter-city leg.
+    legs.forEach((l) => {
+      if (!l.role && !l.from && !l.to) html += legHtml(l);
+    });
     TRIP.meta.optionalCities.forEach((oc) => {
       const oleg = legs.find((l) => l.role === "optional" && l.to === oc);
       html +=
@@ -407,11 +432,10 @@ const TRIP = window.TRIP;
 
   TRIP.meta.route.forEach((c) => renderActivities(c + "Activities", c));
 
-  // route-detail step breakdowns are optional per trip (Japan has them)
-  if (ROUTE_DETAIL && ROUTE_DETAIL.th)
-    renderRouteDetail("rd-th", ROUTE_DETAIL.th);
-  if (ROUTE_DETAIL && ROUTE_DETAIL.hk)
-    renderRouteDetail("rd-hk", ROUTE_DETAIL.hk);
+  // route-detail step breakdowns are optional per trip (Japan has them);
+  // rendered from recalc() via renderRouteDetails() — variant entries
+  // (e.g. the arrival leg's nrt/hnd) need the live toggle selection, and
+  // recalc() runs once on load plus on every input change.
 
   // ── generate the transport toggles from TRIP.transport.legs ───────
   // Builds the same radios/labels the engine expects (ids by ctrl prefix),
@@ -992,15 +1016,11 @@ const TRIP = window.TRIP;
       if (pri) pri.textContent = l.modes.private.label + " $" + costObj.private;
     });
 
-    // route-detail step breakdowns are Japan-specific; render only if present
     const airport = selectedValue("airport");
-    if (ROUTE_DETAIL && ROUTE_DETAIL.airport)
-      renderRouteDetail("rd-airport", ROUTE_DETAIL.airport[airport]);
-    if (ROUTE_DETAIL && ROUTE_DETAIL.final)
-      renderRouteDetail(
-        "rd-final",
-        osakaMode ? ROUTE_DETAIL.final.osaka : ROUTE_DETAIL.final.direct,
-      );
+    // route-detail step breakdowns are optional per trip; renders (or
+    // re-renders, for variant entries like the arrival leg's nrt/hnd) any
+    // leg id present in TRIP.routeDetail.
+    renderRouteDetails();
 
     // named leg values the itinerary/breakdown still read (Japan legs);
     // undefined for other trips, which use the generic paths downstream.
