@@ -36,7 +36,7 @@ export default {
         'Oct 24 → Nov 8, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)',
       planTitle: "Davao &amp; Japan Trip Cost Ledger",
       planSub:
-        "Pick a hotel tier per stop and a transport mode per leg. Transport fares are live-researched, and every airfare is a real quote or a booked ticket. Two things still need re-checking: the Japan hotel rates were quoted for the original mid-November dates, and Davao lodging is a planning estimate that costs nothing at the current pick. The total updates as you go.",
+        "Pick a hotel tier per stop and a transport mode per leg. Transport fares are live-researched, every airfare is a real quote or a booked ticket, and both current hotel picks were re-quoted for the actual dates on 2026-08-09. One thing to act on rather than re-check: the original Tokyo pick is sold out for Nov 6–8, so the Tokyo line reflects the cheapest bookable alternative instead. The total updates as you go.",
       flightsTitle: "Getting there — International flights",
       flightsIntro:
         "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Nov 1 — that leg is booked and priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
@@ -44,7 +44,8 @@ export default {
       itinDek:
         "A slow week with family near Davao, then into Japan through the back door: five nights based in Namba, with Osaka's kitchen at the door and day trips out to Kyoto and Nara, then the Nozomi up to Tokyo for a last two nights. One base, one move, no packing and repacking.",
       finePrint: [
-        "Japan hotel rates were date-locked quotes pulled from booking platforms for the trip's ORIGINAL Nov 14–22 window. The trip has since moved two weeks earlier (Nov 1–8), so re-quote them — early-November rates in Osaka and Tokyo will not match mid-November peak-foliage pricing.",
+        "Both current picks were re-quoted on 2026-08-09 for the real dates (Booking.com, 2 adults, 1 room, USD): Citadines Namba for Nov 1–6 and the Tokyo stay for Nov 6–8. Alternatives marked \"NOT re-quoted\" still carry their old Nov 14–22 figures and will move.",
+        "OMO5 Tokyo Gotanda — the original Tokyo pick — showed NO availability for Nov 6–8, and so did Mitsui Garden Gotanda. Nov 6–8 is a Friday-to-Sunday and Tokyo is tight. Book the Tokyo nights early, and check Hoshino Resorts direct before giving up on OMO5.",
         "Davao lodging is a planning estimate, not a date-locked quote — the current pick is staying with family at no lodging cost.",
         "Every alternative hotel holds a private double/twin room, ≥8.0 guest rating, and the same neighborhood (or one stop away) as the currently-quoted property.",
         "Japan transport fares are current published prices (JR, Nankai, Keihan, Kintetsu); the taxi-bookend figures on the Osaka → Tokyo leg are estimates, not quotes.",
@@ -196,28 +197,34 @@ export default {
       options: [
         {
           name: "Citadines Namba Osaka",
-          rate: 235,
-          rating: "9.0",
-          note: "Serviced apartment, Deluxe Twin/Double, no breakfast, Namba · current pick",
+          rate: 197,
+          rating: "9.1",
+          note: "Deluxe Twin (entire studio), no breakfast, Namba · re-quoted 2026-08-09 for Nov 1–6: $197/night, $984 for the 5 nights with 10% off, free cancellation to Oct 29 · current pick",
           current: true,
+        },
+        {
+          name: "Citadines Namba Osaka — breakfast included",
+          rate: 223,
+          rating: "9.1",
+          note: "Same Deluxe Twin with the buffet · re-quoted 2026-08-09 for Nov 1–6: $1,117 for the 5 nights",
         },
         {
           name: "Fairfield by Marriott Osaka Namba",
           rate: 164,
           rating: "8.8",
-          note: "King Room, no breakfast, Namba",
+          note: "King Room, no breakfast, Namba — NOT re-quoted for the new dates",
         },
         {
           name: "Hotel Forza Osaka Namba",
           rate: 150,
           rating: "8.8",
-          note: "Standard Double, no breakfast, Namba",
+          note: "Standard Double, no breakfast, Namba — NOT re-quoted for the new dates",
         },
         {
           name: "Henn na Hotel Express Osaka Namba Nipponbashi",
           rate: 109,
           rating: "8.7",
-          note: "Budget, breakfast included, Namba/Nipponbashi",
+          note: "Budget, breakfast included, Namba/Nipponbashi — NOT re-quoted for the new dates",
         },
       ],
     },
@@ -227,35 +234,41 @@ export default {
       header: "Tokyo — Gotanda / Shinagawa",
       options: [
         {
+          name: "HOTEL 1899 TOKYO",
+          rate: 229,
+          rating: "9.3",
+          note: "Shimbashi, tea-themed · the only Shinagawa-area option confirmed BOOKABLE for Nov 6–8 (checked 2026-08-09, $458 for the two nights) · current pick by availability, not preference",
+          current: true,
+        },
+        {
           name: "OMO5 Tokyo Gotanda",
           rate: 229,
           rating: "8.9",
-          note: "King Room w/ breakfast · current pick",
-          current: true,
+          note: "King Room w/ breakfast — the original pick, but SOLD OUT Nov 6–8 on Booking.com as of 2026-08-09. Try Hoshino Resorts direct before writing it off",
         },
         {
           name: "Mitsui Garden Hotel Gotanda",
           rate: 219,
-          rating: "8.5",
-          note: "Station-adjacent, no breakfast",
+          rating: "8.6",
+          note: "Station-adjacent, no breakfast — also SOLD OUT Nov 6–8 on Booking.com as of 2026-08-09",
         },
         {
           name: "Miyako City Tokyo Takanawa",
           rate: 187,
           rating: "8.8",
-          note: "Shinagawa, highest-rated alternative",
+          note: "Shinagawa — NOT re-checked for the new dates",
         },
         {
           name: "Shinagawa Tobu Hotel",
           rate: 167,
           rating: "8.1",
-          note: "Shinagawa, plain business hotel",
+          note: "Shinagawa, plain business hotel — NOT re-checked for the new dates",
         },
         {
           name: "APA Hotel Shinagawa Togoshi Ekimae",
           rate: 119,
           rating: "8.2",
-          note: "Budget, 1 stop from Gotanda",
+          note: "Budget, 1 stop from Gotanda — NOT re-checked for the new dates",
         },
       ],
     },
@@ -453,6 +466,28 @@ export default {
         ],
       },
       {
+        day: 13,
+        title: "Send the suitcases ahead to Tokyo (takkyūbin)",
+        options: [
+          {
+            name: "Carry them on the Nozomi (free)",
+            cost: 0,
+            note: "Fine if the cases fit the overhead rack. Anything over 160cm total needs a free oversized-baggage seat reservation, and those rows sell out",
+            current: true,
+          },
+          {
+            name: "Yamato TA-Q-BIN, hotel desk to hotel desk",
+            cost: 32,
+            note: "¥2,300–2,630 per large case (140–160 size band) at ¥155 = $1, so ~$32 for two. Hand them to the Citadines desk on the morning of the 5th; they reach the Tokyo hotel on the 6th",
+          },
+          {
+            name: "Yamato, three cases",
+            cost: 48,
+            note: "Same service, third bag — worth it if you shopped Shinsaibashi hard",
+          },
+        ],
+      },
+      {
         day: 12,
         title: "Nara day trip: Todai-ji and the deer park",
         options: [
@@ -569,7 +604,7 @@ export default {
         "~40 min: Nankai from Kansai Airport station to Namba — in the hotel around 19:40",
       ],
       total: "~13 hrs gate to hotel (07:05 Davao → ~19:40 Namba)",
-      note: "The 07:05 push means leaving the house around 05:00. Both legs are Cebu Pacific, so bags check through — but the Manila layover is in Terminal 3 for both. Have Visit Japan Web done before you land.",
+      note: "The 07:05 push means leaving the house around 05:00. Both legs are Cebu Pacific, so bags check through — but the Manila layover is in Terminal 3 for both. Have Visit Japan Web done before you land. KIX has a Yamato counter on T1's 4th floor if you'd rather send the cases to the hotel than wrestle them onto the Nankai, but same-day delivery cuts off at 12:30 and you land at 18:20 — yours would arrive the next day, and the Nankai is direct anyway.",
     },
     "o-t": {
       label: "Namba → Shin-Osaka → Tokyo → Gotanda (Nozomi)",
@@ -978,6 +1013,13 @@ export default {
             lead: "Kushikatsu in Shinsekai.",
             detail:
               "The retro tower district next to Shitennoji is the home of deep-fried skewers — one rule: no double-dipping the sauce.",
+          },
+          {
+            tag: "Luggage",
+            kind: "soft",
+            flag: "luggage",
+            detail:
+              "Decide this morning, not tomorrow: takkyūbin is <b>next-day</b>, so cases handed to the Citadines front desk today reach the Tokyo hotel when you do. Hand them over after tomorrow's checkout and they turn up on the 7th — a day late. Pack an overnight bag either way. The desk fills out the form and Yamato collects from the lobby; a 7-Eleven, FamilyMart or Lawson counter will also take them if you miss the hotel's pickup. <em>Confirm the Tokyo hotel accepts a delivery for an arriving guest.</em>",
           },
         ],
         fuller:
