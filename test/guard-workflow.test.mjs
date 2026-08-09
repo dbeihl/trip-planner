@@ -44,9 +44,11 @@ async function runGuard({
   event = "pull_request",
 }) {
   const messages = [];
+  const statuses = [];
   let failure = null;
   const core = {
     info: (m) => messages.push(m),
+    warning: (m) => messages.push(m),
     setFailed: (m) => {
       failure = m;
     },
@@ -63,6 +65,9 @@ async function runGuard({
       },
       issues: {
         listComments: () => comments,
+      },
+      repos: {
+        createCommitStatus: async (s) => statuses.push(s),
       },
     },
   };
@@ -84,7 +89,7 @@ async function runGuard({
     `return (async () => {\n${source}\n})();`,
   );
   await fn(github, context, core);
-  return { failed: failure !== null, failure, messages };
+  return { failed: failure !== null, failure, messages, statuses };
 }
 
 const approval = (login, commit_id = HEAD) => ({
@@ -253,4 +258,32 @@ test("a lookalike path outside the gates is not protected", async () => {
     const r = await runGuard({ files: [p] });
     assert.equal(r.failed, false, `${p} should not be protected but was`);
   }
+});
+
+// An issue_comment run's own check attaches to the default branch, not the PR
+// head — so the verdict has to be posted as a commit status on the head or the
+// ack route reports success while the PR's required check stays red.
+test("the verdict is posted as a commit status on the PR head", async () => {
+  const blocked = await runGuard({ files: ["e2e/smoke.spec.mjs"] });
+  assert.deepEqual(
+    blocked.statuses.map((s) => [s.sha, s.state, s.context]),
+    [[HEAD, "failure", "guard/gates"]],
+  );
+
+  const acked = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [ack(OWNER)],
+    event: "issue_comment",
+  });
+  assert.deepEqual(
+    acked.statuses.map((s) => [s.sha, s.state, s.context]),
+    [[HEAD, "success", "guard/gates"]],
+  );
+});
+
+test("a status description stays inside GitHub's 140-char limit", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs", "test/budget.test.mjs", "scripts/validate-trip.mjs"],
+  });
+  for (const s of r.statuses) assert.ok(s.description.length <= 140, s.description);
 });

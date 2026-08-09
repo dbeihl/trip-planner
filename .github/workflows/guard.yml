@@ -25,8 +25,7 @@ name: Guard
 # ack has to bind to the exact diff it was given, or a push after the sign-off
 # silently inherits it. Chasing that with "strip the label when the head moves"
 # is a race — the ack has to name the commit in the first place. A SHA in a
-# comment does; it also means this job needs no write access at all and never
-# mutates the PR.
+# comment does, with no cleanup and nothing to mutate on the PR itself.
 #
 # Only @owner's ack counts. Not "anyone but the author": on a public repo
 # anyone can review or comment, so a fork contributor could clear their own
@@ -34,7 +33,9 @@ name: Guard
 # authorization either — the triage role can apply labels without write access.
 #
 # One-time setup that gives this teeth (repo Settings):
-#   - Branch protection on main: require status checks "test", "smoke", "Guard".
+#   - Branch protection on main: require status checks "test", "smoke" and
+#     "guard/gates" (the commit status this job posts on the PR head — not the
+#     workflow's own check, which an issue_comment run cannot attach there).
 #   - General → allow auto-merge.
 
 on:
@@ -50,6 +51,11 @@ permissions:
   contents: read
   pull-requests: read
   issues: read
+  # An issue_comment run's own check attaches to the default branch, not to the
+  # PR head — so the ack would report success while the PR's required check
+  # stayed red. This job therefore posts its verdict as a commit status on the
+  # head itself. That status is the thing to require in branch protection.
+  statuses: write
 
 jobs:
   guard:
@@ -77,6 +83,7 @@ jobs:
               /^worker\/package(-lock)?\.json$/,
             ];
 
+            const STATUS_CONTEXT = "guard/gates";
             const ev = context.payload;
             const pull_number = (ev.pull_request || ev.issue || {}).number;
             if (!pull_number) {
@@ -93,11 +100,33 @@ jobs:
             const head = pr.head.sha;
             const author = (pr.user || {}).login;
 
+            // Post the verdict onto the head commit as well as failing this
+            // job, so the answer lands on the PR no matter which event ran it.
+            const report = async (state, description) => {
+              try {
+                await github.rest.repos.createCommitStatus({
+                  owner, repo, sha: head, state, context: STATUS_CONTEXT,
+                  description: description.slice(0, 139),
+                  target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+                });
+              } catch (e) {
+                core.warning(`Could not post the ${STATUS_CONTEXT} status: ${e.message}`);
+              }
+            };
+            const pass = async (msg, description) => {
+              await report("success", description);
+              core.info(msg);
+            };
+            const fail = async (msg, description) => {
+              await report("failure", description);
+              core.setFailed(msg);
+            };
+
             const files = await github.paginate(github.rest.pulls.listFiles,
               { owner, repo, pull_number, per_page: 100 });
             const touched = files.map(f => f.filename).filter(n => PROTECTED.some(re => re.test(n)));
             if (touched.length === 0) {
-              core.info("No protected paths touched — gates unchanged.");
+              await pass("No protected paths touched — gates unchanged.", "No gate files touched");
               return;
             }
             const list = touched.join("\n");
@@ -116,7 +145,9 @@ jobs:
               owner !== author &&
               ownerReview.commit_id === head
             ) {
-              core.info(`Protected paths changed, approved by @${owner} at ${head}:\n${list}`);
+              await pass(
+                `Protected paths changed, approved by @${owner} at ${head}:\n${list}`,
+                `Approved by @${owner} at ${head.slice(0, 8)}`);
               return;
             }
 
@@ -130,15 +161,18 @@ jobs:
               if (!c.user || c.user.login !== owner) continue;
               const m = ACK.exec(c.body || "");
               if (m && head.startsWith(m[1].toLowerCase())) {
-                core.info(`Protected paths changed, acked by @${owner} for ${m[1]}:\n${list}`);
+                await pass(
+                  `Protected paths changed, acked by @${owner} for ${m[1]}:\n${list}`,
+                  `Acked by @${owner} for ${head.slice(0, 8)}`);
                 return;
               }
             }
 
-            core.setFailed(
+            await fail(
               `Protected paths changed — auto-merge is blocked until @${owner} signs off:\n${list}\n\n` +
               `Either approve the PR (the approval must land on ${head.slice(0, 8)}), or comment:\n\n` +
               `    gates-reviewed ${head}\n\n` +
               `The sign-off names that commit deliberately: push again and it stops ` +
               `counting, so a later change cannot inherit a review it never had.`,
+              `${touched.length} gate file(s) changed — needs @${owner}'s sign-off on ${head.slice(0, 8)}`,
             );
