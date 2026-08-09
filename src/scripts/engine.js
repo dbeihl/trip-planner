@@ -2455,7 +2455,7 @@ const TRIP = window.TRIP;
     sheets.push({
       name: "Visa Itinerary",
       rows: v,
-      cols: [16, 52, 20, 30],
+      cols: [20, 52, 20, 30],
       merges: ["A4:D4"],
     });
     }

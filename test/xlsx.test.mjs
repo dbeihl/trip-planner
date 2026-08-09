@@ -4,6 +4,7 @@
 // `node --test test/` (also invoked by `npm test`).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   xlEsc,
   xlCol,
@@ -124,7 +125,54 @@ test("buildXlsx assembles a complete OOXML package", () => {
   assert.match(text("[Content_Types].xml"), /PartName="\/xl\/worksheets\/sheet2\.xml"/);
 });
 
-test("visaDate formats as YYYY/MM/DD with zero padding", () => {
-  assert.equal(visaDate(new Date(2026, 10, 14)), "2026/11/14");
-  assert.equal(visaDate(new Date(2027, 0, 3)), "2027/01/03");
+test("visa dates export as text, not as an Excel date serial", async () => {
+  // The value must stay a string: a numeric cell with a date number format
+  // renders per the opening machine's locale, reintroducing exactly the
+  // ambiguity the long format removes.
+  //
+  // Asserting against a cell literal built here would prove nothing -- a
+  // literal with no `n` flag makes xlSheet emit inlineStr by construction,
+  // whatever the export does. buildExcelWorkbook is browser-scoped and not
+  // importable, so this extracts the Visa Itinerary sheet's own row builder
+  // and runs it, checking the cell object the export actually produces.
+  const src = await readFile(
+    new URL("../src/scripts/engine.js", import.meta.url),
+    "utf8",
+  );
+  // indexOf returns -1 on a miss, and slice(-1, n) still yields a truthy
+  // string -- so check the markers themselves, not the slice.
+  const from = src.indexOf('cell("Date", 4)');
+  const to = src.indexOf('name: "Visa Itinerary"');
+  assert.notEqual(from, -1, "Visa Itinerary header row not found in engine.js");
+  assert.notEqual(to, -1, "Visa Itinerary sheet definition not found in engine.js");
+  assert.ok(from < to, "the Visa Itinerary markers are out of order");
+  const block = src.slice(from, to);
+
+  const builder = block.match(/\[\s*(cell|num)\(visaDate\(/);
+  assert.ok(builder, "the Visa Itinerary Date column no longer starts a row with visaDate()");
+
+  // Run the export's own helpers over that call to inspect the real cell.
+  const cell = (v, st) => ({ v: v, s: st });
+  const num = (v, st) => ({ v: v, n: true, s: st });
+  const made = ({ cell, num })[builder[1]](visaDate(new Date(2026, 10, 1)), 3);
+
+  assert.equal(made.n, undefined,
+    "the Date cell carries n:true, making it a numeric serial that renders " +
+      "per the reader's locale");
+  assert.equal(typeof made.v, "string");
+
+  const xml = xlSheet([[made]], null, null);
+  assert.match(xml, /t="inlineStr"/);
+  assert.match(xml, /November 1, 2026/);
+  assert.doesNotMatch(xml, /<v>/, "a <v> element means a numeric cell");
+});
+
+test("visaDate formats as a long unambiguous US date", () => {
+  // 2026/11/14 reads as 14 November or as no valid date at all depending on
+  // the reader's convention. A visa itinerary is read by consular staff, so
+  // the month is spelled out.
+  assert.equal(visaDate(new Date(2026, 10, 14)), "November 14, 2026");
+  assert.equal(visaDate(new Date(2027, 0, 3)), "January 3, 2027");
+  // No zero padding on the day: "January 3", not "January 03".
+  assert.equal(visaDate(new Date(2026, 10, 1)), "November 1, 2026");
 });

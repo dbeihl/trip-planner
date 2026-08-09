@@ -252,12 +252,19 @@
     return xlZip(files);
   }
 
+  // Long form, unambiguous: "November 1, 2026". A visa itinerary is read by
+  // consular staff who may parse 2026/11/01 as 1 November or 11 January
+  // depending on convention, and the document exists to remove doubt.
+  //
+  // This stays a STRING. xlSheet writes any cell without an `n` flag as
+  // t="inlineStr", so Excel treats it as text rather than a date serial --
+  // which is what keeps it rendering identically wherever it is opened. Do
+  // not "improve" this into a numeric cell with a date number format: that
+  // would render per the opener's locale, the exact ambiguity being avoided.
   export function visaDate(d) {
-    return (
-      d.getFullYear() +
-      "/" +
-      String(d.getMonth() + 1).padStart(2, "0") +
-      "/" +
-      String(d.getDate()).padStart(2, "0")
-    );
+    return d.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   }
