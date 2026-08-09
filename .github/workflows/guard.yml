@@ -13,8 +13,9 @@ name: Guard
 # check out or execute PR code; it only reads the GitHub API.
 #
 # Clearing the gate. Either works:
-#   - an approving review from anyone who is NOT the PR author, or
-#   - the "gates-reviewed" label on the PR.
+#   - the repo owner approves the PR, naming the current head commit, or
+#   - the "gates-reviewed" label is on the PR.
+#
 # The label exists because GitHub refuses to let an author approve their own
 # PR. On a single-maintainer repo the owner authors every PR, so requiring
 # *their* approval made this gate unsatisfiable — it could only ever be merged
@@ -24,6 +25,15 @@ name: Guard
 # It does not widen the blast radius: applying a label needs write access, so
 # an outside contributor still cannot clear their own gate change, which is the
 # case this guard was built for.
+#
+# Deliberately NOT accepted: an approving review from "anyone other than the
+# author". On a public repo anyone can submit a review, so a fork contributor
+# could clear their own gate change using a second throwaway account. Being
+# someone other than the author is not a trust boundary; being the owner is.
+#
+# Both routes are pinned to the current head. An approval of an older commit
+# does not count, and pushing after the label strips it — otherwise a sign-off
+# silently covers protected-path changes nobody read.
 #
 # One-time setup that gives this teeth (repo Settings):
 #   - Branch protection on main: require status checks "test", "smoke", "Guard".
@@ -47,7 +57,9 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  # write, not read: a push after the ack strips the label so the
+  # sign-off cannot silently cover commits nobody reviewed.
+  pull-requests: write
 
 jobs:
   guard:
@@ -82,37 +94,61 @@ jobs:
               return;
             }
             const list = touched.join("\n");
+            const head = pr.head.sha;
 
             // Read labels from the API, not context.payload: on a re-run, or on
             // a pull_request_review event, the payload can carry the label set
             // from whenever that event fired rather than the current one.
             const { data: fresh } = await github.rest.pulls.get(
               { owner, repo, pull_number: pr.number });
-            if ((fresh.labels || []).some(l => l.name === ACK_LABEL)) {
+            const labelled = (fresh.labels || []).some(l => l.name === ACK_LABEL);
+
+            // An ack covers the diff the acker actually read. A later push can
+            // add protected-path changes underneath a label that is still
+            // sitting there, so a new head commit strips the label and demands
+            // a fresh one rather than silently inheriting the old sign-off.
+            if (labelled && context.payload.action === "synchronize") {
+              await github.rest.issues.removeLabel(
+                { owner, repo, issue_number: pr.number, name: ACK_LABEL });
+              core.setFailed(
+                `New commits pushed after the "${ACK_LABEL}" ack, and this PR still ` +
+                `touches protected paths:\n${list}\n\n` +
+                `The label has been removed. Re-read the diff and re-apply it.`,
+              );
+              return;
+            }
+            if (labelled) {
               core.info(`Protected paths changed, acknowledged via the "${ACK_LABEL}" label:\n${list}`);
               return;
             }
 
+            // The review route stays deliberately narrow: an approval from the
+            // repo owner, on the current head. It is NOT "any approving review"
+            // — on a public repo anyone can submit one, so a fork contributor
+            // could clear their own gate change with a second throwaway account.
+            // Being someone other than the author is not a trust boundary.
             const reviews = await github.paginate(github.rest.pulls.listReviews,
               { owner, repo, pull_number: pr.number, per_page: 100 });
-            // Latest review per user wins. The author's own review never counts —
-            // GitHub blocks self-approval anyway, and a self-approving gate is no
-            // gate. Anyone else approving is a genuine second pair of eyes.
             const latest = new Map();
-            for (const r of reviews) if (r.user) latest.set(r.user.login, r.state);
+            for (const r of reviews) if (r.user) latest.set(r.user.login, r);
+            const ownerReview = latest.get(owner);
             const author = (pr.user || {}).login;
-            const approver = [...latest].find(([login, state]) =>
-              state === "APPROVED" && login !== author);
-            if (approver) {
-              core.info(`Protected paths changed with @${approver[0]}'s approval:\n${list}`);
+            if (
+              ownerReview &&
+              ownerReview.state === "APPROVED" &&
+              ownerReview.user.login !== author &&
+              ownerReview.commit_id === head
+            ) {
+              core.info(`Protected paths changed with @${owner}'s approval of ${head}:\n${list}`);
               return;
             }
 
             core.setFailed(
               `Protected paths changed — auto-merge is blocked until these are reviewed:\n${list}\n\n` +
               `Clear it either way:\n` +
-              `  • have someone other than @${author} approve the PR, or\n` +
+              `  • @${owner} approves the PR (the approval must name the current head, ${head.slice(0, 8)}), or\n` +
               `  • add the "${ACK_LABEL}" label once you have read the diff above.\n` +
-              `GitHub does not let an author approve their own PR, so on a solo repo ` +
-              `the label is the only route. Removing it re-runs this check.`,
+              `GitHub does not let an author approve their own PR, so when @${owner} is ` +
+              `also the author the label is the only route. Removing it, or pushing ` +
+              `another commit, re-runs this check.`,
             );

@@ -26,12 +26,22 @@ const source = block[1]
   .map((l) => l.replace(/^ {12}/, ""))
   .join("\n");
 
-const AUTHOR = "dbeihl";
+const OWNER = "dbeihl";
 const OTHER = "someone-else";
+const HEAD = "a".repeat(40);
+const OLD = "b".repeat(40);
 
 // Runs the extracted script and reports whether it failed the check.
-async function runGuard({ files, labels = [], reviews = [] }) {
+async function runGuard({
+  files,
+  labels = [],
+  reviews = [],
+  author = OWNER,
+  action = "opened",
+  head = HEAD,
+}) {
   const messages = [];
+  const removedLabels = [];
   let failure = null;
   const core = {
     info: (m) => messages.push(m),
@@ -49,11 +59,17 @@ async function runGuard({ files, labels = [], reviews = [] }) {
         listReviews,
         get: async () => ({ data: { labels: labels.map((name) => ({ name })) } }),
       },
+      issues: {
+        removeLabel: async ({ name }) => removedLabels.push(name),
+      },
     },
   };
   const context = {
-    repo: { owner: AUTHOR, repo: "trip-planner" },
-    payload: { pull_request: { number: 1, user: { login: AUTHOR } } },
+    repo: { owner: OWNER, repo: "trip-planner" },
+    payload: {
+      action,
+      pull_request: { number: 1, user: { login: author }, head: { sha: head } },
+    },
   };
   const fn = new Function(
     "github",
@@ -62,8 +78,14 @@ async function runGuard({ files, labels = [], reviews = [] }) {
     `return (async () => {\n${source}\n})();`,
   );
   await fn(github, context, core);
-  return { failed: failure !== null, failure, messages };
+  return { failed: failure !== null, failure, messages, removedLabels };
 }
+
+const approval = (login, commit_id = HEAD) => ({
+  user: { login },
+  state: "APPROVED",
+  commit_id,
+});
 
 test("a PR touching no protected path passes untouched", async () => {
   const r = await runGuard({ files: ["src/data/japan.js", "README.md"] });
@@ -95,29 +117,67 @@ test("an unrelated label does NOT clear the gate", async () => {
   assert.equal(r.failed, true);
 });
 
-// The whole point of the change: the author is the owner on a solo repo, so a
-// self-approval must not count or the gate approves itself.
+// A new push can add protected-path changes underneath a label that is still
+// sitting on the PR. The ack has to be per-head, or it silently covers code
+// nobody looked at.
+test("pushing after the ack strips the label and fails", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    labels: ["gates-reviewed"],
+    action: "synchronize",
+  });
+  assert.equal(r.failed, true);
+  assert.deepEqual(r.removedLabels, ["gates-reviewed"]);
+  assert.match(r.failure, /Re-read the diff and re-apply/);
+});
+
+// The whole point of the change: the owner authors every PR on a solo repo, so
+// a self-approval must not count or the gate approves itself.
 test("the author's own approval does NOT clear the gate", async () => {
   const r = await runGuard({
     files: ["scripts/validate-trip.mjs"],
-    reviews: [{ user: { login: AUTHOR }, state: "APPROVED" }],
+    reviews: [approval(OWNER)],
   });
   assert.equal(r.failed, true);
 });
 
-test("an approval from anyone else clears the gate", async () => {
+// Anyone can submit a review on a public repo. "Not the author" is not a trust
+// boundary — a fork contributor with a second account would clear their own
+// gate change. Only the owner's approval counts.
+test("an approval from a non-owner does NOT clear the gate", async () => {
   const r = await runGuard({
     files: ["scripts/validate-trip.mjs"],
-    reviews: [{ user: { login: OTHER }, state: "APPROVED" }],
+    author: OTHER,
+    reviews: [approval("random-drive-by")],
   });
-  assert.equal(r.failed, false);
-  assert.match(r.messages.join("\n"), new RegExp(OTHER));
+  assert.equal(r.failed, true);
 });
 
-test("a non-approving review from someone else does NOT clear the gate", async () => {
+test("the owner approving someone else's PR at the current head clears it", async () => {
+  const r = await runGuard({
+    files: ["scripts/validate-trip.mjs"],
+    author: OTHER,
+    reviews: [approval(OWNER)],
+  });
+  assert.equal(r.failed, false);
+  assert.match(r.messages.join("\n"), new RegExp(OWNER));
+});
+
+// A stale approval must not carry forward onto commits pushed after it.
+test("the owner's approval of an older commit does NOT clear the gate", async () => {
+  const r = await runGuard({
+    files: ["scripts/validate-trip.mjs"],
+    author: OTHER,
+    reviews: [approval(OWNER, OLD)],
+  });
+  assert.equal(r.failed, true);
+});
+
+test("a non-approving review from the owner does NOT clear the gate", async () => {
   const r = await runGuard({
     files: ["schema/trip.schema.json"],
-    reviews: [{ user: { login: OTHER }, state: "CHANGES_REQUESTED" }],
+    author: OTHER,
+    reviews: [{ user: { login: OWNER }, state: "CHANGES_REQUESTED", commit_id: HEAD }],
   });
   assert.equal(r.failed, true);
 });
@@ -125,9 +185,10 @@ test("a non-approving review from someone else does NOT clear the gate", async (
 test("a later non-approval supersedes an earlier approval from the same person", async () => {
   const r = await runGuard({
     files: ["package.json"],
+    author: OTHER,
     reviews: [
-      { user: { login: OTHER }, state: "APPROVED" },
-      { user: { login: OTHER }, state: "CHANGES_REQUESTED" },
+      approval(OWNER),
+      { user: { login: OWNER }, state: "CHANGES_REQUESTED", commit_id: HEAD },
     ],
   });
   assert.equal(r.failed, true);
