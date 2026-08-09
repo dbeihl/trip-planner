@@ -3,7 +3,7 @@ name: Guard
 # Immutable-gates enforcement (TRIP-INTAKE-PLAN.md). Auto-merge-on-green is
 # only as trustworthy as the gates a PR cannot rewrite — so any PR that
 # touches the gates themselves (tests, workflows, schema, the validator, the
-# dependency manifests) fails this check until the repo owner approves it.
+# dependency manifests) fails this check until a human signs off on it.
 # PRs that touch none of those (e.g. generated trips: research doc + data
 # module + page) pass instantly and stay auto-mergeable.
 #
@@ -12,13 +12,36 @@ name: Guard
 # that is what makes the gate immutable from inside a PR. This job must never
 # check out or execute PR code; it only reads the GitHub API.
 #
+# Clearing the gate. Either works:
+#   - an approving review from anyone who is NOT the PR author, or
+#   - the "gates-reviewed" label on the PR.
+# The label exists because GitHub refuses to let an author approve their own
+# PR. On a single-maintainer repo the owner authors every PR, so requiring
+# *their* approval made this gate unsatisfiable — it could only ever be merged
+# past, which trains everyone to ignore a red X. A label is an equally
+# deliberate, equally auditable act that the author can actually perform.
+#
+# It does not widen the blast radius: applying a label needs write access, so
+# an outside contributor still cannot clear their own gate change, which is the
+# case this guard was built for.
+#
 # One-time setup that gives this teeth (repo Settings):
 #   - Branch protection on main: require status checks "test", "smoke", "Guard".
 #   - General → allow auto-merge.
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    # labeled/unlabeled matter: without them, adding the ack label leaves this
+    # check sitting red forever because nothing re-runs it.
+    types:
+      [
+        opened,
+        synchronize,
+        reopened,
+        ready_for_review,
+        labeled,
+        unlabeled,
+      ]
   pull_request_review:
     types: [submitted, dismissed]
 
@@ -31,12 +54,13 @@ jobs:
     if: ${{ github.event.pull_request != null }}
     runs-on: ubuntu-latest
     steps:
-      - name: Fail if protected paths changed without owner approval
+      - name: Fail if protected paths changed without a review or the ack label
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
             const pr = context.payload.pull_request;
+            const ACK_LABEL = "gates-reviewed";
             const PROTECTED = [
               /^\.github\//,
               /^test\//,
@@ -57,16 +81,38 @@ jobs:
               core.info("No protected paths touched — gates unchanged.");
               return;
             }
-            const reviews = await github.paginate(github.rest.pulls.listReviews,
-              { owner, repo, pull_number: pr.number, per_page: 100 });
-            // Latest review per user wins; an approval from the repo owner clears the gate.
-            const latest = new Map();
-            for (const r of reviews) if (r.user) latest.set(r.user.login, r.state);
-            if (latest.get(owner) === "APPROVED") {
-              core.info(`Protected paths changed with @${owner}'s approval:\n` + touched.join("\n"));
+            const list = touched.join("\n");
+
+            // Read labels from the API, not context.payload: on a re-run, or on
+            // a pull_request_review event, the payload can carry the label set
+            // from whenever that event fired rather than the current one.
+            const { data: fresh } = await github.rest.pulls.get(
+              { owner, repo, pull_number: pr.number });
+            if ((fresh.labels || []).some(l => l.name === ACK_LABEL)) {
+              core.info(`Protected paths changed, acknowledged via the "${ACK_LABEL}" label:\n${list}`);
               return;
             }
+
+            const reviews = await github.paginate(github.rest.pulls.listReviews,
+              { owner, repo, pull_number: pr.number, per_page: 100 });
+            // Latest review per user wins. The author's own review never counts —
+            // GitHub blocks self-approval anyway, and a self-approving gate is no
+            // gate. Anyone else approving is a genuine second pair of eyes.
+            const latest = new Map();
+            for (const r of reviews) if (r.user) latest.set(r.user.login, r.state);
+            const author = (pr.user || {}).login;
+            const approver = [...latest].find(([login, state]) =>
+              state === "APPROVED" && login !== author);
+            if (approver) {
+              core.info(`Protected paths changed with @${approver[0]}'s approval:\n${list}`);
+              return;
+            }
+
             core.setFailed(
-              `Protected paths changed without @${owner}'s approval — auto-merge is blocked until they review:\n` +
-              touched.join("\n"),
+              `Protected paths changed — auto-merge is blocked until these are reviewed:\n${list}\n\n` +
+              `Clear it either way:\n` +
+              `  • have someone other than @${author} approve the PR, or\n` +
+              `  • add the "${ACK_LABEL}" label once you have read the diff above.\n` +
+              `GitHub does not let an author approve their own PR, so on a solo repo ` +
+              `the label is the only route. Removing it re-runs this check.`,
             );
