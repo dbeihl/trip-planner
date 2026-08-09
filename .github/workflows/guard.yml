@@ -43,9 +43,11 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
-  # An ack arrives as a comment, so the check has to re-run when one lands.
+  # An ack arrives as a comment, so the check has to re-run when one lands —
+  # and when one is edited or deleted, or a withdrawn sign-off would leave a
+  # stale success sitting on the head.
   issue_comment:
-    types: [created, edited]
+    types: [created, edited, deleted]
 
 permissions:
   contents: read

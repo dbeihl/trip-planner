@@ -287,3 +287,33 @@ test("a status description stays inside GitHub's 140-char limit", async () => {
   });
   for (const s of r.statuses) assert.ok(s.description.length <= 140, s.description);
 });
+
+// Deleting the ack comment must recompute, not leave the old success behind.
+test("withdrawing the ack flips the head status back to failure", async () => {
+  const acked = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [ack(OWNER)],
+    event: "issue_comment",
+  });
+  assert.equal(acked.failed, false);
+
+  // Same head, comment now gone — as an issue_comment:deleted run would see it.
+  const withdrawn = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [],
+    event: "issue_comment",
+  });
+  assert.equal(withdrawn.failed, true);
+  assert.deepEqual(
+    withdrawn.statuses.map((s) => [s.sha, s.state]),
+    [[HEAD, "failure"]],
+  );
+});
+
+test("the workflow listens for deleted comments, not just created/edited", () => {
+  const types = yaml.match(/issue_comment:\n\s+types: \[([^\]]+)\]/);
+  assert.ok(types, "issue_comment types block not found");
+  for (const t of ["created", "edited", "deleted"]) {
+    assert.match(types[1], new RegExp(t));
+  }
+});
