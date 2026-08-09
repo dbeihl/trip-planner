@@ -3092,6 +3092,12 @@ const TRIP = window.TRIP;
     else rn.style.display = "none";
     // override the masthead/flights chrome from meta.ui where provided
     // (absent for Japan → its hardcoded HTML text stays, byte-identical).
+    // per-trip minimum hotel rating; the markup default (8.0) stands for any
+    // trip that doesn't set one, so lowering a floor never moves another trip.
+    if (typeof TRIP.meta.minRating === "number") {
+      const mr = document.getElementById("minRating");
+      if (mr) mr.value = TRIP.meta.minRating.toFixed(1);
+    }
     const ui = TRIP.meta.ui || {};
     const setHtml = (id, v) => {
       if (v == null) return;

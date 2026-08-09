@@ -32,6 +32,13 @@ for (const slug of ["japan", "yellowstone"]) {
     await page.click('[data-tab="itin"]');
     await expect(page.locator("#itinRail .drow").first()).toBeVisible();
 
+    // meta.minRating drives the hotel-tier floor per trip; the markup default
+    // (8.0) must still stand for trips that don't set one, so lowering Japan's
+    // floor never moves another trip's default total.
+    await expect(page.locator("#minRating")).toHaveValue(
+      slug === "japan" ? "7.0" : "8.0",
+    );
+
     expect(pageErrors).toEqual([]);
   });
 }

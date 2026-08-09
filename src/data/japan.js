@@ -29,6 +29,7 @@ export default {
         "Kensington Tours quoted <b>$9,644</b> for a Tokyo–Hakone–Kyoto version of this trip — but for placeholder dates (Nov 7–14), the opposite direction of travel, and a route that shares almost nothing with this one: no Osaka base, no Nara, no Davao week, and a Hakone ryokan night that has since been cut. Treat it as a rough order-of-magnitude reference only. The delta above compares ground costs only — Kensington's quote excluded airfare.",
     },
     lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
+    minRating: 7.0, // hotel-tier floor for this trip; markup default is 8.0
     destLabel: "Davao", // gateway shown for an "Other airport" origin
     visaForm: true, // emit the Japan MOFA "Travel Itinerary" sheet in the .xlsx
     ui: {
@@ -47,7 +48,8 @@ export default {
         "Both current picks were re-quoted on 2026-08-09 for the real dates (Booking.com, 2 adults, 1 room, USD): Citadines Namba for Nov 1–6 and the Tokyo stay for Nov 6–8. Alternatives marked \"NOT re-quoted\" still carry their old Nov 14–22 figures and will move.",
         "OMO5 Tokyo Gotanda — the original Tokyo pick — showed NO availability for Nov 6–8, and so did Mitsui Garden Gotanda. Nov 6–8 is a Friday-to-Sunday and Tokyo is tight. Book the Tokyo nights early, and check Hoshino Resorts direct before giving up on OMO5.",
         "Davao lodging is a planning estimate, not a date-locked quote — the current pick is staying with family at no lodging cost.",
-        "Every alternative hotel holds a private double/twin room, ≥8.0 guest rating, and the same neighborhood (or one stop away) as the currently-quoted property.",
+        "Every alternative hotel holds a private double/twin room with its own bathroom and a ≥7.0 guest rating. The floor was 8.0 until 2026-08-09; the sub-8.0 tiers were added deliberately to show what the trip costs at the bottom of the range.",
+        "The cheapest Osaka tiers (OKINI, MAIDO) are in Nishinari Ward — Osaka's cheapest district and the reason the rate is $28 rather than $200. It is a working-class area around Shin-Imamiya with a rough reputation and genuinely good transport, 1.3–1.4 miles from Namba. Worth looking at a map and recent reviews rather than taking the number at face value.",
         "Japan transport fares are current published prices (JR, Nankai, Keihan, Kintetsu); the taxi-bookend figures on the Osaka → Tokyo leg are estimates, not quotes.",
         "The DVO → KIX leg is the booked Cebu Pacific fare: ₱12,358 per person, converted at ₱58 = $1. The IND → DVO, HND → IND, and HND → DVO fares are quoted prices from live searches, not yet ticketed — the Delta home leg was quoted in yen (¥287,660) and converted at ¥155 = $1.",
         "Excluded from every total: Japan's ~10% accommodation tax (varies by city/hotel), meals outside included breakfasts, and activity/entrance fees.",
@@ -226,6 +228,18 @@ export default {
           rating: "8.7",
           note: "Budget, breakfast included, Namba/Nipponbashi — NOT re-quoted for the new dates",
         },
+        {
+          name: "MAIDO — Doyanen Hotels",
+          rate: 30,
+          rating: "7.2",
+          note: "Standard Twin, private bathroom, Nishinari Ward · re-quoted 2026-08-09 for Nov 1–6: $149 for the 5 nights. 1.3 mi to Namba Station — read the Nishinari note below before booking",
+        },
+        {
+          name: "OKINI — Doyanen Hotels",
+          rate: 28,
+          rating: "7.4",
+          note: "Superior Twin, private bathroom, Nishinari Ward · re-quoted 2026-08-09 for Nov 1–6: $139 for the 5 nights — the cheapest private twin that clears 7.0. Additional charges may apply at the property",
+        },
       ],
     },
     tokyo: {
@@ -269,6 +283,18 @@ export default {
           rate: 119,
           rating: "8.2",
           note: "Budget, 1 stop from Gotanda — NOT re-checked for the new dates",
+        },
+        {
+          name: "FLEXSTAY INN Nakanobu",
+          rate: 86,
+          rating: "7.2",
+          note: "Twin room, private bathroom, Shinagawa Ward · re-quoted 2026-08-09 for Nov 6–8: $172 for the two nights, free cancellation, no prepayment. Nakanobu is two stops from Gotanda — the best-placed cheap bed of the lot",
+        },
+        {
+          name: "Tokyo Inn",
+          rate: 82,
+          rating: "7.5",
+          note: "Small Double, private bathroom, Ota Ward · re-quoted 2026-08-09 for Nov 6–8: $164 for the two nights, free cancellation — the cheapest private room that clears 7.0, but 2.8 mi out from Shinagawa",
         },
       ],
     },
