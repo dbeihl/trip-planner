@@ -245,7 +245,7 @@ export default {
     tokyo: {
       baseNights: 2,
       label: "Tokyo",
-      header: "Tokyo — Gotanda / Shinagawa",
+      header: "Tokyo — Shimbashi / Gotanda / Shinagawa",
       options: [
         {
           name: "HOTEL 1899 TOKYO",
@@ -335,7 +335,7 @@ export default {
           public: { label: "Subway + Yamanote", scale: "person" },
           private: { label: "Taxi both ends", scale: "vehicle" },
         },
-        // bookends only: Namba↔Shin-Osaka + Tokyo Station↔Gotanda.
+        // bookends only: Namba↔Shin-Osaka + Tokyo Station↔the Tokyo hotel.
         // Public is the published IC fare; the taxi figure is an estimate.
         cost: { public: 8, private: 45 },
         fixed: { cost: 190, scale: "person" }, // Nozomi Shin-Osaka→Tokyo, always added
@@ -378,7 +378,7 @@ export default {
           public: { label: "Keikyu + Yamanote", scale: "person" },
           private: { label: "Private car", scale: "vehicle" },
         },
-        cost: { public: 6, private: 56 }, // Gotanda↔Haneda
+        cost: { public: 7, private: 56 }, // Shimbashi↔Haneda (Asakusa/Keikyu ~¥510 pp)
       },
     ],
   },
@@ -633,16 +633,16 @@ export default {
       note: "The 07:05 push means leaving the house around 05:00. Both legs are Cebu Pacific, so bags check through — but the Manila layover is in Terminal 3 for both. Have Visit Japan Web done before you land. KIX has a Yamato counter on T1's 4th floor if you'd rather send the cases to the hotel than wrestle them onto the Nankai, but same-day delivery cuts off at 12:30 and you land at 18:20 — yours would arrive the next day, and the Nankai is direct anyway.",
     },
     "o-t": {
-      label: "Namba → Shin-Osaka → Tokyo → Gotanda (Nozomi)",
+      label: "Namba → Shin-Osaka → Tokyo → Shimbashi (Nozomi)",
       steps: [
         "~15 min: Midosuji subway Namba → Shin-Osaka",
         "150 min: Nozomi Shin-Osaka → Tokyo Station — the fast one, and it runs every few minutes all day",
         "~5 min transfer within Tokyo Station to the Yamanote platform",
-        "~22 min: Tokyo → Gotanda (Yamanote via Shinagawa)",
-        "6 min walk: Gotanda Station → hotel",
+        "~5 min: Tokyo → Shimbashi (Yamanote, 2 stops)",
+        "5 min walk: Shimbashi Station → hotel",
       ],
-      total: "~3h 15m door to door",
-      note: "No schedule anxiety on this one — Nozomi departures are every 5–10 minutes, so a missed train costs minutes, not hours. Reserve seats anyway if you're carrying the big cases; the oversized-baggage racks need a reservation.",
+      total: "~3h door to door",
+      note: "The last two steps assume the current Tokyo pick (HOTEL 1899 TOKYO, Shimbashi). Pick a Gotanda or Shinagawa tier instead and it's Tokyo → Shinagawa → Gotanda on the Yamanote, ~22 min rather than ~5. No schedule anxiety either way — Nozomi departures run every 5–10 minutes, so a missed train costs minutes, not hours. Reserve seats anyway if you're carrying the big cases; the oversized-baggage racks need a reservation.",
     },
     nara: {
       label: "Namba ⇄ Nara (day trip)",
@@ -664,15 +664,13 @@ export default {
       note: "Go early — Fushimi Inari before 9am beats the crowds; last trains back to Namba run past 23:00.",
     },
     depart: {
-      label: "Gotanda → Haneda (Yamanote + Keikyu)",
+      label: "Shimbashi → Haneda (Toei Asakusa / Keikyu, direct)",
       steps: [
-        "6 min walk: hotel → Gotanda Station",
-        "8 min ride: Gotanda → Shinagawa (Yamanote, via Osaki)",
-        "4 min transfer walk at Shinagawa",
-        "17 min ride: Shinagawa → Haneda T3 (Keikyu Ltd. Express)",
+        "5 min walk: hotel → Shimbashi Station (Toei Asakusa line)",
+        "~30 min: Shimbashi → Haneda T3 on a Keikyu through-service — no transfer, the Asakusa line runs straight onto the Keikyu Airport line",
       ],
-      total: "~45 min",
-      note: "Matches OMO5's own published estimate almost exactly. Narita instead would run ~108 min — worth a cheaper fare only if the schedule suits.",
+      total: "~35 min",
+      note: "Shimbashi sits on the Asakusa line, so the airport run is a single seat — better than the Gotanda tiers, which need a Yamanote hop to Shinagawa first (~45 min all in). Check the destination on the platform board: only some Asakusa-line trains carry through to Haneda. Narita instead would run ~108 min.",
     },
   },
   itinPool: {
@@ -1074,7 +1072,7 @@ export default {
             kind: "table",
             lead: "Whatever's open and close.",
             detail:
-              "Gotanda has 1,000+ eateries within a few blocks — a bowl of ramen or a neighborhood izakaya. No reservation, no ambition.",
+              "Shimbashi is the salaryman izakaya district — the ones under the JR viaduct, grill smoke in the street, no English menu and no need for one. Walk in, point, sit down.",
           },
           {
             tag: "Window",
@@ -1189,7 +1187,7 @@ export default {
         tag: "Note",
         kind: "soft",
         detail:
-          "~45 min to the gate from Gotanda — build in buffer and have the paperwork ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy. David routes home to Indianapolis; his partner flies back to Davao.",
+          "~35 min to the gate from Shimbashi on the direct Asakusa-line run (~45 if you switched to a Gotanda tier) — build in buffer and have the paperwork ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy. David routes home to Indianapolis; his partner flies back to Davao.",
       },
     ],
     ask: "when do the two flights home actually leave? Different departure times mean two different airport runs.",
