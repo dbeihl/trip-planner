@@ -121,14 +121,12 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
 <div class="wrap pane" id="planPane">
   <header class="masthead">
     <div class="eyebrow" id="planEyebrow">
-      Nov 14 → Nov 22, 2026 ·
       <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)
     </div>
-    <h1 id="planTitle">Japan Trip Cost Ledger</h1>
+    <h1 id="planTitle">Trip Cost Ledger</h1>
     <p class="sub" id="planSub">
-      Pick a hotel tier per stop and a transport mode per leg. Every figure is a
-      live-researched market rate for these exact dates — not an estimate. The
-      total updates as you go.
+      Pick a hotel tier per stop and a transport mode per leg. The total updates
+      as you go.
     </p>
   </header>
 
@@ -145,10 +143,9 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
         <span class="nights" id="flightsCount">round trip</span>
       </div>
       <p class="flights-intro" id="flightsIntro">
-        Two travelers converging in Tokyo from different origins. Pick a routing
-        for each — fares fold into the grand total. This block is data-driven:
-        edit the <code>FLIGHTS</code> object to add travelers, routings, or
-        fares.
+        Pick a routing for each traveler — fares fold into the grand total. This
+        block is data-driven: edit the <code>FLIGHTS</code> object to add
+        travelers, routings, or fares.
       </p>
       <div class="origin-quiz" id="originQuiz">
         <div class="quiz-row">
@@ -390,37 +387,18 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
     <h3>Methodology</h3>
     <ul id="finePrintList">
       <li>
-        All hotel rates are live, date-locked quotes for the actual stay dates
-        (Nov 2026), pulled directly from booking platforms — not seasonal floor
-        rates.
+        Every figure is a researched planning estimate for the trip dates —
+        verify live prices before booking.
       </li>
       <li>
-        Every alternative hotel holds a private double/twin room, ≥8.0 guest
-        rating, and the same neighborhood (or one stop away) as the
-        currently-quoted property.
+        Lodging totals include a flat planning buffer for taxes and fees (shown
+        as its own line in the breakdown); actual taxes vary by property.
       </li>
       <li>
-        Transport fares are current published prices (JR, Odakyu, Nankai,
-        Kintetsu) plus representative private-transfer quotes from real booking
-        platforms (Klook, Viator, Welcome Pickups).
+        Flight fares are representative round-trips, not date-locked quotes —
+        re-check fares (e.g. Google Flights) before booking.
       </li>
-      <li>
-        International flights ARE now included in the grand total, as researched
-        representative Nov-2026 round-trip fares (per the Flights section) —
-        these are estimates, not the date-locked quotes used for hotels. The
-        Kensington reference comparison stays ground-only, since that quote also
-        excluded airfare.
-      </li>
-      <li>
-        Excluded from every total: Japan's ~10% accommodation tax (varies by
-        city/hotel), meals outside included breakfasts, and activity/entrance
-        fees.
-      </li>
-      <li>
-        Kyoto→Osaka and Osaka→Kansai legs show public-transit cost only —
-        private car quotes for those specific legs weren't part of this research
-        pass.
-      </li>
+      <li>Meals and incidentals beyond what's listed are not included.</li>
     </ul>
   </footer>
 </div>
@@ -428,7 +406,6 @@ const apiBase = import.meta.env.PUBLIC_API_BASE || "";
 <div class="itinwrap pane" id="itinPane" style="display: none">
   <header class="masthead">
     <div class="eyebrow" id="itinEyebrow">
-      Nov 14 → Nov 22, 2026 ·
       <span class="traveler-count-lbl">2</span> travelers · self-booked
     </div>
     <h1 id="itinTitle">Your itinerary</h1>

@@ -1,114 +1,131 @@
 export default {
   meta: {
-    title: "Japan — Nov 2026",
+    title: "Davao & Japan — Oct–Nov 2026",
     // hub card (index page): emoji, display title, stops line, blurb, sort order
     hub: {
       order: 1,
       emoji: "🗼",
       title: "Japan",
-      meta: "Tokyo · Hakone · Osaka · Kyoto day trip",
+      meta: "Davao · Osaka · Hakone · Tokyo · Kyoto day trip",
       go: "Japan",
       blurb:
-        "Nine days by train through Tokyo, a Hakone onsen night, and Osaka's neon streets — with a Kyoto day trip for the shrines and lanes, flights from two origins, ryokan-to-hotel lodging tiers, and a flexible ninth night.",
+        "A week with family near Davao, then in through Kansai for Osaka's neon streets, a Hakone onsen night, and Tokyo to finish — with a Kyoto day trip for the shrines and lanes, ryokan-to-hotel lodging tiers, and a flexible extra night.",
     },
-    route: ["tokyo", "hakone", "osaka"], // ordered city keys
+    route: ["davao", "osaka", "hakone", "tokyo"], // ordered city keys
     optionalCities: [],
-    flexNightDefault: "osaka", // which flex-night option is selected by default
-    dates: { arrive: "2026-11-14", depart: "2026-11-22", nights: 8 },
-    travelers: { count: 2, note: "2 adults, separate arrival flights" },
+    flexNightDefault: "tokyo", // which flex-night option is selected by default
+    dates: { arrive: "2026-10-24", depart: "2026-11-08", nights: 15 },
+    travelers: {
+      count: 2,
+      note: "2 adults; David flies IND → Davao (departs Oct 22, lands Oct 24), then both fly DVO → KIX together on Oct 31 and home separately out of Haneda",
+    },
     currency: "USD",
     reference: {
       total: 9644,
       label: "Kensington Tours quote",
       caveat:
-        "Placeholder Nov 7–14 dates and a different route (Kyoto base, no Osaka); ground-only comparison since Kensington's quote excluded airfare.",
+        "Placeholder Nov 7–14 dates and a different route (Tokyo-first, Kyoto base, no Osaka, no Davao week); ground-only comparison since Kensington's quote excluded airfare.",
       blurb:
-        "Kensington Tours quoted <b>$9,644</b> for a Tokyo–Hakone–Kyoto version of this trip — but for placeholder dates (Nov 7–14) that predate locking in the real Nov 14–22 window, and for a different route (Kyoto as the lodging base, no Osaka). Treat it as a rough order-of-magnitude reference only: neither the dates nor the route match what's priced here. The delta above compares ground costs only — Kensington's quote excluded airfare.",
+        "Kensington Tours quoted <b>$9,644</b> for a Tokyo–Hakone–Kyoto version of this trip — but for placeholder dates (Nov 7–14), the opposite direction of travel, and a route with no Osaka base and no Davao week. Treat it as a rough order-of-magnitude reference only: neither the dates nor the route match what's priced here. The delta above compares ground costs only — Kensington's quote excluded airfare.",
     },
     lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
-    destLabel: "Tokyo", // gateway shown for an "Other airport" origin
+    destLabel: "Davao", // gateway shown for an "Other airport" origin
     visaForm: true, // emit the Japan MOFA "Travel Itinerary" sheet in the .xlsx
+    ui: {
+      eyebrow:
+        'Oct 24 → Nov 8, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)',
+      planTitle: "Davao &amp; Japan Trip Cost Ledger",
+      planSub:
+        "Pick a hotel tier per stop and a transport mode per leg. Japan hotel rates and transport fares are live-researched market figures; the Davao week and the flights out of the Philippines are planning estimates until the bookings are in. The total updates as you go.",
+      flightsTitle: "Getting there — International flights",
+      flightsIntro:
+        "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Oct 31 — that leg is priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
+      itinTitle: "Davao, Osaka, Hakone &amp; Tokyo — fifteen nights",
+      itinDek:
+        "A slow week with family near Davao, then into Japan through the back door: Kansai to Namba for Osaka's kitchen and a Kyoto day trip, one night of kaiseki and a private onsen in Hakone, and Tokyo last — the big city as the finish, not the jet-lagged opening.",
+      finePrint: [
+        "Japan hotel rates are live, date-locked quotes for the actual stay dates (Oct–Nov 2026), pulled directly from booking platforms — not seasonal floor rates.",
+        "Davao lodging is a planning estimate, not a date-locked quote — the current pick is staying with family at no lodging cost.",
+        "Every alternative hotel holds a private double/twin room, ≥8.0 guest rating, and the same neighborhood (or one stop away) as the currently-quoted property.",
+        "Japan transport fares are current published prices (JR, Odakyu, Nankai, Keihan) plus representative private-transfer quotes from real booking platforms (Klook, Viator, Welcome Pickups).",
+        "The DVO → KIX flight and both international fares are representative estimates pending the booked fares — replace them with the real numbers once ticketed.",
+        "Excluded from every total: Japan's ~10% accommodation tax (varies by city/hotel), meals outside included breakfasts, and activity/entrance fees.",
+        "The Kensington reference comparison stays ground-only, since that quote also excluded airfare.",
+      ],
+    },
   },
   flights: {
     us: {
-      label: "From the USA — David (IND)",
+      label: "From the USA — David (IND → Davao, home from Haneda)",
       traveler: "David",
       pax: 1,
-      preference: "Delta preferred · fewest stops",
+      preference: "Delta/partner metal · fewest stops · open-jaw",
       options: [
         {
-          name: "Delta via Detroit",
-          route: "IND → DTW → HND",
-          stops: 1,
-          cabin: "Premium Select",
-          fare: 2150,
-          note: "Delta throughout; DTW→HND is a nonstop A350 with Premium Select",
+          name: "Philippine Airlines via San Francisco & Manila",
+          route: "IND → SFO → MNL → DVO · HND → DTW → IND",
+          stops: 2,
+          cabin: "Economy",
+          fare: 1780,
+          note: "PAL's SFO–MNL nonstop out on Oct 22 (lands DVO Oct 24), Delta home from Haneda — ESTIMATE, swap in the booked fare",
           current: true,
         },
         {
-          name: "Delta via Minneapolis",
-          route: "IND → MSP → HND",
-          stops: 1,
-          cabin: "Premium Select",
-          fare: 2200,
-          note: "Delta throughout; MSP→HND nonstop widebody",
-        },
-        {
-          name: "Delta via Seattle",
-          route: "IND → SEA → HND",
-          stops: 1,
-          cabin: "Premium Select",
-          fare: 2260,
-          note: "Delta; longer domestic hop, west-coast gateway",
-        },
-        {
-          name: "Delta Main Cabin via Detroit",
-          route: "IND → DTW → HND",
-          stops: 1,
+          name: "Korean Air via Incheon & Manila",
+          route: "IND → ICN → MNL → DVO · HND → ICN → IND",
+          stops: 2,
           cabin: "Economy",
-          fare: 1200,
-          note: "Same routing in economy — cost reference",
+          fare: 1690,
+          note: "Widebody through Incheon both directions — ESTIMATE",
+        },
+        {
+          name: "Japan Airlines via Tokyo & Manila",
+          route: "IND → DFW → NRT → MNL → DVO · HND → DFW → IND",
+          stops: 3,
+          cabin: "Economy",
+          fare: 1850,
+          note: "Longest routing, but one alliance end to end — ESTIMATE",
+        },
+        {
+          name: "Business class on the transpacific sector",
+          route: "IND → SFO → MNL → DVO · HND → DTW → IND",
+          stops: 2,
+          cabin: "Business (long-haul only)",
+          fare: 4200,
+          note: "Lie-flat across the Pacific, economy on the domestic/regional hops — ESTIMATE",
         },
       ],
     },
     ph: {
-      label: "From the Philippines — partner (DVO)",
+      label: "From the Philippines — partner (already in Davao)",
       traveler: "Partner",
       pax: 1,
-      preference: "Fewest stops · premium economy where offered",
+      preference: "Home leg only · fewest stops",
       options: [
         {
-          name: "Philippine Airlines via Manila",
-          route: "DVO → MNL → NRT",
+          name: "Philippine Airlines home via Manila",
+          route: "(already home in Davao) · HND → MNL → DVO",
           stops: 1,
-          cabin: "Premium Economy",
-          fare: 850,
-          note: "One airline, bags checked through — simplest connection",
+          cabin: "Economy",
+          fare: 430,
+          note: "One airline home from Haneda, bags checked through to Davao — ESTIMATE",
           current: true,
         },
         {
-          name: "ANA / JAL via Manila",
-          route: "DVO → MNL → HND/NRT",
+          name: "Cebu Pacific home via Manila",
+          route: "(already home in Davao) · NRT → MNL → DVO",
           stops: 1,
-          cabin: "Premium Economy",
-          fare: 950,
-          note: "Best premium-economy product; DVO→MNL feeder on PAL/Cebu",
+          cabin: "Economy",
+          fare: 360,
+          note: "Budget carrier out of Narita — cheaper, but a Narita departure adds ~an hour to the airport run — ESTIMATE",
         },
         {
-          name: "Via Cebu",
-          route: "DVO → CEB → NRT",
+          name: "ANA / PAL home via Manila (Premium Economy)",
+          route: "(already home in Davao) · HND → MNL → DVO",
           stops: 1,
           cabin: "Premium Economy",
-          fare: 900,
-          note: "Alternate hub if she routes through Cebu",
-        },
-        {
-          name: "Cebu Pacific via Manila",
-          route: "DVO → MNL → NRT",
-          stops: 1,
-          cabin: "Economy (no PE)",
-          fare: 480,
-          note: "Budget carrier — economy only, no premium economy",
+          fare: 620,
+          note: "Best cabin on the Tokyo–Manila sector — ESTIMATE",
         },
       ],
     },
@@ -117,45 +134,127 @@ export default {
       traveler: "Traveler",
       pax: 1,
       preset: true, // available in the dropdown; not part of the default split
-      preference: "Nonstop to Tokyo where available",
+      preference: "Fewest stops into Davao, home from Tokyo",
       options: [
         {
-          name: "ANA nonstop",
-          route: "ORD → HND",
-          stops: 0,
+          name: "Philippine Airlines via Manila",
+          route: "ORD → MNL → DVO · HND → ORD",
+          stops: 1,
           cabin: "Economy",
-          fare: 1350,
-          note: "Daily ORD–HND nonstop; Haneda is closer to central Tokyo",
+          fare: 1520,
+          note: "PAL's ORD–MNL nonstop, then the Manila–Davao hop; home nonstop from Haneda — ESTIMATE",
           current: true,
         },
         {
-          name: "United nonstop",
-          route: "ORD → NRT",
-          stops: 0,
+          name: "ANA via Tokyo & Manila",
+          route: "ORD → HND → MNL → DVO · HND → ORD",
+          stops: 2,
           cabin: "Economy",
-          fare: 1300,
-          note: "New daily ORD–NRT nonstop from Oct 2026 (787-8)",
+          fare: 1580,
+          note: "ANA's ORD–HND nonstop both directions, Manila connection into Davao — ESTIMATE",
         },
         {
-          name: "ANA nonstop (Premium Economy)",
-          route: "ORD → HND",
-          stops: 0,
-          cabin: "Premium Economy",
-          fare: 2600,
-          note: "Same nonstop, upgraded cabin for the ~13.5 hr sector",
-        },
-        {
-          name: "One-stop via US West Coast",
-          route: "ORD → SFO/LAX/SEA → NRT/HND",
-          stops: 1,
+          name: "Korean Air via Incheon",
+          route: "ORD → ICN → MNL → DVO · HND → ICN → ORD",
+          stops: 2,
           cabin: "Economy",
-          fare: 1180,
-          note: "Connecting itinerary typically undercuts nonstop fares",
+          fare: 1490,
+          note: "Incheon hub; usually the cheapest of the one-alliance options — ESTIMATE",
         },
       ],
     },
   },
   hotels: {
+    davao: {
+      baseNights: 7,
+      label: "Davao",
+      header: "Davao — with family",
+      options: [
+        {
+          name: "Staying with family",
+          rate: 0,
+          rating: "—",
+          note: "The week near Davao at the family's place — no lodging cost; bring gifts, not a booking · current pick",
+          current: true,
+        },
+        {
+          name: "Seda Abreeza Davao",
+          rate: 95,
+          rating: "8.7",
+          note: "Mall-attached city hotel, Deluxe room — ESTIMATE, not a locked quote",
+        },
+        {
+          name: "Dusit Thani Residence Davao",
+          rate: 120,
+          rating: "8.8",
+          note: "Apartment-style suites near Lanang, pool — ESTIMATE",
+        },
+        {
+          name: "Marco Polo Davao",
+          rate: 110,
+          rating: "8.5",
+          note: "Downtown, closest to Bankerohan and the old city — ESTIMATE",
+        },
+      ],
+    },
+    osaka: {
+      baseNights: 3,
+      label: "Osaka",
+      header: "Osaka — Namba",
+      options: [
+        {
+          name: "Citadines Namba Osaka",
+          rate: 235,
+          rating: "9.0",
+          note: "Serviced apartment, Deluxe Twin/Double, no breakfast, Namba · current pick",
+          current: true,
+        },
+        {
+          name: "Fairfield by Marriott Osaka Namba",
+          rate: 164,
+          rating: "8.8",
+          note: "King Room, no breakfast, Namba",
+        },
+        {
+          name: "Hotel Forza Osaka Namba",
+          rate: 150,
+          rating: "8.8",
+          note: "Standard Double, no breakfast, Namba",
+        },
+        {
+          name: "Henn na Hotel Express Osaka Namba Nipponbashi",
+          rate: 109,
+          rating: "8.7",
+          note: "Budget, breakfast included, Namba/Nipponbashi",
+        },
+      ],
+    },
+    hakone: {
+      baseNights: 1,
+      label: "Hakone",
+      header: "Hakone",
+      options: [
+        {
+          name: "Hakone Kowakien Ten-yu",
+          rate: 710,
+          rating: "9.1",
+          note: "Half-board · private open-air onsen · current pick",
+          current: true,
+        },
+        {
+          name: "Mikawaya Ryokan",
+          rate: 559,
+          rating: "8.7",
+          note: "Half-board · private open-air onsen",
+        },
+        {
+          name: "Hakone Kowakien Hotel",
+          rate: 341,
+          rating: "8.4",
+          note: "Half-board · shared onsen + Yunessun pass, no private bath",
+        },
+      ],
+    },
     tokyo: {
       baseNights: 3,
       label: "Tokyo",
@@ -194,116 +293,59 @@ export default {
         },
       ],
     },
-    hakone: {
-      baseNights: 1,
-      label: "Hakone",
-      header: "Hakone",
-      options: [
-        {
-          name: "Hakone Kowakien Ten-yu",
-          rate: 710,
-          rating: "9.1",
-          note: "Half-board · private open-air onsen · current pick",
-          current: true,
-        },
-        {
-          name: "Mikawaya Ryokan",
-          rate: 559,
-          rating: "8.7",
-          note: "Half-board · private open-air onsen",
-        },
-        {
-          name: "Hakone Kowakien Hotel",
-          rate: 341,
-          rating: "8.4",
-          note: "Half-board · shared onsen + Yunessun pass, no private bath",
-        },
-      ],
-    },
-    osaka: {
-      baseNights: 3,
-      label: "Osaka",
-      header: "Osaka — Namba",
-      options: [
-        {
-          name: "Citadines Namba Osaka",
-          rate: 235,
-          rating: "9.0",
-          note: "Serviced apartment, Deluxe Twin/Double, no breakfast, Namba · current pick",
-          current: true,
-        },
-        {
-          name: "Fairfield by Marriott Osaka Namba",
-          rate: 164,
-          rating: "8.8",
-          note: "King Room, no breakfast, Namba",
-        },
-        {
-          name: "Hotel Forza Osaka Namba",
-          rate: 150,
-          rating: "8.8",
-          note: "Standard Double, no breakfast, Namba",
-        },
-        {
-          name: "Henn na Hotel Express Osaka Namba Nipponbashi",
-          rate: 109,
-          rating: "8.7",
-          note: "Budget, breakfast included, Namba/Nipponbashi",
-        },
-      ],
-    },
   },
   transport: {
     legs: [
       {
         id: "airport-arrive",
         role: "arrival", // renders before the first stop
-        routeName: "<strong>Airport</strong> → Tokyo (Gotanda)",
-        toggles: ["terminal", "mode"],
+        routeName: "<strong>Davao (DVO)</strong> → the family's place",
+        note: "(Grab/taxi from the airport, both adults: <b>$20</b> — add ~$70 if the drive runs south to Malita)",
+        toggles: [],
         routeDetail: true,
-        ctrlPrefix: "air", // input/label id prefix (others default to the leg id)
-        modeControl: "airportmode",
-        terminalControl: "airport", // arrival-terminal sub-choice
-        terminals: { nrt: { label: "Narita" }, hnd: { label: "Haneda" } },
-        modes: {
-          public: { label: "Train/bus", scale: "person" },
-          private: { label: "Private car", scale: "vehicle" },
-        },
-        cost: {
-          nrt: { public: 43, private: 148 },
-          hnd: { public: 6, private: 56 },
-        },
+        flat: { cost: 20, scale: "person" },
       },
       {
-        id: "t-h",
-        from: "tokyo",
+        id: "d-o",
+        from: "davao",
+        to: "osaka",
+        routeName: "Davao → <strong>Osaka</strong>",
+        note: "(DVO → KIX via Manila, both adults: <b>$700</b> ESTIMATE — plus the Nankai into Namba, <b>$18</b> fixed)",
+        toggles: [],
+        routeDetail: true,
+        flat: { cost: 700, scale: "person" }, // DVO→KIX airfare, 2-adult total — ESTIMATE
+        fixed: { cost: 18, scale: "person" }, // Nankai KIX→Namba, researched
+      },
+      {
+        id: "o-h",
+        from: "osaka",
         to: "hakone",
-        routeName: "Tokyo → <strong>Hakone</strong>",
+        routeName: "Osaka → <strong>Hakone</strong>",
+        note: "(Shinkansen, both adults, reserved seat: <b>$163</b> fixed — must be a Hikari; Nozomi skips Odawara)",
         toggles: ["mode"],
         routeDetail: true,
-        modeControl: "thmode",
+        ctrlPrefix: "oh",
+        modeControl: "ohmode",
+        modes: {
+          public: { label: "Subway/bus", scale: "person" },
+          private: { label: "Taxi both ends", scale: "vehicle" },
+        },
+        cost: { public: 15, private: 63 }, // bookends only: Namba↔Shin-Osaka + Odawara↔hotel
+        fixed: { cost: 163, scale: "person" }, // Hikari Shin-Osaka→Odawara, always added
+      },
+      {
+        id: "h-t",
+        from: "hakone",
+        to: "tokyo",
+        routeName: "Hakone → <strong>Tokyo</strong>",
+        toggles: ["mode"],
+        routeDetail: true,
+        modeControl: "htmode",
         modes: {
           public: { label: "Romancecar", scale: "person" },
           private: { label: "Private car", scale: "vehicle" },
         },
-        cost: { public: 30, private: 340 }, // Tokyo↔Hakone
-      },
-      {
-        id: "h-o",
-        from: "hakone",
-        to: "osaka",
-        routeName: "Hakone → <strong>Osaka</strong>",
-        note: "(Shinkansen, both adults, reserved seat: <b>$163</b> fixed — must be a Hikari; Nozomi skips Odawara)",
-        toggles: ["mode"],
-        routeDetail: true,
-        ctrlPrefix: "ho",
-        modeControl: "homode",
-        modes: {
-          public: { label: "Bus/subway", scale: "person" },
-          private: { label: "Taxi both ends", scale: "vehicle" },
-        },
-        cost: { public: 15, private: 63 }, // bookends only: hotel↔Odawara + Shin-Osaka↔Namba
-        fixed: { cost: 163, scale: "person" }, // Hikari Odawara→Shin-Osaka, always added
+        cost: { public: 30, private: 340 }, // Hakone↔Tokyo
       },
       {
         id: "daytrip",
@@ -313,6 +355,9 @@ export default {
         // budget breakdown (engine.js only "folds" a cost-role leg into
         // another leg's row via Japan-specific logic this data intentionally
         // bypasses), so it stays unset and gets its own breakdown line.
+        // Known display wrinkle: side-trip legs render after the route's LAST
+        // stop (Tokyo) even though this one runs out of Osaka. The itinerary
+        // tab places it correctly, on the Osaka day that carries move:"daytrip".
         routeName: "Osaka ⇄ <strong>Kyoto</strong> (day trip)",
         note: "(round trip, both adults: <b>$17</b> fixed — Midosuji subway Namba → Yodoyabashi, then Keihan Main Line express → Gion-Shijo)",
         toggles: [],
@@ -322,18 +367,151 @@ export default {
       {
         id: "depart",
         role: "departure", // renders after the last stop
-        routeName: "<strong>Osaka</strong> → Kansai Airport",
-        note: "(Nankai, both adults: <b>$18</b> fixed)",
-        toggles: [],
+        routeName: "<strong>Tokyo</strong> → Haneda Airport",
+        toggles: ["mode"],
         routeDetail: true,
-        flat: { cost: 18, scale: "person" }, // Nankai ticketless/IC fare
+        ctrlPrefix: "dep",
+        modeControl: "depmode",
+        modes: {
+          public: { label: "Keikyu + Yamanote", scale: "person" },
+          private: { label: "Private car", scale: "vehicle" },
+        },
+        cost: { public: 6, private: 56 }, // Gotanda↔Haneda
       },
     ],
   },
   activities: {
+    davao: [
+      {
+        day: 3,
+        title: "Samal Island — beaches and Hagimit Falls",
+        options: [
+          {
+            name: "Self-guided (ferry + habal-habal)",
+            cost: 0,
+            note: "Barge from Sasa, then hire a ride on the island — the local way",
+            current: true,
+          },
+          {
+            name: "Joiner island tour",
+            cost: 60,
+            note: "Boat, lunch, and the usual beach + falls circuit",
+          },
+          {
+            name: "Private boat charter",
+            cost: 140,
+            note: "Your own bangka and route — Vanishing Island at low tide",
+          },
+        ],
+      },
+      {
+        day: 4,
+        title: "Eden, Malagos & the Philippine Eagle Center",
+        options: [
+          {
+            name: "Self-guided (jeepney + entry fees)",
+            cost: 0,
+            note: "Entry fees only, not counted here — slow, cheap, doable in a day",
+            current: true,
+          },
+          {
+            name: "Malagos Garden + Eagle Center combo",
+            cost: 45,
+            note: "Chocolate tasting, the bird show, and the eagle sanctuary in one ticket",
+          },
+          {
+            name: "Private van day with a driver",
+            cost: 120,
+            note: "Eden Nature Park, Malagos, and the Eagle Center without the transfers eating the day",
+          },
+        ],
+      },
+    ],
+    osaka: [
+      {
+        day: 9,
+        title: "Kyoto day trip: Higashiyama District",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Free public streets — steps from the Keihan Gion-Shijo stop",
+            current: true,
+          },
+          {
+            name: "History-teacher walk",
+            cost: 60,
+            note: "2 hrs, small group ≤4 · 4.8★ (9)",
+          },
+          {
+            name: "Private Higashiyama walk",
+            cost: 84,
+            note: "3 hrs · 5.0★ (5)",
+          },
+        ],
+      },
+      {
+        day: 9,
+        title: "Kyoto day trip: Fushimi Inari Shrine",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Free, 24/7, well-marked trail — 2 stops past Gion-Shijo on the Keihan line",
+            current: true,
+          },
+          {
+            name: "DMO Kyoto guided tour",
+            cost: 68,
+            note: "60 min, includes a Kagura dance viewing you can't get solo · 5.0★",
+          },
+        ],
+      },
+      {
+        day: 9,
+        title: "Kyoto day trip: Pontocho evening",
+        options: [
+          {
+            name: "Self-guided (free)",
+            cost: 0,
+            note: "Real tourist-trap risk in this alley; last Keihan back to Namba runs past 23:00",
+            current: true,
+          },
+          {
+            name: "13-dish food tour",
+            cost: 178,
+            note: "3 hrs · 4.9★ (447) — best-reviewed + cheapest paid pick",
+          },
+          {
+            name: "Kyoto Night Foodie Tour",
+            cost: 326,
+            note: "3 hrs, sake-focused · 5.0★ (1,762)",
+          },
+        ],
+      },
+    ],
+    hakone: [
+      {
+        day: 11,
+        title: "Hakone Loop (museums, Owakudani, Lake Ashi)",
+        options: [
+          {
+            name: "Self-guided w/ Free Pass",
+            cost: 0,
+            note: "Pass (~$74–88/2) + admissions (~$25–30/2), not counted here",
+            current: true,
+          },
+          {
+            name: "GoWithGuide private guide",
+            cost: 372,
+            note: "8 hrs flat for the group · 5.0★ (33) — logistics/hand-holding, not new sights",
+          },
+        ],
+      },
+    ],
     tokyo: [
       {
-        day: 2,
+        day: 13,
         title: "Tsukiji Market / Tokyo Highlights",
         options: [
           {
@@ -360,7 +538,7 @@ export default {
         ],
       },
       {
-        day: 3,
+        day: 14,
         title: "Ramen exploration",
         options: [
           {
@@ -382,7 +560,7 @@ export default {
         ],
       },
       {
-        day: 3,
+        day: 14,
         title: "Shinjuku / Yokocho bar hopping",
         options: [
           {
@@ -409,141 +587,52 @@ export default {
         ],
       },
     ],
-    hakone: [
-      {
-        day: 4,
-        title: "Hakone Loop (museums, Owakudani, Lake Ashi)",
-        options: [
-          {
-            name: "Self-guided w/ Free Pass",
-            cost: 0,
-            note: "Pass (~$74–88/2) + admissions (~$25–30/2), not counted here",
-            current: true,
-          },
-          {
-            name: "GoWithGuide private guide",
-            cost: 372,
-            note: "8 hrs flat for the group · 5.0★ (33) — logistics/hand-holding, not new sights",
-          },
-        ],
-      },
-    ],
-    osaka: [
-      {
-        day: 6,
-        title: "Kyoto day trip: Higashiyama District",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Free public streets — steps from the Keihan Gion-Shijo stop",
-            current: true,
-          },
-          {
-            name: "History-teacher walk",
-            cost: 60,
-            note: "2 hrs, small group ≤4 · 4.8★ (9)",
-          },
-          {
-            name: "Private Higashiyama walk",
-            cost: 84,
-            note: "3 hrs · 5.0★ (5)",
-          },
-        ],
-      },
-      {
-        day: 6,
-        title: "Kyoto day trip: Fushimi Inari Shrine",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Free, 24/7, well-marked trail — 2 stops past Gion-Shijo on the Keihan line",
-            current: true,
-          },
-          {
-            name: "DMO Kyoto guided tour",
-            cost: 68,
-            note: "60 min, includes a Kagura dance viewing you can't get solo · 5.0★",
-          },
-        ],
-      },
-      {
-        day: 6,
-        title: "Kyoto day trip: Pontocho evening",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Real tourist-trap risk in this alley; last Keihan back to Namba runs past 23:00",
-            current: true,
-          },
-          {
-            name: "13-dish food tour",
-            cost: 178,
-            note: "3 hrs · 4.9★ (447) — best-reviewed + cheapest paid pick",
-          },
-          {
-            name: "Kyoto Night Foodie Tour",
-            cost: 326,
-            note: "3 hrs, sake-focused · 5.0★ (1,762)",
-          },
-        ],
-      },
-    ],
   },
   routeDetail: {
     "airport-arrive": {
-      nrt: {
-        label: "Narita → Gotanda (N'EX + Yamanote)",
-        steps: [
-          "8 min walk: arrivals → N'EX platform",
-          "~15 min wait (N'EX runs every 30–60 min)",
-          "65 min ride: Narita → Shinagawa (N'EX)",
-          "6 min transfer walk at Shinagawa",
-          "8 min ride: Shinagawa → Gotanda (Yamanote, via Osaki)",
-          "6 min walk: Gotanda Station → hotel",
-        ],
-        total: "~108 min (1h 48m)",
-        note: "Excludes immigration/customs (commonly 15–40+ min at NRT). OMO5's own guidance suggests Skyliner via Nippori instead, ~70 min total — faster, less luggage space.",
-      },
-      hnd: {
-        label: "Haneda → Gotanda (Keikyu + Yamanote)",
-        steps: [
-          "5 min walk: arrivals → Keikyu platform",
-          "5 min wait (Limited Express runs ~every 10 min)",
-          "17 min ride: Haneda T3 → Shinagawa (Keikyu Ltd. Express)",
-          "4 min transfer walk at Shinagawa",
-          "8 min ride: Shinagawa → Gotanda (Yamanote, via Osaki)",
-          "6 min walk: Gotanda Station → hotel",
-        ],
-        total: "~45 min",
-        note: "Matches OMO5's own published estimate almost exactly. Excludes immigration (faster than NRT with e-gates).",
-      },
-    },
-    "t-h": {
-      label: "Gotanda → Hakone ryokan (Romancecar)",
+      label: "Davao airport (DVO) → the family's place",
       steps: [
-        "6 min walk: hotel → Gotanda Station",
-        "3 min wait + 14 min ride: Gotanda → Shinjuku (Yamanote)",
-        "~10 min transfer walk within Shinjuku Station to the Romancecar platform",
-        "80 min ride: Odakyu Romancecar, Shinjuku → Hakone-Yumoto",
-        "37 min ride: Hakone-Yumoto → Gora (Hakone Tozan Railway)",
-        "13 min: Gora Station → ryokan (shuttle/bus + short walk)",
+        "Immigration + bags at DVO (small airport, usually quick)",
+        "~20–30 min by Grab/taxi into Davao City",
+        "Add ~2.5–3 hrs if the drive continues south to Malita",
       ],
-      total: "~150 min (2.5 hr) door-to-door",
-      note: "Biggest lever is the Romancecar run — stopping pattern varies train to train. Shuttle timing is soft; confirm with your specific ryokan.",
+      total: "~30 min into Davao City (~3 hrs to Malita)",
+      note: "David lands Oct 24 after departing IND on Oct 22 — the dateline eats a day. Confirm who's meeting the flight before booking a car.",
     },
-    "h-o": {
-      label: "Hakone hotel → Odawara → Shin-Osaka → Namba",
+    "d-o": {
+      label: "Davao (DVO) → Kansai (KIX) → Namba",
       steps: [
-        "Hakone Tozan bus / taxi: hotel area → Odawara Station",
-        "135–150 min: Shinkansen Odawara → Shin-Osaka — must be a Hikari (Nozomi doesn't stop at Odawara); only ~6–8 direct departures/day, roughly every 2 hours",
-        "~15 min: Midosuji subway Shin-Osaka → Namba",
+        "DVO → MNL domestic hop (~1h 45m), then the Manila terminal transfer",
+        "MNL → KIX (~4h), arriving Kansai in the afternoon/evening",
+        "Immigration + customs at KIX",
+        "~40 min: Nankai from Kansai Airport station to Namba",
+      ],
+      total: "~10–12 hrs door to door including the Manila connection",
+      note: "Book the Manila connection with real slack — terminal changes at MNL are the usual failure point. Have Visit Japan Web done before you land.",
+    },
+    "o-h": {
+      label: "Namba → Shin-Osaka → Odawara → Hakone ryokan",
+      steps: [
+        "~15 min: Midosuji subway Namba → Shin-Osaka",
+        "135–150 min: Shinkansen Shin-Osaka → Odawara — must be a Hikari (Nozomi doesn't stop at Odawara); only ~6–8 direct departures/day, roughly every 2 hours",
+        "Hakone Tozan bus / taxi: Odawara Station → the ryokan",
       ],
       total:
-        "~150–165 min Odawara → Namba (Shinkansen + subway); hotel→Odawara bus/taxi time not itemized",
-      note: "Plan the Odawara departure around the sparse direct-Hikari schedule (~every 2 hrs) — missing one costs real time, not just a short wait.",
+        "~150–165 min Namba → Odawara (subway + Shinkansen); Odawara→hotel bus/taxi time not itemized",
+      note: "Plan the Shin-Osaka departure around the sparse direct-Hikari schedule (~every 2 hrs) — missing one costs real time, not just a short wait.",
+    },
+    "h-t": {
+      label: "Hakone ryokan → Gotanda (Romancecar)",
+      steps: [
+        "13 min: ryokan → Gora Station (shuttle/bus + short walk)",
+        "37 min ride: Gora → Hakone-Yumoto (Hakone Tozan Railway)",
+        "80 min ride: Odakyu Romancecar, Hakone-Yumoto → Shinjuku",
+        "~10 min transfer walk within Shinjuku Station to the Yamanote platform",
+        "3 min wait + 14 min ride: Shinjuku → Gotanda (Yamanote)",
+        "6 min walk: Gotanda Station → hotel",
+      ],
+      total: "~150 min (2.5 hr) door-to-door",
+      note: "Biggest lever is the Romancecar run — stopping pattern varies train to train. Reserve the seat; it's a reserved-only service.",
     },
     daytrip: {
       label: "Namba ⇄ Kyoto (day trip)",
@@ -555,202 +644,208 @@ export default {
       note: "Go early — Fushimi Inari before 9am beats the crowds; last trains back to Namba run past 23:00.",
     },
     depart: {
-      label: "Osaka Namba → Kansai Airport",
+      label: "Gotanda → Haneda (Yamanote + Keikyu)",
       steps: [
-        "~40 min: Nankai from Namba Station to KIX (Rapi:t reserved or airport express)",
+        "6 min walk: hotel → Gotanda Station",
+        "8 min ride: Gotanda → Shinagawa (Yamanote, via Osaki)",
+        "4 min transfer walk at Shinagawa",
+        "17 min ride: Shinagawa → Haneda T3 (Keikyu Ltd. Express)",
       ],
-      total: "~40 min (Nankai, Namba Station → KIX)",
-      note: "Nankai ticketless/IC fare researched; Rapi:t reserved seat costs slightly more.",
+      total: "~45 min",
+      note: "Matches OMO5's own published estimate almost exactly. Narita instead would run ~108 min — worth a cheaper fare only if the schedule suits.",
     },
   },
   itinPool: {
-    tokyo: [
+    davao: [
       {
-        id: "t-arrive",
+        id: "d-arrive",
         travel: true,
-        cityTag: "Tokyo — arrive",
-        sun: "16:35",
+        cityTag: "Davao — arrive",
+        sun: "17:41",
         move: "airport-arrive",
-        lodging: "tokyo",
-        title: "Land, get to Gotanda, and do almost nothing",
+        lodging: "davao",
+        title: "Land in Davao and do absolutely nothing",
         rows: [
           {
             tag: "Table",
             kind: "table",
-            lead: "Whatever's open and close.",
+            lead: "Whatever the family puts on the table.",
             detail:
-              "Gotanda has 1,000+ eateries within a few blocks — a bowl of ramen or a neighborhood izakaya. No reservation, no ambition.",
+              "Two days in transit out of Indianapolis end here. Rice, something grilled, and going to bed early is the whole plan.",
           },
           {
             tag: "Settle",
             kind: "soft",
             detail:
-              "Add mobile Suica to Apple Wallet, activate the eSIM, hit a konbini. First night is jet-lag triage. We arrive on separate flights — meet at the hotel, not the airport.",
+              "Grab a local SIM or activate the eSIM, pull out pesos, and let the jet lag do what it's going to do. Nothing is scheduled.",
           },
         ],
-        ask: "what time do our flights actually land? It decides whether tonight has a dinner in it at all.",
+        ask: "who's meeting the flight, and is the week based in Davao City or down in Malita? It changes the airport run and every day trip below.",
       },
       {
-        id: "t-tsukiji",
-        cityTag: "Tokyo",
-        sun: "16:34",
-        title: "Breakfast at the fish market, then old Tokyo",
+        id: "d-city",
+        cityTag: "Davao",
+        sun: "17:41",
+        title: "Davao proper — durian, the market, and the night out",
         rows: [
           {
-            tag: "Table",
-            kind: "table",
-            lead: "Tsukiji Outer Market, early (~8 am).",
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Bankerohan Market in the morning.",
             detail:
-              "Tamagoyaki on a stick, uni, fatty tuna, grilled scallops — grazing breakfast is the point. Beats the crowds.",
+              "The city's working market — fruit stacked by the crate, fish still moving, and durian in season if the timing holds.",
           },
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Asakusa — Sensō-ji &amp; Nakamise.",
+            lead: "People's Park &amp; the old center.",
             detail:
-              "Tokyo's oldest temple and the approach street of little shops. Late morning, unhurried.",
+              "Durian-shaped everything and the Mindanao sculptures — a walkable stretch of city between the malls.",
           },
           {
-            tag: "Evening",
-            kind: "soft",
+            tag: "Table",
+            kind: "table",
+            lead: "Roxas Avenue night market.",
             detail:
-              "Free. Shibuya Crossing after dark if there's energy; if not, a depachika food-hall dinner and an early night.",
+              "Grilled everything on sticks down the length of the street — the cheapest good meal of the whole trip.",
+          },
+        ],
+      },
+      {
+        id: "d-samal",
+        cityTag: "Davao — day out",
+        sun: "17:41",
+        title: "Samal Island — a barge, a beach, and a waterfall",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Barge across from Sasa.",
+            detail:
+              "Twenty minutes of water and you're on Samal — white sand on the west side, mangroves and quiet coves everywhere else.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Hagimit Falls.",
+            detail:
+              "Low, wide freshwater pools under the trees, cold enough to hurt after an afternoon on the sand.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Grilled fish at a beachside carinderia.",
+            detail:
+              "Point at what's on ice, eat it an hour later with rice and vinegar. No reservation exists to make.",
           },
         ],
         fuller:
-          'Add <b>Meiji Shrine + Omotesandō/Harajuku</b> in the afternoon — that\'s the full Kensington "Tokyo Highlights" loop in one day.',
-        ask: "rain plan is <b>teamLab Planets</b> (needs advance tickets) — want me to hold a slot?",
+          "At low tide, <b>Vanishing Island</b> surfaces off the north end — a sandbar you can stand on in the middle of the strait. Worth chartering a boat for if the tide table cooperates.",
       },
       {
-        id: "t-gyoen",
-        cityTag: "Tokyo",
-        sun: "16:33",
-        title: "A garden by day, the alleyways by night",
+        id: "d-eden",
+        cityTag: "Davao — day out",
+        sun: "17:41",
+        title: "Up the mountain — Eden, Malagos, and the eagles",
         rows: [
           {
-            tag: "Morning",
-            kind: "soft",
-            detail: "Slow start. Coffee somewhere good.",
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Eden Nature Park.",
+            detail:
+              "Three thousand feet up the flank of Mount Apo, cold enough for a jacket, with the whole gulf laid out below.",
           },
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Shinjuku Gyoen.",
+            lead: "Philippine Eagle Center.",
             detail:
-              "A huge, calm garden starting to turn for autumn in mid-November — the antidote to Tokyo's density. (Free observation deck at the Metro Gov't Building nearby for the skyline.)",
+              "One of the largest eagles on earth and one of the rarest — the conservation center at Malagos is the only reliable place to see one.",
           },
           {
             tag: "Table",
             kind: "table",
-            lead: "Yokochō night in Shinjuku.",
+            lead: "Malagos chocolate and cheese.",
             detail:
-              "Yakitori under the tracks at Omoide Yokochō, or a ramen crawl (Nakiryu, Afuri, Fūunji). The food night in Tokyo.",
+              "Single-origin cacao grown on the same hillside, plus a genuinely good local cheese room. A tasting counts as lunch.",
+          },
+        ],
+      },
+      {
+        id: "d-family",
+        cityTag: "Davao",
+        sun: "17:41",
+        title: "A day that belongs to the family, not the itinerary",
+        rows: [
+          {
+            tag: "Soft",
+            kind: "soft",
+            detail:
+              "No anchor, no plan. This is the reason the week is seven nights and not three — cooking, visiting, sitting around.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Whatever gets cooked at home.",
+            detail:
+              "Offer to buy the ingredients and stay out of the way. If there's a birthday, a fiesta, or a karaoke machine, that's the day.",
+          },
+        ],
+      },
+      {
+        id: "d-coast",
+        cityTag: "Davao — day out",
+        sun: "17:41",
+        title: "Down the coast — beaches, and the long southern road",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "The coast road south.",
+            detail:
+              "The road south runs along the gulf past fishing barangays and black-sand coves, with Mount Apo over your shoulder most of the way.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Kinilaw and grilled tuna.",
+            detail:
+              "Raw fish cured in coconut vinegar, eaten within sight of the boat it came off. Mindanao does it better than Manila does.",
           },
         ],
         fuller:
-          "Golden Gai's tiny bars are famously locals-only. A <b>guided bar-hop</b> gets us in the doors — solves a real access problem, not just another stop.",
+          "If the week is based in <b>Malita</b>, this is a home day instead — the coast road <em>is</em> the commute, and the beaches are the local ones.",
       },
       {
-        id: "t-shopping",
-        cityTag: "Tokyo — day out",
-        sun: "16:32",
-        title: "Shibuya, Harajuku, and a proper shopping day",
+        id: "d-pack",
+        cityTag: "Davao — last day",
+        sun: "17:41",
+        title: "Goodbyes, pasalubong, and packing for a colder country",
         rows: [
           {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Shibuya first.",
-            detail:
-              "The scramble crossing, then the vertical retail — Shibuya Parco for streetwear and game-culture floors, Loft and Hands for the gifts you actually take home.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Harajuku &amp; Omotesando after.",
-            detail:
-              "Takeshita-dori for the chaos, then Omotesando's tree-lined flagships and the Cat Street vintage stretch between them — the full Tokyo retail spectrum in one walkable line.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Depachika dinner.",
-            detail:
-              "A department-store basement food hall (Shibuya's Tokyu or Shinjuku's Isetan) — assemble a spread from the counters and eat well without a reservation.",
-          },
-        ],
-        fuller:
-          "<b>Shinjuku at night</b> to close it out — Kabukicho neon, Golden Gai's tiny bars, or the free Metro Government observation deck for the skyline.",
-      },
-    ],
-    hakone: [
-      {
-        id: "h-arrive",
-        travel: true,
-        cityTag: "Tokyo → Hakone",
-        sun: "16:32",
-        move: "t-h",
-        lodging: "hakone",
-        title: "The mountain, and the best meal of the trip",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Hakone Open-Air Museum",
-            detail:
-              "or the Lake Ashi / Owakudani loop on the Free Pass — but honestly, one stop then straight to the onsen. This is the rest day.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Kaiseki dinner at the ryokan.",
-            detail:
-              "Multi-course seasonal dinner (half-board) plus a private open-air hot-spring bath on the balcony. The romantic centerpiece — nowhere to be, nothing to catch.",
-          },
-          {
-            tag: "Luggage",
-            kind: "soft",
-            flag: "luggage",
-            detail:
-              "This morning, forward the big suitcases <b>Tokyo → Osaka hotel</b> by takkyūbin (~¥2,500/bag, next-day). Ride to Hakone with just an overnight bag; the cases meet us in Osaka. <em>Confirm the Osaka hotel accepts the delivery.</em>",
-          },
-        ],
-      },
-      {
-        id: "h-full",
-        cityTag: "Hakone",
-        sun: "16:31",
-        title: "A full day in the hills",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "The complete Hakone loop.",
-            detail:
-              "Ropeway over the sulphur vents at Owakudani, the pirate ship across Lake Ashi, the red Hakone Shrine torii standing in the water — the classic circuit, no rushing.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Black eggs &amp; a second kaiseki.",
-            detail:
-              "Owakudani's kuro-tamago (boiled black in the hot springs) by day; another multi-course ryokan dinner and a long soak by night.",
-          },
-          {
-            tag: "Soak",
+            tag: "Soft",
             kind: "soft",
             detail:
-              "The whole reason to give Hakone a second night — a slow morning in the private open-air bath before anything else.",
+              "Last morning with everyone. Buy pasalubong at Aldevinco or the airport if you're rushed, and repack — Osaka in November is a different climate entirely.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "One more home-cooked meal.",
+            detail:
+              "The flight to Kansai goes tomorrow. Tonight is the goodbye dinner, and it should be at the house.",
           },
         ],
+        ask: "what time does the DVO → MNL leg push tomorrow? An early one means leaving for the airport before dawn.",
       },
     ],
     osaka: [
       {
         id: "o-arrive",
         travel: true,
-        cityTag: "Hakone → Osaka",
-        sun: "16:52",
-        move: "h-o",
+        cityTag: "Davao → Osaka",
+        sun: "17:01",
+        move: "d-o",
         lodging: "osaka",
         title: "Osaka — neon, canals, and street food",
         rows: [
@@ -759,24 +854,29 @@ export default {
             kind: "anchor",
             lead: "Dotonbori &amp; Namba after dark.",
             detail:
-              "The Glico running man, the canal lights, the roar of the arcades — Osaka is the loud, fun counterweight to Hakone's quiet morning.",
+              "The Glico running man, the canal lights, the roar of the arcades — a loud, easy first night that asks nothing of you.",
           },
           {
             tag: "Table",
             kind: "table",
             lead: "A street-food crawl.",
             detail:
-              "Takoyaki, okonomiyaki, kushikatsu — Osaka is Japan's kitchen and this is the point of coming. Graze, don't sit down.",
+              "Takoyaki, okonomiyaki, kushikatsu — Osaka is Japan's kitchen and this is the point of landing here first. Graze, don't sit down.",
+          },
+          {
+            tag: "Settle",
+            kind: "soft",
+            detail:
+              "Add mobile Suica to Apple Wallet, activate the Japan eSIM, hit a konbini. Drop bags at the hotel first — Namba is minutes from the action, so an early check-in isn't critical.",
           },
         ],
-        fuller:
-          "Drop bags at the hotel first — Namba is minutes from the action, so an early check-in isn't critical.",
+        ask: "what time does the KIX arrival actually land? It decides whether tonight has a Dotonbori walk in it at all.",
       },
       {
         id: "o-daytrip",
         travel: true,
         cityTag: "Day trip — Kyoto",
-        sun: "16:51",
+        sun: "17:00",
         move: "daytrip",
         title: "Kyoto in a day — shrines, lanes, and a market lunch",
         rows: [
@@ -792,7 +892,7 @@ export default {
             kind: "anchor",
             lead: "The eastern hills after lunch.",
             detail:
-              "Kiyomizu-dera's veranda, then downhill through Sannenzaka and Ninenzaka's preserved lanes to Gion — late November is peak foliage, so the temple gardens earn their reputation this week.",
+              "Kiyomizu-dera's veranda, then downhill through Sannenzaka and Ninenzaka's preserved lanes to Gion — early November catches the first of the foliage turning.",
           },
           {
             tag: "Table",
@@ -803,12 +903,12 @@ export default {
           },
         ],
         fuller:
-          "If the foliage forecast is right, <b>Eikandō's evening illumination</b> is the best autumn ticket in Kyoto — it means a later train back to Namba, which runs past 23:00.",
+          "If the foliage forecast is early, <b>Eikandō's evening illumination</b> is the best autumn ticket in Kyoto — it means a later train back to Namba, which runs past 23:00.",
       },
       {
         id: "o-food",
         cityTag: "Osaka",
-        sun: "16:51",
+        sun: "16:59",
         title: "Kuromon market, Shinsaibashi, and Japan's kitchen",
         rows: [
           {
@@ -839,7 +939,7 @@ export default {
       {
         id: "o-shrines",
         cityTag: "Osaka",
-        sun: "16:50",
+        sun: "16:58",
         title: "Sumiyoshi Taisha, Shitennoji, and old Osaka",
         rows: [
           {
@@ -854,7 +954,7 @@ export default {
             kind: "anchor",
             lead: "Shitennoji after.",
             detail:
-              "Japan's oldest officially-administered temple (593 AD), with a five-story pagoda and a quiet turtle pond — the flea market (21st/22nd of the month) overlaps our dates.",
+              "Japan's oldest officially-administered temple (593 AD), with a five-story pagoda and a quiet turtle pond.",
           },
           {
             tag: "Table",
@@ -868,38 +968,227 @@ export default {
           "<b>Osaka Castle</b> park on the way back — the keep is a reconstruction, but the moats and gold-leaf details photograph best in late-afternoon light.",
       },
     ],
+    hakone: [
+      {
+        id: "h-arrive",
+        travel: true,
+        cityTag: "Osaka → Hakone",
+        sun: "16:44",
+        move: "o-h",
+        lodging: "hakone",
+        title: "The mountain, and the best meal of the trip",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Hakone Open-Air Museum",
+            detail:
+              "or the Lake Ashi / Owakudani loop on the Free Pass — but honestly, one stop then straight to the onsen. This is the rest day.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Kaiseki dinner at the ryokan.",
+            detail:
+              "Multi-course seasonal dinner (half-board) plus a private open-air hot-spring bath on the balcony. The romantic centerpiece — nowhere to be, nothing to catch.",
+          },
+          {
+            tag: "Luggage",
+            kind: "soft",
+            flag: "luggage",
+            detail:
+              "This morning, forward the big suitcases <b>Osaka → Tokyo hotel</b> by takkyūbin (~¥2,500/bag, next-day). Ride to Hakone with just an overnight bag; the cases meet us in Tokyo. <em>Confirm the Tokyo hotel accepts the delivery.</em>",
+          },
+        ],
+      },
+      {
+        id: "h-full",
+        cityTag: "Hakone",
+        sun: "16:43",
+        title: "A full day in the hills",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "The complete Hakone loop.",
+            detail:
+              "Ropeway over the sulphur vents at Owakudani, the pirate ship across Lake Ashi, the red Hakone Shrine torii standing in the water — the classic circuit, no rushing.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Black eggs &amp; a second kaiseki.",
+            detail:
+              "Owakudani's kuro-tamago (boiled black in the hot springs) by day; another multi-course ryokan dinner and a long soak by night.",
+          },
+          {
+            tag: "Soak",
+            kind: "soft",
+            detail:
+              "The whole reason to give Hakone a second night — a slow morning in the private open-air bath before anything else.",
+          },
+        ],
+      },
+    ],
+    tokyo: [
+      {
+        id: "t-arrive",
+        travel: true,
+        cityTag: "Hakone → Tokyo",
+        sun: "16:42",
+        move: "h-t",
+        lodging: "tokyo",
+        title: "Down from the mountain into the biggest city on earth",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shibuya Crossing after dark.",
+            detail:
+              "Straight from a silent hillside to the loudest intersection in the world. The contrast is the point — do it the night you arrive.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Whatever's open and close.",
+            detail:
+              "Gotanda has 1,000+ eateries within a few blocks — a bowl of ramen or a neighborhood izakaya. No reservation, no ambition.",
+          },
+        ],
+      },
+      {
+        id: "t-tsukiji",
+        cityTag: "Tokyo",
+        sun: "16:41",
+        title: "Breakfast at the fish market, then old Tokyo",
+        rows: [
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Tsukiji Outer Market, early (~8 am).",
+            detail:
+              "Tamagoyaki on a stick, uni, fatty tuna, grilled scallops — grazing breakfast is the point. Beats the crowds.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Asakusa — Sensō-ji &amp; Nakamise.",
+            detail:
+              "Tokyo's oldest temple and the approach street of little shops. Late morning, unhurried.",
+          },
+          {
+            tag: "Evening",
+            kind: "soft",
+            detail:
+              "Free. A depachika food-hall dinner and an early night, or push on to Shinjuku if there's energy left.",
+          },
+        ],
+        fuller:
+          'Add <b>Meiji Shrine + Omotesandō/Harajuku</b> in the afternoon — that\'s the full Kensington "Tokyo Highlights" loop in one day.',
+        ask: "rain plan is <b>teamLab Planets</b> (needs advance tickets) — want me to hold a slot?",
+      },
+      {
+        id: "t-gyoen",
+        cityTag: "Tokyo",
+        sun: "16:40",
+        title: "A garden by day, the alleyways by night",
+        rows: [
+          {
+            tag: "Morning",
+            kind: "soft",
+            detail: "Slow start. Coffee somewhere good.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shinjuku Gyoen.",
+            detail:
+              "A huge, calm garden just starting to turn for autumn in early November — the antidote to Tokyo's density. (Free observation deck at the Metro Gov't Building nearby for the skyline.)",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Yokochō night in Shinjuku.",
+            detail:
+              "Yakitori under the tracks at Omoide Yokochō, or a ramen crawl (Nakiryu, Afuri, Fūunji). The food night in Tokyo.",
+          },
+        ],
+        fuller:
+          "Golden Gai's tiny bars are famously locals-only. A <b>guided bar-hop</b> gets us in the doors — solves a real access problem, not just another stop.",
+      },
+      {
+        id: "t-shopping",
+        cityTag: "Tokyo — last day",
+        sun: "16:39",
+        title: "Shibuya, Harajuku, and a proper shopping day",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shibuya first.",
+            detail:
+              "The vertical retail — Shibuya Parco for streetwear and game-culture floors, Loft and Hands for the gifts you actually take home.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Harajuku &amp; Omotesando after.",
+            detail:
+              "Takeshita-dori for the chaos, then Omotesando's tree-lined flagships and the Cat Street vintage stretch between them — the full Tokyo retail spectrum in one walkable line.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Depachika dinner.",
+            detail:
+              "A department-store basement food hall (Shibuya's Tokyu or Shinjuku's Isetan) — assemble a spread from the counters and eat well without a reservation.",
+          },
+        ],
+        fuller:
+          "<b>Shinjuku at night</b> to close it out — Kabukicho neon, Golden Gai's tiny bars, or the free Metro Government observation deck for the skyline.",
+      },
+    ],
   },
   itinDepart: {
     id: "depart",
     travel: true,
     move: "depart",
-    sun: "16:46",
-    cityTag: "Osaka → home",
-    title: "Kansai Airport, and the long way home",
+    sun: "16:38",
+    cityTag: "Tokyo → home",
+    title: "Haneda, and two different ways home",
     rows: [
       {
         tag: "Note",
         kind: "soft",
         detail:
-          "~40 min to the gate — build in buffer and have Visit Japan Web ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy.",
+          "~45 min to the gate from Gotanda — build in buffer and have the paperwork ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy. David routes home to Indianapolis; his partner flies back to Davao.",
       },
     ],
-    ask: "when do our flights home actually leave? That sets how much of the morning is ours.",
+    ask: "when do the two flights home actually leave? Different departure times mean two different airport runs.",
   },
   visaPlan: {
-    "t-arrive": "Arrive in Tokyo; check in and rest.",
+    "d-arrive": "In the Philippines — arrive Davao (DVO); not yet in Japan.",
+    "d-city": "In the Philippines — Davao City; family visit.",
+    "d-samal": "In the Philippines — Samal Island, Davao del Norte.",
+    "d-eden": "In the Philippines — Eden Nature Park & Malagos, Davao City.",
+    "d-family": "In the Philippines — Davao; family visit.",
+    "d-coast": "In the Philippines — Davao del Sur coast.",
+    "d-pack": "In the Philippines — Davao; depart for Japan the next day.",
+    "o-arrive":
+      "Enter Japan at Kansai International Airport (KIX); travel to Osaka (Namba); Dotonbori & Namba.",
+    "o-daytrip":
+      "Day trip to Kyoto by train; Fushimi Inari Shrine; Kiyomizu-dera Temple; Nishiki Market.",
+    "o-food":
+      "Kuromon Ichiba Market; Shinsaibashi & Amerikamura shopping districts.",
+    "o-shrines": "Sumiyoshi Taisha Shrine; Shitennoji Temple; Osaka Castle.",
+    "h-arrive":
+      "Travel to Hakone; Hakone Open-Air Museum; onsen (hot spring) ryokan.",
+    "h-full": "Hakone loop — Lake Ashi, Owakudani, Hakone Shrine.",
+    "t-arrive": "Travel to Tokyo; Shibuya district.",
     "t-tsukiji": "Tsukiji Outer Market; Asakusa Senso-ji Temple & Nakamise St.",
     "t-gyoen": "Shinjuku Gyoen National Garden; Shinjuku district.",
     "t-shopping":
       "Shibuya, Harajuku & Omotesando shopping districts; Shinjuku in the evening.",
-    "h-arrive":
-      "Travel to Hakone; Hakone Open-Air Museum; onsen (hot spring) ryokan.",
-    "h-full": "Hakone loop — Lake Ashi, Owakudani, Hakone Shrine.",
-    "o-arrive": "Travel to Osaka; Dotonbori & Namba.",
-    "o-daytrip":
-      "Day trip to Kyoto by train; Fushimi Inari Shrine; Kiyomizu-dera Temple; Nishiki Market.",
-    "o-food": "Kuromon Ichiba Market; Shinsaibashi & Amerikamura shopping districts.",
-    "o-shrines": "Sumiyoshi Taisha Shrine; Shitennoji Temple; Osaka Castle.",
-    depart: "Depart from Kansai International Airport.",
+    depart: "Depart Japan from Haneda International Airport (HND).",
   },
 };
