@@ -9,7 +9,7 @@ export default {
       meta: "Davao · Osaka · Tokyo · Kyoto & Nara day trips",
       go: "Japan",
       blurb:
-        "A week with family near Davao, then in through Kansai to a five-night Osaka base — neon and street food, with day trips out to Kyoto's lanes and Nara's deer — and a Shinkansen up to Tokyo for the last two nights.",
+        "A week with family in Malita first, then the trip proper: in through Kansai to a five-night Osaka base — neon and street food, with day trips out to Kyoto's lanes and Nara's deer — and a Shinkansen up to Tokyo for the last two nights.",
     },
     route: ["davao", "osaka", "tokyo"], // ordered city keys
     optionalCities: [],
@@ -41,13 +41,13 @@ export default {
       flightsTitle: "Getting there — International flights",
       flightsIntro:
         "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Nov 1 — that leg is booked and priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
-      itinTitle: "Davao, Osaka &amp; Tokyo — fifteen nights",
+      itinTitle: "Osaka &amp; Tokyo — seven nights in Japan",
       itinDek:
-        "A slow week with family near Davao, then into Japan through the back door: five nights based in Namba, with Osaka's kitchen at the door and day trips out to Kyoto and Nara, then the Nozomi up to Tokyo for a last two nights. One base, one move, no packing and repacking.",
+        "The Philippine week is family time in Malita and is not planned here — it appears only so the dates and the costs line up. Japan is the trip: five nights based in Namba, with Osaka's kitchen at the door and day trips out to Kyoto and Nara, then the Nozomi up to Tokyo for a last two nights. One base, one move, no packing and repacking.",
       finePrint: [
         "Both current picks were re-quoted on 2026-08-09 for the real dates (Booking.com, 2 adults, 1 room, USD): Citadines Namba for Nov 1–6 and the Tokyo stay for Nov 6–8. Alternatives marked \"NOT re-quoted\" still carry their old Nov 14–22 figures and will move.",
         "OMO5 Tokyo Gotanda — the original Tokyo pick — showed NO availability for Nov 6–8, and so did Mitsui Garden Gotanda. Nov 6–8 is a Friday-to-Sunday and Tokyo is tight. Book the Tokyo nights early, and check Hoshino Resorts direct before giving up on OMO5.",
-        "Davao lodging is a planning estimate, not a date-locked quote — the current pick is staying with family at no lodging cost.",
+        "The Philippine week is not costed beyond the airport transfer and the flights — it is family time in Malita, staying with family at no lodging cost. The Davao hotel tiers are rough estimates kept only as a fallback.",
         "Every alternative hotel holds a private double/twin room with its own bathroom and a ≥7.0 guest rating. The floor was 8.0 until 2026-08-09; the sub-8.0 tiers were added deliberately to show what the trip costs at the bottom of the range.",
         "The cheapest Osaka tiers (OKINI, MAIDO) are in Nishinari Ward — Osaka's cheapest district and the reason the rate is $28 rather than $200. It is a working-class area around Shin-Imamiya with a rough reputation and genuinely good transport, 1.3–1.4 miles from Namba. Worth looking at a map and recent reviews rather than taking the number at face value.",
         "Japan transport fares are current published prices (JR, Nankai, Keihan, Kintetsu); the taxi-bookend figures on the Osaka → Tokyo leg are estimates, not quotes.",
@@ -163,13 +163,13 @@ export default {
     davao: {
       baseNights: 7,
       label: "Davao",
-      header: "Davao — with family",
+      header: "Davao — family time (not planned here)",
       options: [
         {
           name: "Staying with family",
           rate: 0,
           rating: "—",
-          note: "The week near Davao at the family's place — no lodging cost; bring gifts, not a booking · current pick",
+          note: "The week in Malita with her family — no lodging cost · current pick",
           current: true,
         },
         {
@@ -304,11 +304,11 @@ export default {
       {
         id: "airport-arrive",
         role: "arrival", // renders before the first stop
-        routeName: "<strong>Davao (DVO)</strong> → the family's place",
-        note: "(Grab/taxi from the airport into Davao City, both adults: <b>$20</b>)",
+        routeName: "<strong>Davao (DVO)</strong> → Malita",
+        note: "(the ~2.5–3 hr run south, both adults: <b>$70</b>)",
         toggles: [],
         routeDetail: true,
-        flat: { cost: 20, scale: "person" },
+        flat: { cost: 70, scale: "person" },
       },
       {
         id: "d-o",
@@ -383,52 +383,6 @@ export default {
     ],
   },
   activities: {
-    davao: [
-      {
-        day: 3,
-        title: "Samal Island — beaches and Hagimit Falls",
-        options: [
-          {
-            name: "Self-guided (ferry + habal-habal)",
-            cost: 0,
-            note: "Barge from Sasa, then hire a ride on the island — the local way",
-            current: true,
-          },
-          {
-            name: "Joiner island tour",
-            cost: 60,
-            note: "Boat, lunch, and the usual beach + falls circuit",
-          },
-          {
-            name: "Private boat charter",
-            cost: 140,
-            note: "Your own bangka and route — Vanishing Island at low tide",
-          },
-        ],
-      },
-      {
-        day: 4,
-        title: "Eden, Malagos & the Philippine Eagle Center",
-        options: [
-          {
-            name: "Self-guided (jeepney + entry fees)",
-            cost: 0,
-            note: "Entry fees only, not counted here — slow, cheap, doable in a day",
-            current: true,
-          },
-          {
-            name: "Malagos Garden + Eagle Center combo",
-            cost: 45,
-            note: "Chocolate tasting, the bird show, and the eagle sanctuary in one ticket",
-          },
-          {
-            name: "Private van day with a driver",
-            cost: 120,
-            note: "Eden Nature Park, Malagos, and the Eagle Center without the transfers eating the day",
-          },
-        ],
-      },
-    ],
     osaka: [
       {
         day: 11,
@@ -612,13 +566,13 @@ export default {
   },
   routeDetail: {
     "airport-arrive": {
-      label: "Davao airport (DVO) → the family's place",
+      label: "Davao airport (DVO) → Malita",
       steps: [
         "Immigration + bags at DVO (small airport, usually quick)",
-        "~20–30 min by Grab/taxi into Davao City",
+        "~2.5–3 hrs south by road to Malita",
       ],
-      total: "~30 min into Davao City",
-      note: "David lands Oct 24 after departing IND on Oct 22 — 28 hours of flying and the dateline eats a day on top. Confirm who's meeting the flight before booking a car.",
+      total: "~3 hrs",
+      note: "David lands Oct 24 after departing IND on Oct 22 — 28 hours of flying and the dateline eats a day on top.",
     },
     "d-o": {
       label: "Davao (DVO) → Kansai (KIX) → Namba — booked, Nov 1",
@@ -682,203 +636,15 @@ export default {
         sun: "17:41",
         move: "airport-arrive",
         lodging: "davao",
-        title: "Land in Davao and do absolutely nothing",
+        title: "Arrive in Davao",
         rows: [
           {
-            tag: "Table",
-            kind: "table",
-            lead: "Whatever the family puts on the table.",
-            detail:
-              "Two days in transit out of Indianapolis end here. Rice, something grilled, and going to bed early is the whole plan.",
-          },
-          {
-            tag: "Settle",
+            tag: "Note",
             kind: "soft",
             detail:
-              "Grab a local SIM or activate the eSIM, pull out pesos, and let the jet lag do what it's going to do. Nothing is scheduled.",
+              "Land Oct 24 after departing IND on the 22nd. The week here is family time in Malita — not planned in this document, and not costed beyond the airport run and the flights.",
           },
         ],
-        ask: "who's meeting the flight? Landing after 28 hours in the air, a Grab you booked yourself is the worst version of this.",
-      },
-      {
-        id: "d-city",
-        cityTag: "Davao",
-        sun: "17:41",
-        title: "Davao proper — durian, the market, and the night out",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Bankerohan Market in the morning.",
-            detail:
-              "The city's working market — fruit stacked by the crate, fish still moving, and durian in season if the timing holds.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "People's Park &amp; the old center.",
-            detail:
-              "Durian-shaped everything and the Mindanao sculptures — a walkable stretch of city between the malls.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Roxas Avenue night market.",
-            detail:
-              "Grilled everything on sticks down the length of the street — the cheapest good meal of the whole trip.",
-          },
-        ],
-      },
-      {
-        id: "d-samal",
-        cityTag: "Davao — day out",
-        sun: "17:41",
-        title: "Samal Island — a barge, a beach, and a waterfall",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Barge across from Sasa.",
-            detail:
-              "Twenty minutes of water and you're on Samal — white sand on the west side, mangroves and quiet coves everywhere else.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Hagimit Falls.",
-            detail:
-              "Low, wide freshwater pools under the trees, cold enough to hurt after an afternoon on the sand.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Grilled fish at a beachside carinderia.",
-            detail:
-              "Point at what's on ice, eat it an hour later with rice and vinegar. No reservation exists to make.",
-          },
-        ],
-        fuller:
-          "At low tide, <b>Vanishing Island</b> surfaces off the north end — a sandbar you can stand on in the middle of the strait. Worth chartering a boat for if the tide table cooperates.",
-      },
-      {
-        id: "d-eden",
-        cityTag: "Davao — day out",
-        sun: "17:41",
-        title: "Up the mountain — Eden, Malagos, and the eagles",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Eden Nature Park.",
-            detail:
-              "Three thousand feet up the flank of Mount Apo, cold enough for a jacket, with the whole gulf laid out below.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Philippine Eagle Center.",
-            detail:
-              "One of the largest eagles on earth and one of the rarest — the conservation center at Malagos is the only reliable place to see one.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Malagos chocolate and cheese.",
-            detail:
-              "Single-origin cacao grown on the same hillside, plus a genuinely good local cheese room. A tasting counts as lunch.",
-          },
-        ],
-      },
-      {
-        id: "d-falls",
-        cityTag: "Davao — day out",
-        sun: "17:41",
-        title: "Tudaya Falls and the road into the Bagobo highlands",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Tudaya Falls, Santa Cruz.",
-            detail:
-              "Ninety minutes south, then a walk in: a tall, narrow drop off the Mount Apo watershed with a cold pool at the bottom. Fewer people than anything on Samal.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Lunch in Santa Cruz on the way back.",
-            detail:
-              "Roadside grilled chicken and rice. This is a day where the drive is half the point.",
-          },
-        ],
-        fuller:
-          "The same road keeps climbing toward the <b>Mount Apo trailheads</b> — worth the detour for the view even without the multi-day hike.",
-      },
-      {
-        id: "d-family",
-        cityTag: "Davao",
-        sun: "17:41",
-        title: "A day that belongs to the family, not the itinerary",
-        rows: [
-          {
-            tag: "Soft",
-            kind: "soft",
-            detail:
-              "No anchor, no plan. This is the reason the week is seven nights and not three — cooking, visiting, sitting around.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Whatever gets cooked at home.",
-            detail:
-              "Offer to buy the ingredients and stay out of the way. If there's a birthday, a fiesta, or a karaoke machine, that's the day.",
-          },
-        ],
-      },
-      {
-        id: "d-coast",
-        cityTag: "Davao — day out",
-        sun: "17:41",
-        title: "Down the coast — beaches, and the long southern road",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "The coast road south.",
-            detail:
-              "The road south runs along the gulf past fishing barangays and black-sand coves, with Mount Apo over your shoulder most of the way.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Kinilaw and grilled tuna.",
-            detail:
-              "Raw fish cured in coconut vinegar, eaten within sight of the boat it came off. Mindanao does it better than Manila does.",
-          },
-        ],
-        fuller:
-          "Push as far as <b>Malita</b> and it's a ~3 hr run each way — worth it only as an overnight, not a day trip.",
-      },
-      {
-        id: "d-pack",
-        cityTag: "Davao — last day",
-        sun: "17:41",
-        title: "Goodbyes, pasalubong, and packing for a colder country",
-        rows: [
-          {
-            tag: "Soft",
-            kind: "soft",
-            detail:
-              "Last morning with everyone. Buy pasalubong at Aldevinco or the airport if you're rushed, and repack — Osaka in November is a different climate entirely.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "One more home-cooked meal.",
-            detail:
-              "The flight to Kansai goes tomorrow. Tonight is the goodbye dinner, and it should be at the house.",
-          },
-        ],
-        ask: "the 5J 966 pushes at 07:05 tomorrow — that's a ~05:00 departure from the house. Who's driving, and is anyone else getting up for it?",
       },
     ],
     osaka: [
@@ -1193,14 +959,17 @@ export default {
     ask: "when do the two flights home actually leave? Different departure times mean two different airport runs.",
   },
   visaPlan: {
+    // The Philippine days are family time, not an itinerary. They appear here
+    // only because the MOFA sheet numbers every day of the trip; the Japan
+    // entries below are the ones that matter to it.
     "d-arrive": "In the Philippines — arrive Davao (DVO); not yet in Japan.",
-    "d-city": "In the Philippines — Davao City; family visit.",
-    "d-samal": "In the Philippines — Samal Island, Davao del Norte.",
-    "d-eden": "In the Philippines — Eden Nature Park & Malagos, Davao City.",
-    "d-falls": "In the Philippines — Tudaya Falls, Santa Cruz, Davao del Sur.",
-    "d-family": "In the Philippines — Davao; family visit.",
-    "d-coast": "In the Philippines — Davao del Sur coast.",
-    "d-pack": "In the Philippines — Davao; depart for Japan the next day.",
+    "davao-leisure-1": "In the Philippines — Davao; family visit.",
+    "davao-leisure-2": "In the Philippines — Davao; family visit.",
+    "davao-leisure-3": "In the Philippines — Davao; family visit.",
+    "davao-leisure-4": "In the Philippines — Davao; family visit.",
+    "davao-leisure-5": "In the Philippines — Davao; family visit.",
+    "davao-leisure-6": "In the Philippines — Davao; family visit.",
+    "davao-leisure-7": "In the Philippines — Davao; depart for Japan.",
     "o-arrive":
       "Enter Japan at Kansai International Airport (KIX); travel to Osaka (Namba); Dotonbori & Namba.",
     "o-daytrip":
