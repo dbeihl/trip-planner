@@ -3,7 +3,7 @@ name: Guard
 # Immutable-gates enforcement (TRIP-INTAKE-PLAN.md). Auto-merge-on-green is
 # only as trustworthy as the gates a PR cannot rewrite — so any PR that
 # touches the gates themselves (tests, workflows, schema, the validator, the
-# dependency manifests) fails this check until the repo owner approves it.
+# dependency manifests) fails this check until a human signs off on it.
 # PRs that touch none of those (e.g. generated trips: research doc + data
 # module + page) pass instantly and stay auto-mergeable.
 #
@@ -12,8 +12,30 @@ name: Guard
 # that is what makes the gate immutable from inside a PR. This job must never
 # check out or execute PR code; it only reads the GitHub API.
 #
+# Clearing the gate. Either works, and both name a specific commit:
+#   - @owner approves the PR, and the approval is against the current head; or
+#   - @owner comments "gates-reviewed <sha>" quoting the current head.
+#
+# The comment route exists because GitHub refuses to let an author approve
+# their own PR. On a single-maintainer repo the owner authors every PR, so
+# requiring *their* approval made this gate unsatisfiable — it could only ever
+# be merged past, which trains everyone to ignore a red X.
+#
+# Why a comment naming the SHA and not a label: a label carries no commit. An
+# ack has to bind to the exact diff it was given, or a push after the sign-off
+# silently inherits it. Chasing that with "strip the label when the head moves"
+# is a race — the ack has to name the commit in the first place. A SHA in a
+# comment does, with no cleanup and nothing to mutate on the PR itself.
+#
+# Only @owner's ack counts. Not "anyone but the author": on a public repo
+# anyone can review or comment, so a fork contributor could clear their own
+# gate change with a second throwaway account. Label-holding is not
+# authorization either — the triage role can apply labels without write access.
+#
 # One-time setup that gives this teeth (repo Settings):
-#   - Branch protection on main: require status checks "test", "smoke", "Guard".
+#   - Branch protection on main: require status checks "test", "smoke" and
+#     "guard/gates" (the commit status this job posts on the PR head — not the
+#     workflow's own check, which an issue_comment run cannot attach there).
 #   - General → allow auto-merge.
 
 on:
@@ -21,22 +43,34 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
+  # An ack arrives as a comment, so the check has to re-run when one lands —
+  # and when one is edited or deleted, or a withdrawn sign-off would leave a
+  # stale success sitting on the head.
+  issue_comment:
+    types: [created, edited, deleted]
 
 permissions:
   contents: read
   pull-requests: read
+  issues: read
+  # An issue_comment run's own check attaches to the default branch, not to the
+  # PR head — so the ack would report success while the PR's required check
+  # stayed red. This job therefore posts its verdict as a commit status on the
+  # head itself. That status is the thing to require in branch protection.
+  statuses: write
 
 jobs:
   guard:
-    if: ${{ github.event.pull_request != null }}
+    # issue_comment fires for plain issues too; only PRs are in scope.
+    if: ${{ github.event.pull_request != null || github.event.issue.pull_request != null }}
     runs-on: ubuntu-latest
     steps:
-      - name: Fail if protected paths changed without owner approval
+      - name: Fail if protected paths changed without the owner's sign-off
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            const pr = context.payload.pull_request;
+            const ACK = /gates-reviewed[:\s]+([0-9a-f]{7,40})/i;
             const PROTECTED = [
               /^\.github\//,
               /^test\//,
@@ -50,23 +84,106 @@ jobs:
               /^package(-lock)?\.json$/,
               /^worker\/package(-lock)?\.json$/,
             ];
+
+            const STATUS_CONTEXT = "guard/gates";
+            const ev = context.payload;
+            const pull_number = (ev.pull_request || ev.issue || {}).number;
+            if (!pull_number) {
+              core.info("No pull request in this event — nothing to guard.");
+              return;
+            }
+
+            // Everything is read fresh from the API. Event payloads can be
+            // replayed or re-run and then describe a head that has moved on;
+            // deciding from a stale payload is how a gate silently approves a
+            // commit nobody looked at.
+            const { data: pr } = await github.rest.pulls.get(
+              { owner, repo, pull_number });
+            const head = pr.head.sha;
+            const author = (pr.user || {}).login;
+
+            // Post the verdict onto the head commit as well as failing this
+            // job, so the answer lands on the PR no matter which event ran it.
+            // A publish failure must be loud. If this is swallowed, a run that
+            // computed "failure" still reports success while an earlier
+            // "success" status stays authoritative on the head — the exact
+            // silent-pass this gate exists to prevent.
+            const report = async (state, description) => {
+              try {
+                await github.rest.repos.createCommitStatus({
+                  owner, repo, sha: head, state, context: STATUS_CONTEXT,
+                  description: description.slice(0, 139),
+                  target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+                });
+              } catch (e) {
+                core.setFailed(
+                  `Computed "${state}" for ${head} but could not publish the ` +
+                  `${STATUS_CONTEXT} status: ${e.message}. Any earlier status on this ` +
+                  `commit is now stale — re-run this check.`,
+                );
+                throw e;
+              }
+            };
+            const pass = async (msg, description) => {
+              await report("success", description);
+              core.info(msg);
+            };
+            const fail = async (msg, description) => {
+              await report("failure", description);
+              core.setFailed(msg);
+            };
+
             const files = await github.paginate(github.rest.pulls.listFiles,
-              { owner, repo, pull_number: pr.number, per_page: 100 });
+              { owner, repo, pull_number, per_page: 100 });
             const touched = files.map(f => f.filename).filter(n => PROTECTED.some(re => re.test(n)));
             if (touched.length === 0) {
-              core.info("No protected paths touched — gates unchanged.");
+              await pass("No protected paths touched — gates unchanged.", "No gate files touched");
               return;
             }
+            const list = touched.join("\n");
+
+            // Route 1 — the owner approved, against this exact head. Latest
+            // review per user wins. A self-approval never counts: GitHub blocks
+            // it today, and a gate that can approve itself is not a gate.
             const reviews = await github.paginate(github.rest.pulls.listReviews,
-              { owner, repo, pull_number: pr.number, per_page: 100 });
-            // Latest review per user wins; an approval from the repo owner clears the gate.
+              { owner, repo, pull_number, per_page: 100 });
             const latest = new Map();
-            for (const r of reviews) if (r.user) latest.set(r.user.login, r.state);
-            if (latest.get(owner) === "APPROVED") {
-              core.info(`Protected paths changed with @${owner}'s approval:\n` + touched.join("\n"));
+            for (const r of reviews) if (r.user) latest.set(r.user.login, r);
+            const ownerReview = latest.get(owner);
+            if (
+              ownerReview &&
+              ownerReview.state === "APPROVED" &&
+              owner !== author &&
+              ownerReview.commit_id === head
+            ) {
+              await pass(
+                `Protected paths changed, approved by @${owner} at ${head}:\n${list}`,
+                `Approved by @${owner} at ${head.slice(0, 8)}`);
               return;
             }
-            core.setFailed(
-              `Protected paths changed without @${owner}'s approval — auto-merge is blocked until they review:\n` +
-              touched.join("\n"),
+
+            // Route 2 — the owner named this head in a comment. The SHA is what
+            // makes it safe: an ack for an earlier commit simply does not match
+            // the current one, so a later push invalidates it with no cleanup,
+            // no mutation, and no race.
+            const comments = await github.paginate(github.rest.issues.listComments,
+              { owner, repo, issue_number: pull_number, per_page: 100 });
+            for (const c of comments) {
+              if (!c.user || c.user.login !== owner) continue;
+              const m = ACK.exec(c.body || "");
+              if (m && head.startsWith(m[1].toLowerCase())) {
+                await pass(
+                  `Protected paths changed, acked by @${owner} for ${m[1]}:\n${list}`,
+                  `Acked by @${owner} for ${head.slice(0, 8)}`);
+                return;
+              }
+            }
+
+            await fail(
+              `Protected paths changed — auto-merge is blocked until @${owner} signs off:\n${list}\n\n` +
+              `Either approve the PR (the approval must land on ${head.slice(0, 8)}), or comment:\n\n` +
+              `    gates-reviewed ${head}\n\n` +
+              `The sign-off names that commit deliberately: push again and it stops ` +
+              `counting, so a later change cannot inherit a review it never had.`,
+              `${touched.length} gate file(s) changed — needs @${owner}'s sign-off on ${head.slice(0, 8)}`,
             );
