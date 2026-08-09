@@ -375,7 +375,7 @@ export default {
         ctrlPrefix: "dep",
         modeControl: "depmode",
         modes: {
-          public: { label: "Keikyu + Yamanote", scale: "person" },
+          public: { label: "Toei Asakusa + Keikyu", scale: "person" },
           private: { label: "Private car", scale: "vehicle" },
         },
         cost: { public: 7, private: 56 }, // Shimbashi↔Haneda (Asakusa/Keikyu ~¥510 pp)
