@@ -36,7 +36,7 @@ export default {
         'Oct 24 → Nov 8, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)',
       planTitle: "Davao &amp; Japan Trip Cost Ledger",
       planSub:
-        "Pick a hotel tier per stop and a transport mode per leg. Japan hotel rates and transport fares are live-researched market figures, and every airfare below is a real quote or a booked ticket. Davao lodging is the one planning estimate, and it costs nothing at the current pick. The total updates as you go.",
+        "Pick a hotel tier per stop and a transport mode per leg. Transport fares are live-researched, and every airfare is a real quote or a booked ticket. Two things still need re-checking: the Japan hotel rates were quoted for the original mid-November dates, and Davao lodging is a planning estimate that costs nothing at the current pick. The total updates as you go.",
       flightsTitle: "Getting there — International flights",
       flightsIntro:
         "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Nov 1 — that leg is booked and priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
@@ -44,7 +44,7 @@ export default {
       itinDek:
         "A slow week with family near Davao, then into Japan through the back door: Kansai to Namba for Osaka's kitchen and a Kyoto day trip, one night of kaiseki and a private onsen in Hakone, and Tokyo last — the big city as the finish, not the jet-lagged opening.",
       finePrint: [
-        "Japan hotel rates are live, date-locked quotes for the actual stay dates (Oct–Nov 2026), pulled directly from booking platforms — not seasonal floor rates.",
+        "Japan hotel rates were date-locked quotes pulled from booking platforms for the trip's ORIGINAL Nov 14–22 window. The trip has since moved two weeks earlier (Nov 1–8), so re-quote them — early-November rates in Osaka and Tokyo will not match mid-November peak-foliage pricing.",
         "Davao lodging is a planning estimate, not a date-locked quote — the current pick is staying with family at no lodging cost.",
         "Every alternative hotel holds a private double/twin room, ≥8.0 guest rating, and the same neighborhood (or one stop away) as the currently-quoted property.",
         "Japan transport fares are current published prices (JR, Odakyu, Nankai, Keihan) plus representative private-transfer quotes from real booking platforms (Klook, Viator, Welcome Pickups).",
