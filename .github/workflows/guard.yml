@@ -22,9 +22,11 @@ name: Guard
 # past, which trains everyone to ignore a red X. A label is an equally
 # deliberate, equally auditable act that the author can actually perform.
 #
-# It does not widen the blast radius: applying a label needs write access, so
-# an outside contributor still cannot clear their own gate change, which is the
-# case this guard was built for.
+# Label PRESENCE is not authorization — the triage role can apply labels
+# without write access. So the check reads the timeline and requires that the
+# most recent application of the label was by @owner; anyone else's is stripped
+# and fails. An outside contributor therefore still cannot clear their own gate
+# change, which is the case this guard was built for.
 #
 # Deliberately NOT accepted: an approving review from "anyone other than the
 # author". On a public repo anyone can submit a review, so a fork contributor
@@ -57,9 +59,12 @@ on:
 
 permissions:
   contents: read
-  # write, not read: a push after the ack strips the label so the
-  # sign-off cannot silently cover commits nobody reviewed.
+  # write, not read: an ack that is stale or unauthorised is stripped, so a
+  # sign-off cannot silently cover commits nobody reviewed. Labels on PRs go
+  # through the issues API, hence both scopes. The job still never checks out
+  # or executes PR code.
   pull-requests: write
+  issues: write
 
 jobs:
   guard:
@@ -94,31 +99,62 @@ jobs:
               return;
             }
             const list = touched.join("\n");
-            const head = pr.head.sha;
 
-            // Read labels from the API, not context.payload: on a re-run, or on
-            // a pull_request_review event, the payload can carry the label set
-            // from whenever that event fired rather than the current one.
+            // Read state from the API, not context.payload: on a re-run, or on
+            // a pull_request_review event, the payload can carry the labels and
+            // head from whenever that event fired rather than the current ones.
             const { data: fresh } = await github.rest.pulls.get(
               { owner, repo, pull_number: pr.number });
+            const head = fresh.head.sha;
+            // A re-run of an old event: the payload describes a head that is no
+            // longer current. Evaluate against the truth, but never mutate the
+            // PR on the strength of a stale payload.
+            const staleEvent = pr.head.sha !== head;
             const labelled = (fresh.labels || []).some(l => l.name === ACK_LABEL);
 
-            // An ack covers the diff the acker actually read. A later push can
-            // add protected-path changes underneath a label that is still
-            // sitting there, so a new head commit strips the label and demands
-            // a fresh one rather than silently inheriting the old sign-off.
-            if (labelled && context.payload.action === "synchronize") {
-              await github.rest.issues.removeLabel(
-                { owner, repo, issue_number: pr.number, name: ACK_LABEL });
-              core.setFailed(
-                `New commits pushed after the "${ACK_LABEL}" ack, and this PR still ` +
-                `touches protected paths:\n${list}\n\n` +
-                `The label has been removed. Re-read the diff and re-apply it.`,
-              );
-              return;
-            }
+            const dropLabel = async (why) => {
+              if (staleEvent) {
+                core.setFailed(`${why}\n\n(Stale event — label left alone; re-run against the current head.)`);
+                return;
+              }
+              try {
+                await github.rest.issues.removeLabel(
+                  { owner, repo, issue_number: pr.number, name: ACK_LABEL });
+                core.setFailed(`${why}\n\nThe label has been removed.`);
+              } catch (e) {
+                core.setFailed(`${why}\n\n(Could not remove the label: ${e.message})`);
+              }
+            };
+
             if (labelled) {
-              core.info(`Protected paths changed, acknowledged via the "${ACK_LABEL}" label:\n${list}`);
+              // An ack covers the diff the acker actually read. A later push can
+              // add protected-path changes underneath a label still sitting
+              // there, so a new head commit strips it and demands a fresh one.
+              if (context.payload.action === "synchronize") {
+                await dropLabel(
+                  `New commits pushed after the "${ACK_LABEL}" ack, and this PR still ` +
+                  `touches protected paths:\n${list}\n\nRe-read the diff and re-apply it.`,
+                );
+                return;
+              }
+              // Label PRESENCE is not authorization. The triage role can apply
+              // labels without write access, so check who actually applied it —
+              // only @owner's ack counts.
+              const events = await github.paginate(github.rest.issues.listEvents,
+                { owner, repo, issue_number: pr.number, per_page: 100 });
+              const applied = events
+                .filter(e => e.event === "labeled" && e.label && e.label.name === ACK_LABEL)
+                .pop();
+              const by = applied && applied.actor ? applied.actor.login : null;
+              if (by === owner) {
+                core.info(`Protected paths changed, acknowledged by @${owner} via the "${ACK_LABEL}" label:\n${list}`);
+                return;
+              }
+              await dropLabel(
+                `The "${ACK_LABEL}" label was applied by ${by ? "@" + by : "an unknown actor"}, ` +
+                `not @${owner}. Applying a label only needs the triage role, so the label ` +
+                `alone is not authorization for these changes:\n${list}`,
+              );
               return;
             }
 

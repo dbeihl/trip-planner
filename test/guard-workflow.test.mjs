@@ -39,6 +39,8 @@ async function runGuard({
   author = OWNER,
   action = "opened",
   head = HEAD,
+  currentHead = null, // API head, when it differs from the event payload's
+  labelledBy = OWNER,
 }) {
   const messages = [];
   const removedLabels = [];
@@ -51,15 +53,27 @@ async function runGuard({
   };
   const listFiles = () => files.map((f) => (typeof f === "string" ? { filename: f } : f));
   const listReviews = () => reviews;
+  const listEvents = () =>
+    labels.map((name) => ({
+      event: "labeled",
+      label: { name },
+      actor: { login: labelledBy },
+    }));
   const github = {
     paginate: async (method) => method(),
     rest: {
       pulls: {
         listFiles,
         listReviews,
-        get: async () => ({ data: { labels: labels.map((name) => ({ name })) } }),
+        get: async () => ({
+          data: {
+            labels: labels.map((name) => ({ name })),
+            head: { sha: currentHead || head },
+          },
+        }),
       },
       issues: {
+        listEvents,
         removeLabel: async ({ name }) => removedLabels.push(name),
       },
     },
@@ -106,7 +120,47 @@ test("the ack label clears the gate", async () => {
     labels: ["gates-reviewed"],
   });
   assert.equal(r.failed, false);
-  assert.match(r.messages.join("\n"), /acknowledged via/);
+  assert.match(r.messages.join("\n"), /acknowledged by @dbeihl via/);
+});
+
+// Label presence is not authorization: the triage role can apply labels
+// without write access, so the gate has to check who applied it.
+test("the ack label applied by a non-owner does NOT clear the gate", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    labels: ["gates-reviewed"],
+    labelledBy: "triage-collaborator",
+  });
+  assert.equal(r.failed, true);
+  assert.match(r.failure, /applied by @triage-collaborator/);
+  assert.deepEqual(r.removedLabels, ["gates-reviewed"]);
+});
+
+// A re-run of an old event must not strip an ack that was applied for a newer
+// head than the one the payload describes.
+test("a stale synchronize event does not mutate the label", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    labels: ["gates-reviewed"],
+    action: "synchronize",
+    head: OLD, // payload head
+    currentHead: HEAD, // PR has moved on since
+  });
+  assert.equal(r.failed, true);
+  assert.deepEqual(r.removedLabels, [], "must not remove a label on a stale event");
+  assert.match(r.failure, /Stale event/);
+});
+
+// The approval SHA is compared against the API's head, not the payload's.
+test("the owner's approval of the CURRENT api head clears it on a stale payload", async () => {
+  const r = await runGuard({
+    files: ["scripts/validate-trip.mjs"],
+    author: OTHER,
+    head: OLD,
+    currentHead: HEAD,
+    reviews: [approval(OWNER, HEAD)],
+  });
+  assert.equal(r.failed, false);
 });
 
 test("an unrelated label does NOT clear the gate", async () => {
