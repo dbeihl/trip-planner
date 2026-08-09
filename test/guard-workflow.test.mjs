@@ -42,6 +42,7 @@ async function runGuard({
   head = HEAD,
   payloadHead = null,
   event = "pull_request",
+  statusThrows = false,
 }) {
   const messages = [];
   const statuses = [];
@@ -67,7 +68,10 @@ async function runGuard({
         listComments: () => comments,
       },
       repos: {
-        createCommitStatus: async (s) => statuses.push(s),
+        createCommitStatus: async (s) => {
+          if (statusThrows) throw new Error("503 upstream unavailable");
+          statuses.push(s);
+        },
       },
     },
   };
@@ -316,4 +320,24 @@ test("the workflow listens for deleted comments, not just created/edited", () =>
   for (const t of ["created", "edited", "deleted"]) {
     assert.match(types[1], new RegExp(t));
   }
+});
+
+// If the verdict cannot be published, the run must not report success — an
+// earlier success status would otherwise stay authoritative on the head.
+test("a failed status publish fails the run loudly", async () => {
+  await assert.rejects(
+    () => runGuard({ files: ["e2e/smoke.spec.mjs"], statusThrows: true }),
+    /503 upstream unavailable/,
+  );
+});
+
+test("a failed publish on the PASS path also fails the run", async () => {
+  await assert.rejects(
+    () =>
+      runGuard({
+        files: ["src/data/japan.js"],
+        statusThrows: true,
+      }),
+    /503 upstream unavailable/,
+  );
 });

@@ -104,6 +104,10 @@ jobs:
 
             // Post the verdict onto the head commit as well as failing this
             // job, so the answer lands on the PR no matter which event ran it.
+            // A publish failure must be loud. If this is swallowed, a run that
+            // computed "failure" still reports success while an earlier
+            // "success" status stays authoritative on the head — the exact
+            // silent-pass this gate exists to prevent.
             const report = async (state, description) => {
               try {
                 await github.rest.repos.createCommitStatus({
@@ -112,7 +116,12 @@ jobs:
                   target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`,
                 });
               } catch (e) {
-                core.warning(`Could not post the ${STATUS_CONTEXT} status: ${e.message}`);
+                core.setFailed(
+                  `Computed "${state}" for ${head} but could not publish the ` +
+                  `${STATUS_CONTEXT} status: ${e.message}. Any earlier status on this ` +
+                  `commit is now stale — re-run this check.`,
+                );
+                throw e;
               }
             };
             const pass = async (msg, description) => {
