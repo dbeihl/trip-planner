@@ -4,6 +4,7 @@
 // `node --test test/` (also invoked by `npm test`).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   xlEsc,
   xlCol,
@@ -124,10 +125,32 @@ test("buildXlsx assembles a complete OOXML package", () => {
   assert.match(text("[Content_Types].xml"), /PartName="\/xl\/worksheets\/sheet2\.xml"/);
 });
 
-test("visa dates export as text, not as an Excel date serial", () => {
-  // The value must stay a string. A numeric cell with a date number format
-  // would render per the opening machine's locale -- reintroducing exactly
-  // the ambiguity the long format removes.
+test("visa dates export as text, not as an Excel date serial", async () => {
+  // The value must stay a string: a numeric cell with a date number format
+  // renders per the opening machine's locale, reintroducing exactly the
+  // ambiguity the long format removes.
+  //
+  // Asserting against a cell literal built here would prove nothing -- a
+  // literal with no `n` flag makes xlSheet emit inlineStr by construction,
+  // whatever the real export does. engine.js builds its cells with local
+  // helpers that cannot be imported, so this reads the call site itself.
+  const src = await readFile(
+    new URL("../src/scripts/engine.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    src,
+    /cell\(visaDate\(/,
+    "the visa Date column must use cell(), which emits t=\"inlineStr\"",
+  );
+  assert.doesNotMatch(
+    src,
+    /num\(visaDate\(/,
+    "num() sets n:true and makes the date a numeric serial, which renders " +
+      "per the reader's locale",
+  );
+
+  // And that cell(), given a string, really does produce an inlineStr.
   const xml = xlSheet([[{ v: visaDate(new Date(2026, 10, 1)), s: 3 }]], null, null);
   assert.match(xml, /t="inlineStr"/);
   assert.match(xml, /November 1, 2026/);
