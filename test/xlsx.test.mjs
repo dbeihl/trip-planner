@@ -139,11 +139,14 @@ test("visa dates export as text, not as an Excel date serial", async () => {
     new URL("../src/scripts/engine.js", import.meta.url),
     "utf8",
   );
-  const block = src.slice(
-    src.indexOf('cell("Date", 4)'),
-    src.indexOf('name: "Visa Itinerary"'),
-  );
-  assert.ok(block, "could not locate the Visa Itinerary rows in engine.js");
+  // indexOf returns -1 on a miss, and slice(-1, n) still yields a truthy
+  // string -- so check the markers themselves, not the slice.
+  const from = src.indexOf('cell("Date", 4)');
+  const to = src.indexOf('name: "Visa Itinerary"');
+  assert.notEqual(from, -1, "Visa Itinerary header row not found in engine.js");
+  assert.notEqual(to, -1, "Visa Itinerary sheet definition not found in engine.js");
+  assert.ok(from < to, "the Visa Itinerary markers are out of order");
+  const block = src.slice(from, to);
 
   const builder = block.match(/\[\s*(cell|num)\(visaDate\(/);
   assert.ok(builder, "the Visa Itinerary Date column no longer starts a row with visaDate()");
