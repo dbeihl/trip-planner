@@ -20,6 +20,32 @@ for (const slug of ["japan", "yellowstone"]) {
     await expect(page.locator("#recalcNanBanner")).toHaveCount(0);
     await expect(page.locator("#breakdown .breakdown-row").first()).toBeVisible();
 
+    // meta.minRating drives the hotel-tier floor per trip; the markup default
+    // (8.0) must still stand for trips that don't set one, so lowering Japan's
+    // floor never moves another trip's default total.
+    await expect(page.locator("#minRating")).toHaveValue(
+      slug === "japan" ? "7.0" : "8.0",
+    );
+
+    // The floor must be applied before the first recalc(), not just displayed:
+    // set it later and the control reads 7.0 while applyRatingFilter() has
+    // already hidden the sub-8.0 tiers, so they stay invisible on first paint.
+    // Asserted here, on the Plan tab — after the itinerary tab opens, the whole
+    // Plan pane is hidden and every tier reads as invisible regardless.
+    if (slug === "japan") {
+      await expect(
+        page
+          .locator("#osakaTiers label.tier")
+          .filter({ hasText: "Doyanen" })
+          .first(),
+      ).toBeVisible();
+    }
+
+    // Pin Japan's default total. A leg cost or hotel rate edited without
+    // updating the figures quoted in the PR/README goes unnoticed otherwise —
+    // this fails loudly instead. Update deliberately when the trip changes.
+    if (slug === "japan") await expect(total).toHaveText("$6,008");
+
     // party size drives recalc(): 2 → 4 travelers must change the total
     // (lodging doubles at minimum) and keep it a number
     const before = await total.textContent();

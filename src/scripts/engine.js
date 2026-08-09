@@ -1802,6 +1802,16 @@ const TRIP = window.TRIP;
         renderOrigins();
       }
     });
+  // Per-trip hotel-rating floor. Must land BEFORE the first recalc() below,
+  // because recalc() runs applyRatingFilter() — set it any later and the
+  // control reads the trip's floor while the tiers are still filtered by the
+  // markup default, so sub-floor tiers stay hidden until the next input event.
+  // restoreScenario() runs after this and carries minRating, so a floor the
+  // traveler saved themselves still wins over the trip default.
+  if (typeof TRIP.meta.minRating === "number") {
+    const mr = document.getElementById("minRating");
+    if (mr) mr.value = TRIP.meta.minRating.toFixed(1);
+  }
   document.addEventListener("change", recalc);
   document.getElementById("travelerCount").addEventListener("input", recalc);
   document.getElementById("minRating").addEventListener("input", recalc);

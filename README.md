@@ -6,7 +6,7 @@ A self-contained, single-file trip planner — a cost **budget ledger** and a se
 
 ## Why this repo exists
 
-The Japan planner started in a separate, private repo (`japan-travel`), archived 2026-08-07 after its Osaka restructure merged there (`japan-travel`#12). This repo is now canonical for that live trip — Tokyo → Hakone → Osaka, Kyoto as a Keihan day trip, Nov 14–22 2026 — and is where the **engine is generalized** to other destinations; `src/data/japan.js` isn't a frozen reference dataset, and the validator, tests, and e2e are the regression gates going forward.
+The Japan planner started in a separate, private repo (`japan-travel`), archived 2026-08-07 after its Osaka restructure merged there (`japan-travel`#12). This repo is now canonical for that live trip — Davao → Osaka → Tokyo, Kyoto and Nara as day trips out of Osaka, Oct 24 – Nov 8 2026 — and is where the **engine is generalized** to other destinations; `src/data/japan.js` isn't a frozen reference dataset, and the validator, tests, and e2e are the regression gates going forward.
 
 ## Files
 
