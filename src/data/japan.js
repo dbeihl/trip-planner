@@ -13,11 +13,11 @@ export default {
     },
     route: ["davao", "osaka", "hakone", "tokyo"], // ordered city keys
     optionalCities: [],
-    flexNightDefault: "tokyo", // which flex-night option is selected by default
+    flexNightDefault: "davao", // which flex-night option is selected by default
     dates: { arrive: "2026-10-24", depart: "2026-11-08", nights: 15 },
     travelers: {
       count: 2,
-      note: "2 adults; David flies IND → Davao (departs Oct 22, lands Oct 24), then both fly DVO → KIX together on Oct 31 and home separately out of Haneda",
+      note: "2 adults; David flies IND → Davao (departs Oct 22, lands Oct 24), then both fly DVO → KIX together on Nov 1 (booked, Cebu Pacific) and home separately out of Haneda on Nov 8",
     },
     currency: "USD",
     reference: {
@@ -36,10 +36,10 @@ export default {
         'Oct 24 → Nov 8, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)',
       planTitle: "Davao &amp; Japan Trip Cost Ledger",
       planSub:
-        "Pick a hotel tier per stop and a transport mode per leg. Japan hotel rates and transport fares are live-researched market figures; the Davao week and the flights out of the Philippines are planning estimates until the bookings are in. The total updates as you go.",
+        "Pick a hotel tier per stop and a transport mode per leg. Japan hotel rates and transport fares are live-researched market figures, and every airfare below is a real quote or a booked ticket. Davao lodging is the one planning estimate, and it costs nothing at the current pick. The total updates as you go.",
       flightsTitle: "Getting there — International flights",
       flightsIntro:
-        "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Oct 31 — that leg is priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
+        "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Nov 1 — that leg is booked and priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
       itinTitle: "Davao, Osaka, Hakone &amp; Tokyo — fifteen nights",
       itinDek:
         "A slow week with family near Davao, then into Japan through the back door: Kansai to Namba for Osaka's kitchen and a Kyoto day trip, one night of kaiseki and a private onsen in Hakone, and Tokyo last — the big city as the finish, not the jet-lagged opening.",
@@ -48,7 +48,7 @@ export default {
         "Davao lodging is a planning estimate, not a date-locked quote — the current pick is staying with family at no lodging cost.",
         "Every alternative hotel holds a private double/twin room, ≥8.0 guest rating, and the same neighborhood (or one stop away) as the currently-quoted property.",
         "Japan transport fares are current published prices (JR, Odakyu, Nankai, Keihan) plus representative private-transfer quotes from real booking platforms (Klook, Viator, Welcome Pickups).",
-        "The DVO → KIX flight and both international fares are representative estimates pending the booked fares — replace them with the real numbers once ticketed.",
+        "The DVO → KIX leg is the booked Cebu Pacific fare: ₱12,358 per person, converted at ₱58 = $1. The IND → DVO, HND → IND, and HND → DVO fares are quoted prices from live searches, not yet ticketed — the Delta home leg was quoted in yen (¥287,660) and converted at ¥155 = $1.",
         "Excluded from every total: Japan's ~10% accommodation tax (varies by city/hotel), meals outside included breakfasts, and activity/entrance fees.",
         "The Kensington reference comparison stays ground-only, since that quote also excluded airfare.",
       ],
@@ -59,40 +59,32 @@ export default {
       label: "From the USA — David (IND → Davao, home from Haneda)",
       traveler: "David",
       pax: 1,
-      preference: "Delta/partner metal · fewest stops · open-jaw",
+      preference: "Fewest stops out · Premium Select home · open-jaw",
       options: [
         {
-          name: "Philippine Airlines via San Francisco & Manila",
-          route: "IND → SFO → MNL → DVO · HND → DTW → IND",
+          name: "Alaska/PAL out via Seattle · Delta Premium Select home",
+          route: "IND → SEA → MNL → DVO · HND → MSP → IND",
           stops: 2,
-          cabin: "Economy",
-          fare: 1780,
-          note: "PAL's SFO–MNL nonstop out on Oct 22 (lands DVO Oct 24), Delta home from Haneda — ESTIMATE, swap in the booked fare",
+          cabin: "Economy out · Premium Select home",
+          fare: 3000,
+          note: "Out Oct 22 on AS500 (IND 18:12) then PR125 SEA→MNL, landing DVO Oct 24 — 27h 58m, ~$1,200. Home Nov 8 on DL120/DL1456 HND 17:15 → MSP → IND 17:55, ¥287,660 ≈ $1,800",
           current: true,
         },
         {
-          name: "Korean Air via Incheon & Manila",
-          route: "IND → ICN → MNL → DVO · HND → ICN → IND",
+          name: "Same routing, Delta Main Cabin home",
+          route: "IND → SEA → MNL → DVO · HND → MSP → IND",
           stops: 2,
           cabin: "Economy",
-          fare: 1690,
-          note: "Widebody through Incheon both directions — ESTIMATE",
+          fare: 2100,
+          note: "Identical outbound; economy instead of Premium Select on the 14h 40m run home — home leg is an ESTIMATE",
         },
         {
-          name: "Japan Airlines via Tokyo & Manila",
-          route: "IND → DFW → NRT → MNL → DVO · HND → DFW → IND",
-          stops: 3,
-          cabin: "Economy",
-          fare: 1850,
-          note: "Longest routing, but one alliance end to end — ESTIMATE",
-        },
-        {
-          name: "Business class on the transpacific sector",
-          route: "IND → SFO → MNL → DVO · HND → DTW → IND",
+          name: "Same routing, Delta One home",
+          route: "IND → SEA → MNL → DVO · HND → MSP → IND",
           stops: 2,
-          cabin: "Business (long-haul only)",
-          fare: 4200,
-          note: "Lie-flat across the Pacific, economy on the domestic/regional hops — ESTIMATE",
+          cabin: "Economy out · Delta One home",
+          fare: 4600,
+          note: "Lie-flat on the Pacific crossing home — home leg is an ESTIMATE",
         },
       ],
     },
@@ -107,8 +99,8 @@ export default {
           route: "(already home in Davao) · HND → MNL → DVO",
           stops: 1,
           cabin: "Economy",
-          fare: 430,
-          note: "One airline home from Haneda, bags checked through to Davao — ESTIMATE",
+          fare: 500,
+          note: "Nov 8: PR421 HND 15:25 → MNL 19:45, then PR2825 MNL 23:20 → DVO 01:10+1. Quoted from $460; budgeted at $500",
           current: true,
         },
         {
@@ -300,7 +292,7 @@ export default {
         id: "airport-arrive",
         role: "arrival", // renders before the first stop
         routeName: "<strong>Davao (DVO)</strong> → the family's place",
-        note: "(Grab/taxi from the airport, both adults: <b>$20</b> — add ~$70 if the drive runs south to Malita)",
+        note: "(Grab/taxi from the airport into Davao City, both adults: <b>$20</b>)",
         toggles: [],
         routeDetail: true,
         flat: { cost: 20, scale: "person" },
@@ -310,10 +302,10 @@ export default {
         from: "davao",
         to: "osaka",
         routeName: "Davao → <strong>Osaka</strong>",
-        note: "(DVO → KIX via Manila, both adults: <b>$700</b> ESTIMATE — plus the Nankai into Namba, <b>$18</b> fixed)",
+        note: "(DVO → KIX via Manila on Cebu Pacific, Nov 1 — booked at ₱12,358/person ≈ $213, both adults <b>$426</b>; plus the Nankai into Namba, <b>$18</b> fixed)",
         toggles: [],
         routeDetail: true,
-        flat: { cost: 700, scale: "person" }, // DVO→KIX airfare, 2-adult total — ESTIMATE
+        flat: { cost: 426, scale: "person" }, // booked DVO→KIX, 2-adult total: ₱12,358 pp at ₱58 = $1
         fixed: { cost: 18, scale: "person" }, // Nankai KIX→Namba, researched
       },
       {
@@ -429,7 +421,7 @@ export default {
     ],
     osaka: [
       {
-        day: 9,
+        day: 10,
         title: "Kyoto day trip: Higashiyama District",
         options: [
           {
@@ -451,7 +443,7 @@ export default {
         ],
       },
       {
-        day: 9,
+        day: 10,
         title: "Kyoto day trip: Fushimi Inari Shrine",
         options: [
           {
@@ -468,7 +460,7 @@ export default {
         ],
       },
       {
-        day: 9,
+        day: 10,
         title: "Kyoto day trip: Pontocho evening",
         options: [
           {
@@ -492,7 +484,7 @@ export default {
     ],
     hakone: [
       {
-        day: 11,
+        day: 12,
         title: "Hakone Loop (museums, Owakudani, Lake Ashi)",
         options: [
           {
@@ -511,7 +503,7 @@ export default {
     ],
     tokyo: [
       {
-        day: 13,
+        day: 14,
         title: "Tsukiji Market / Tokyo Highlights",
         options: [
           {
@@ -538,7 +530,7 @@ export default {
         ],
       },
       {
-        day: 14,
+        day: 15,
         title: "Ramen exploration",
         options: [
           {
@@ -560,7 +552,7 @@ export default {
         ],
       },
       {
-        day: 14,
+        day: 15,
         title: "Shinjuku / Yokocho bar hopping",
         options: [
           {
@@ -594,21 +586,21 @@ export default {
       steps: [
         "Immigration + bags at DVO (small airport, usually quick)",
         "~20–30 min by Grab/taxi into Davao City",
-        "Add ~2.5–3 hrs if the drive continues south to Malita",
       ],
-      total: "~30 min into Davao City (~3 hrs to Malita)",
-      note: "David lands Oct 24 after departing IND on Oct 22 — the dateline eats a day. Confirm who's meeting the flight before booking a car.",
+      total: "~30 min into Davao City",
+      note: "David lands Oct 24 after departing IND on Oct 22 — 28 hours of flying and the dateline eats a day on top. Confirm who's meeting the flight before booking a car.",
     },
     "d-o": {
-      label: "Davao (DVO) → Kansai (KIX) → Namba",
+      label: "Davao (DVO) → Kansai (KIX) → Namba — booked, Nov 1",
       steps: [
-        "DVO → MNL domestic hop (~1h 45m), then the Manila terminal transfer",
-        "MNL → KIX (~4h), arriving Kansai in the afternoon/evening",
+        "5J 966: DVO 07:05 → MNL 09:05 (Cebu Pacific)",
+        "4h 05m on the ground at Manila Terminal 3",
+        "5J 828: MNL 13:10 → KIX Terminal 1 18:20",
         "Immigration + customs at KIX",
-        "~40 min: Nankai from Kansai Airport station to Namba",
+        "~40 min: Nankai from Kansai Airport station to Namba — in the hotel around 19:40",
       ],
-      total: "~10–12 hrs door to door including the Manila connection",
-      note: "Book the Manila connection with real slack — terminal changes at MNL are the usual failure point. Have Visit Japan Web done before you land.",
+      total: "~13 hrs gate to hotel (07:05 Davao → ~19:40 Namba)",
+      note: "The 07:05 push means leaving the house around 05:00. Both legs are Cebu Pacific, so bags check through — but the Manila layover is in Terminal 3 for both. Have Visit Japan Web done before you land.",
     },
     "o-h": {
       label: "Namba → Shin-Osaka → Odawara → Hakone ryokan",
@@ -680,7 +672,7 @@ export default {
               "Grab a local SIM or activate the eSIM, pull out pesos, and let the jet lag do what it's going to do. Nothing is scheduled.",
           },
         ],
-        ask: "who's meeting the flight, and is the week based in Davao City or down in Malita? It changes the airport run and every day trip below.",
+        ask: "who's meeting the flight? Landing after 28 hours in the air, a Grab you booked yourself is the worst version of this.",
       },
       {
         id: "d-city",
@@ -772,6 +764,30 @@ export default {
         ],
       },
       {
+        id: "d-falls",
+        cityTag: "Davao — day out",
+        sun: "17:41",
+        title: "Tudaya Falls and the road into the Bagobo highlands",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Tudaya Falls, Santa Cruz.",
+            detail:
+              "Ninety minutes south, then a walk in: a tall, narrow drop off the Mount Apo watershed with a cold pool at the bottom. Fewer people than anything on Samal.",
+          },
+          {
+            tag: "Table",
+            kind: "table",
+            lead: "Lunch in Santa Cruz on the way back.",
+            detail:
+              "Roadside grilled chicken and rice. This is a day where the drive is half the point.",
+          },
+        ],
+        fuller:
+          "The same road keeps climbing toward the <b>Mount Apo trailheads</b> — worth the detour for the view even without the multi-day hike.",
+      },
+      {
         id: "d-family",
         cityTag: "Davao",
         sun: "17:41",
@@ -814,7 +830,7 @@ export default {
           },
         ],
         fuller:
-          "If the week is based in <b>Malita</b>, this is a home day instead — the coast road <em>is</em> the commute, and the beaches are the local ones.",
+          "Push as far as <b>Malita</b> and it's a ~3 hr run each way — worth it only as an overnight, not a day trip.",
       },
       {
         id: "d-pack",
@@ -836,7 +852,7 @@ export default {
               "The flight to Kansai goes tomorrow. Tonight is the goodbye dinner, and it should be at the house.",
           },
         ],
-        ask: "what time does the DVO → MNL leg push tomorrow? An early one means leaving for the airport before dawn.",
+        ask: "the 5J 966 pushes at 07:05 tomorrow — that's a ~05:00 departure from the house. Who's driving, and is anyone else getting up for it?",
       },
     ],
     osaka: [
@@ -870,7 +886,7 @@ export default {
               "Add mobile Suica to Apple Wallet, activate the Japan eSIM, hit a konbini. Drop bags at the hotel first — Namba is minutes from the action, so an early check-in isn't critical.",
           },
         ],
-        ask: "what time does the KIX arrival actually land? It decides whether tonight has a Dotonbori walk in it at all.",
+        ask: "5J 828 lands KIX at 18:20, so the hotel happens around 19:40 — that's a Dotonbori night, but not a sit-down-dinner-reservation night.",
       },
       {
         id: "o-daytrip",
@@ -1171,6 +1187,7 @@ export default {
     "d-city": "In the Philippines — Davao City; family visit.",
     "d-samal": "In the Philippines — Samal Island, Davao del Norte.",
     "d-eden": "In the Philippines — Eden Nature Park & Malagos, Davao City.",
+    "d-falls": "In the Philippines — Tudaya Falls, Santa Cruz, Davao del Sur.",
     "d-family": "In the Philippines — Davao; family visit.",
     "d-coast": "In the Philippines — Davao del Sur coast.",
     "d-pack": "In the Philippines — Davao; depart for Japan the next day.",
