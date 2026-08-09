@@ -41,6 +41,11 @@ for (const slug of ["japan", "yellowstone"]) {
       ).toBeVisible();
     }
 
+    // Pin Japan's default total. A leg cost or hotel rate edited without
+    // updating the figures quoted in the PR/README goes unnoticed otherwise —
+    // this fails loudly instead. Update deliberately when the trip changes.
+    if (slug === "japan") await expect(total).toHaveText("$6,008");
+
     // party size drives recalc(): 2 → 4 travelers must change the total
     // (lodging doubles at minimum) and keep it a number
     const before = await total.textContent();
