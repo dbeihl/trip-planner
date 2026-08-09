@@ -124,7 +124,22 @@ test("buildXlsx assembles a complete OOXML package", () => {
   assert.match(text("[Content_Types].xml"), /PartName="\/xl\/worksheets\/sheet2\.xml"/);
 });
 
-test("visaDate formats as YYYY/MM/DD with zero padding", () => {
-  assert.equal(visaDate(new Date(2026, 10, 14)), "2026/11/14");
-  assert.equal(visaDate(new Date(2027, 0, 3)), "2027/01/03");
+test("visa dates export as text, not as an Excel date serial", () => {
+  // The value must stay a string. A numeric cell with a date number format
+  // would render per the opening machine's locale -- reintroducing exactly
+  // the ambiguity the long format removes.
+  const xml = xlSheet([[{ v: visaDate(new Date(2026, 10, 1)), s: 3 }]], null, null);
+  assert.match(xml, /t="inlineStr"/);
+  assert.match(xml, /November 1, 2026/);
+  assert.doesNotMatch(xml, /<v>/, "a <v> element means a numeric cell");
+});
+
+test("visaDate formats as a long unambiguous US date", () => {
+  // 2026/11/14 reads as 14 November or as no valid date at all depending on
+  // the reader's convention. A visa itinerary is read by consular staff, so
+  // the month is spelled out.
+  assert.equal(visaDate(new Date(2026, 10, 14)), "November 14, 2026");
+  assert.equal(visaDate(new Date(2027, 0, 3)), "January 3, 2027");
+  // No zero padding on the day: "January 3", not "January 03".
+  assert.equal(visaDate(new Date(2026, 10, 1)), "November 1, 2026");
 });
