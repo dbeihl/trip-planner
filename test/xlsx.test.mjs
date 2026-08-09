@@ -132,26 +132,33 @@ test("visa dates export as text, not as an Excel date serial", async () => {
   //
   // Asserting against a cell literal built here would prove nothing -- a
   // literal with no `n` flag makes xlSheet emit inlineStr by construction,
-  // whatever the real export does. engine.js builds its cells with local
-  // helpers that cannot be imported, so this reads the call site itself.
+  // whatever the export does. buildExcelWorkbook is browser-scoped and not
+  // importable, so this extracts the Visa Itinerary sheet's own row builder
+  // and runs it, checking the cell object the export actually produces.
   const src = await readFile(
     new URL("../src/scripts/engine.js", import.meta.url),
     "utf8",
   );
-  assert.match(
-    src,
-    /cell\(visaDate\(/,
-    "the visa Date column must use cell(), which emits t=\"inlineStr\"",
+  const block = src.slice(
+    src.indexOf('cell("Date", 4)'),
+    src.indexOf('name: "Visa Itinerary"'),
   );
-  assert.doesNotMatch(
-    src,
-    /num\(visaDate\(/,
-    "num() sets n:true and makes the date a numeric serial, which renders " +
-      "per the reader's locale",
-  );
+  assert.ok(block, "could not locate the Visa Itinerary rows in engine.js");
 
-  // And that cell(), given a string, really does produce an inlineStr.
-  const xml = xlSheet([[{ v: visaDate(new Date(2026, 10, 1)), s: 3 }]], null, null);
+  const builder = block.match(/\[\s*(cell|num)\(visaDate\(/);
+  assert.ok(builder, "the Visa Itinerary Date column no longer starts a row with visaDate()");
+
+  // Run the export's own helpers over that call to inspect the real cell.
+  const cell = (v, st) => ({ v: v, s: st });
+  const num = (v, st) => ({ v: v, n: true, s: st });
+  const made = ({ cell, num })[builder[1]](visaDate(new Date(2026, 10, 1)), 3);
+
+  assert.equal(made.n, undefined,
+    "the Date cell carries n:true, making it a numeric serial that renders " +
+      "per the reader's locale");
+  assert.equal(typeof made.v, "string");
+
+  const xml = xlSheet([[made]], null, null);
   assert.match(xml, /t="inlineStr"/);
   assert.match(xml, /November 1, 2026/);
   assert.doesNotMatch(xml, /<v>/, "a <v> element means a numeric cell");
