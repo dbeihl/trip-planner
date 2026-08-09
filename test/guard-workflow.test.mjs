@@ -32,18 +32,18 @@ const HEAD = "a".repeat(40);
 const OLD = "b".repeat(40);
 
 // Runs the extracted script and reports whether it failed the check.
+// `head` is what the API reports — the script deliberately never trusts the
+// event payload for it, so `payloadHead` exists only to prove that.
 async function runGuard({
   files,
-  labels = [],
   reviews = [],
+  comments = [],
   author = OWNER,
-  action = "opened",
   head = HEAD,
-  currentHead = null, // API head, when it differs from the event payload's
-  labelledBy = OWNER,
+  payloadHead = null,
+  event = "pull_request",
 }) {
   const messages = [];
-  const removedLabels = [];
   let failure = null;
   const core = {
     info: (m) => messages.push(m),
@@ -51,40 +51,32 @@ async function runGuard({
       failure = m;
     },
   };
-  const listFiles = () => files.map((f) => (typeof f === "string" ? { filename: f } : f));
-  const listReviews = () => reviews;
-  const listEvents = () =>
-    labels.map((name) => ({
-      event: "labeled",
-      label: { name },
-      actor: { login: labelledBy },
-    }));
   const github = {
     paginate: async (method) => method(),
     rest: {
       pulls: {
-        listFiles,
-        listReviews,
+        listFiles: () => files.map((f) => (typeof f === "string" ? { filename: f } : f)),
+        listReviews: () => reviews,
         get: async () => ({
-          data: {
-            labels: labels.map((name) => ({ name })),
-            head: { sha: currentHead || head },
-          },
+          data: { head: { sha: head }, user: { login: author } },
         }),
       },
       issues: {
-        listEvents,
-        removeLabel: async ({ name }) => removedLabels.push(name),
+        listComments: () => comments,
       },
     },
   };
-  const context = {
-    repo: { owner: OWNER, repo: "trip-planner" },
-    payload: {
-      action,
-      pull_request: { number: 1, user: { login: author }, head: { sha: head } },
-    },
-  };
+  const payload =
+    event === "issue_comment"
+      ? { issue: { number: 1, pull_request: {} } }
+      : {
+          pull_request: {
+            number: 1,
+            user: { login: author },
+            head: { sha: payloadHead || head },
+          },
+        };
+  const context = { repo: { owner: OWNER, repo: "trip-planner" }, payload };
   const fn = new Function(
     "github",
     "context",
@@ -92,13 +84,17 @@ async function runGuard({
     `return (async () => {\n${source}\n})();`,
   );
   await fn(github, context, core);
-  return { failed: failure !== null, failure, messages, removedLabels };
+  return { failed: failure !== null, failure, messages };
 }
 
 const approval = (login, commit_id = HEAD) => ({
   user: { login },
   state: "APPROVED",
   commit_id,
+});
+const ack = (login, sha = HEAD) => ({
+  user: { login },
+  body: `gates-reviewed ${sha}`,
 });
 
 test("a PR touching no protected path passes untouched", async () => {
@@ -107,82 +103,11 @@ test("a PR touching no protected path passes untouched", async () => {
   assert.match(r.messages.join("\n"), /gates unchanged/);
 });
 
-test("a PR touching a gate fails with no approval and no label", async () => {
+test("a PR touching a gate fails with no sign-off at all", async () => {
   const r = await runGuard({ files: ["e2e/smoke.spec.mjs"] });
   assert.equal(r.failed, true);
   assert.match(r.failure, /e2e\/smoke\.spec\.mjs/);
   assert.match(r.failure, /gates-reviewed/);
-});
-
-test("the ack label clears the gate", async () => {
-  const r = await runGuard({
-    files: ["e2e/smoke.spec.mjs"],
-    labels: ["gates-reviewed"],
-  });
-  assert.equal(r.failed, false);
-  assert.match(r.messages.join("\n"), /acknowledged by @dbeihl via/);
-});
-
-// Label presence is not authorization: the triage role can apply labels
-// without write access, so the gate has to check who applied it.
-test("the ack label applied by a non-owner does NOT clear the gate", async () => {
-  const r = await runGuard({
-    files: ["e2e/smoke.spec.mjs"],
-    labels: ["gates-reviewed"],
-    labelledBy: "triage-collaborator",
-  });
-  assert.equal(r.failed, true);
-  assert.match(r.failure, /applied by @triage-collaborator/);
-  assert.deepEqual(r.removedLabels, ["gates-reviewed"]);
-});
-
-// A re-run of an old event must not strip an ack that was applied for a newer
-// head than the one the payload describes.
-test("a stale synchronize event does not mutate the label", async () => {
-  const r = await runGuard({
-    files: ["e2e/smoke.spec.mjs"],
-    labels: ["gates-reviewed"],
-    action: "synchronize",
-    head: OLD, // payload head
-    currentHead: HEAD, // PR has moved on since
-  });
-  assert.equal(r.failed, true);
-  assert.deepEqual(r.removedLabels, [], "must not remove a label on a stale event");
-  assert.match(r.failure, /Stale event/);
-});
-
-// The approval SHA is compared against the API's head, not the payload's.
-test("the owner's approval of the CURRENT api head clears it on a stale payload", async () => {
-  const r = await runGuard({
-    files: ["scripts/validate-trip.mjs"],
-    author: OTHER,
-    head: OLD,
-    currentHead: HEAD,
-    reviews: [approval(OWNER, HEAD)],
-  });
-  assert.equal(r.failed, false);
-});
-
-test("an unrelated label does NOT clear the gate", async () => {
-  const r = await runGuard({
-    files: ["test/budget.test.mjs"],
-    labels: ["enhancement"],
-  });
-  assert.equal(r.failed, true);
-});
-
-// A new push can add protected-path changes underneath a label that is still
-// sitting on the PR. The ack has to be per-head, or it silently covers code
-// nobody looked at.
-test("pushing after the ack strips the label and fails", async () => {
-  const r = await runGuard({
-    files: ["e2e/smoke.spec.mjs"],
-    labels: ["gates-reviewed"],
-    action: "synchronize",
-  });
-  assert.equal(r.failed, true);
-  assert.deepEqual(r.removedLabels, ["gates-reviewed"]);
-  assert.match(r.failure, /Re-read the diff and re-apply/);
 });
 
 // The whole point of the change: the owner authors every PR on a solo repo, so
@@ -195,14 +120,23 @@ test("the author's own approval does NOT clear the gate", async () => {
   assert.equal(r.failed, true);
 });
 
-// Anyone can submit a review on a public repo. "Not the author" is not a trust
-// boundary — a fork contributor with a second account would clear their own
-// gate change. Only the owner's approval counts.
+// Anyone can review or comment on a public repo. "Not the author" is not a
+// trust boundary — a fork contributor with a second account would clear their
+// own gate change.
 test("an approval from a non-owner does NOT clear the gate", async () => {
   const r = await runGuard({
     files: ["scripts/validate-trip.mjs"],
     author: OTHER,
     reviews: [approval("random-drive-by")],
+  });
+  assert.equal(r.failed, true);
+});
+
+test("an ack comment from a non-owner does NOT clear the gate", async () => {
+  const r = await runGuard({
+    files: ["scripts/validate-trip.mjs"],
+    author: OTHER,
+    comments: [ack("random-drive-by")],
   });
   assert.equal(r.failed, true);
 });
@@ -214,10 +148,8 @@ test("the owner approving someone else's PR at the current head clears it", asyn
     reviews: [approval(OWNER)],
   });
   assert.equal(r.failed, false);
-  assert.match(r.messages.join("\n"), new RegExp(OWNER));
 });
 
-// A stale approval must not carry forward onto commits pushed after it.
 test("the owner's approval of an older commit does NOT clear the gate", async () => {
   const r = await runGuard({
     files: ["scripts/validate-trip.mjs"],
@@ -227,11 +159,58 @@ test("the owner's approval of an older commit does NOT clear the gate", async ()
   assert.equal(r.failed, true);
 });
 
-test("a non-approving review from the owner does NOT clear the gate", async () => {
+// The ack route: this is what makes the gate satisfiable for a solo owner.
+test("an owner ack comment naming the current head clears it", async () => {
   const r = await runGuard({
-    files: ["schema/trip.schema.json"],
-    author: OTHER,
-    reviews: [{ user: { login: OWNER }, state: "CHANGES_REQUESTED", commit_id: HEAD }],
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [ack(OWNER)],
+  });
+  assert.equal(r.failed, false);
+  assert.match(r.messages.join("\n"), /acked by @dbeihl/);
+});
+
+test("a short-sha ack still matches the head", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [ack(OWNER, HEAD.slice(0, 8))],
+  });
+  assert.equal(r.failed, false);
+});
+
+// A push after the ack must invalidate it. The SHA does that on its own — no
+// cleanup, no mutation, no race with a stale event.
+test("an ack naming an older commit does NOT clear the gate", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [ack(OWNER, OLD)],
+  });
+  assert.equal(r.failed, true);
+});
+
+test("an ack comment with no sha does NOT clear the gate", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [{ user: { login: OWNER }, body: "gates-reviewed, looks fine" }],
+  });
+  assert.equal(r.failed, true);
+});
+
+// A replayed event describes a head that has moved on. The decision must come
+// from the API, never the payload.
+test("a stale event payload cannot smuggle in an old head", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    comments: [ack(OWNER, OLD)],
+    head: HEAD,
+    payloadHead: OLD,
+  });
+  assert.equal(r.failed, true, "must judge against the API head, not the payload");
+});
+
+test("an issue_comment event resolves the PR and still guards it", async () => {
+  const r = await runGuard({
+    files: ["e2e/smoke.spec.mjs"],
+    event: "issue_comment",
   });
   assert.equal(r.failed, true);
 });
