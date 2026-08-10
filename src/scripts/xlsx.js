@@ -256,6 +256,11 @@
   // consular staff who may parse 2026/11/01 as 1 November or 11 January
   // depending on convention, and the document exists to remove doubt.
   //
+  // This is now the date format for EVERY sheet in the workbook (Itinerary,
+  // Budget, Visa Itinerary) and for the copy-into-a-spreadsheet fallback --
+  // David asked for it explicitly. Don't "restore" the short weekday format
+  // on the other tabs; fmtDate() in engine.js still serves the on-screen UI.
+  //
   // This stays a STRING. xlSheet writes any cell without an `n` flag as
   // t="inlineStr", so Excel treats it as text rather than a date serial --
   // which is what keeps it rendering identically wherever it is opened. Do
