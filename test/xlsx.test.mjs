@@ -201,3 +201,5 @@ test("visaDate formats as a long unambiguous US date", () => {
   // No zero padding on the day: "January 3", not "January 03".
   assert.equal(visaDate(new Date(2026, 10, 1)), "November 1, 2026");
 });
+
+// throwaway: verifying the guard/gates required check blocks a merge
