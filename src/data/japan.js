@@ -29,7 +29,7 @@ export default {
         "Kensington Tours quoted <b>$9,644</b> for a Tokyo–Hakone–Kyoto version of this trip — but for placeholder dates (Nov 7–14), the opposite direction of travel, and a route that shares almost nothing with this one: no Osaka base, no Nara, no Davao week, and a Hakone ryokan night that has since been cut. Treat it as a rough order-of-magnitude reference only. The delta above compares ground costs only — Kensington's quote excluded airfare.",
     },
     lodgingTaxBuffer: 1.25, // lodging-only planning margin, not a sourced figure
-    minRating: 7.0, // hotel-tier floor for this trip; markup default is 8.0
+    minRating: 8.0, // hotel-tier floor for this trip; markup default is 8.0
     destLabel: "Davao", // gateway shown for an "Other airport" origin
     visaForm: true, // emit the Japan MOFA "Travel Itinerary" sheet in the .xlsx
     ui: {
