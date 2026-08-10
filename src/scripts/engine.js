@@ -1634,7 +1634,7 @@ const TRIP = window.TRIP;
     ]);
     rows.forEach((r) =>
       out.push([
-        fmtDate(r.date),
+        visaDate(r.date),
         r.category,
         r.title,
         r.detail,
@@ -2359,7 +2359,7 @@ const TRIP = window.TRIP;
       ],
     ];
     days.forEach((d, i) => {
-      const date = fmtDate(addDays(cur, i));
+      const date = visaDate(addDays(cur, i));
       const plan = VISA_PLAN[d.id] || strip(d.title);
       const move = d.move
         ? (function () {
@@ -2381,7 +2381,7 @@ const TRIP = window.TRIP;
       ]);
     });
     const sheets = [
-      { name: "Itinerary", rows: itinRows, cols: [16, 8, 46, 30, 40] },
+      { name: "Itinerary", rows: itinRows, cols: [20, 8, 46, 30, 40] },
     ];
 
     // --- Budget sheet: when prices are shown, or forced (Plan-tab export) ---
@@ -2398,7 +2398,7 @@ const TRIP = window.TRIP;
       ];
       rows.forEach((r) =>
         bud.push([
-          cell(fmtDate(r.date)),
+          cell(visaDate(r.date)),
           cell(r.category),
           cell(r.title),
           cell(r.detail),
@@ -2419,7 +2419,7 @@ const TRIP = window.TRIP;
         cell("TOTAL", 1),
         num(Math.round(s.grand), 1),
       ]);
-      sheets.push({ name: "Budget", rows: bud, cols: [16, 14, 30, 40, 14] });
+      sheets.push({ name: "Budget", rows: bud, cols: [20, 14, 30, 40, 14] });
     }
 
     // --- Optional final sheet: Japan MOFA "Travel Itinerary" visa form ---

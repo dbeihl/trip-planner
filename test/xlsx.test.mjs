@@ -18,6 +18,13 @@ import {
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
+// buildExcelWorkbook is browser-scoped (reads window.__state) and so cannot be
+// imported. The export's guarantees are pinned by scanning its source instead.
+const src = await readFile(
+  new URL("../src/scripts/engine.js", import.meta.url),
+  "utf8",
+);
+
 // Minimal reader for the stored (no compression) zips xlZip emits: walk the
 // end-of-central-directory record, then each central entry back to its local
 // header, returning { name, crc, data } per member.
@@ -125,7 +132,7 @@ test("buildXlsx assembles a complete OOXML package", () => {
   assert.match(text("[Content_Types].xml"), /PartName="\/xl\/worksheets\/sheet2\.xml"/);
 });
 
-test("visa dates export as text, not as an Excel date serial", async () => {
+test("visa dates export as text, not as an Excel date serial", () => {
   // The value must stay a string: a numeric cell with a date number format
   // renders per the opening machine's locale, reintroducing exactly the
   // ambiguity the long format removes.
@@ -135,10 +142,7 @@ test("visa dates export as text, not as an Excel date serial", async () => {
   // whatever the export does. buildExcelWorkbook is browser-scoped and not
   // importable, so this extracts the Visa Itinerary sheet's own row builder
   // and runs it, checking the cell object the export actually produces.
-  const src = await readFile(
-    new URL("../src/scripts/engine.js", import.meta.url),
-    "utf8",
-  );
+  //
   // indexOf returns -1 on a miss, and slice(-1, n) still yields a truthy
   // string -- so check the markers themselves, not the slice.
   const from = src.indexOf('cell("Date", 4)');
@@ -165,6 +169,27 @@ test("visa dates export as text, not as an Excel date serial", async () => {
   assert.match(xml, /t="inlineStr"/);
   assert.match(xml, /November 1, 2026/);
   assert.doesNotMatch(xml, /<v>/, "a <v> element means a numeric cell");
+});
+
+test("every workbook sheet dates in the long form, not the UI's short one", () => {
+  // fmtDate() ("Mon, Nov 2") is the on-screen format and must keep serving the
+  // planner UI -- but no sheet of the export may use it. Scanning the whole of
+  // buildExcelWorkbook, rather than the two known Date columns, also catches a
+  // sheet added later that reaches for the nearer helper.
+  const from = src.indexOf("function buildExcelWorkbook(");
+  const to = src.indexOf("return buildXlsx(sheets);");
+  assert.notEqual(from, -1, "buildExcelWorkbook not found in engine.js");
+  assert.notEqual(to, -1, "buildExcelWorkbook's return not found in engine.js");
+  assert.ok(from < to, "the buildExcelWorkbook markers are out of order");
+  const block = src.slice(from, to);
+  assert.doesNotMatch(
+    block,
+    /\bfmtDate\(/,
+    "an Excel sheet formats a date with fmtDate() -- exports use visaDate()",
+  );
+  // and the two data sheets do date their rows
+  assert.match(block, /visaDate\(addDays\(cur, i\)\)/, "Itinerary sheet");
+  assert.match(block, /cell\(visaDate\(r\.date\)\)/, "Budget sheet");
 });
 
 test("visaDate formats as a long unambiguous US date", () => {
