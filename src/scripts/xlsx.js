@@ -268,7 +268,7 @@
   // would render per the opener's locale, the exact ambiguity being avoided.
   export function visaDate(d) {
     return d.toLocaleDateString("en-US", {
-      month: "long",
+      month: "short",
       day: "numeric",
       year: "numeric",
     });
