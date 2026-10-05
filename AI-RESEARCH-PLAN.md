@@ -14,7 +14,7 @@ Make the site *do more research*: when a signed-in traveler changes a trip's dat
 
 ## The one thing to internalize first
 
-This is a real architectural shift, not a feature. The planner today is a static Astro build on GitHub Pages with **no network at view time** — that is a load-bearing invariant in `CLAUDE.md`. "Log in" and "store data pulls" both require a server. The good news: at four travelers the shift is small and cheap, and it grafts onto the existing engine without disturbing the static planners.
+This is a real architectural shift, not a feature. The planner today is a static Astro build on GitHub Pages with **no network at view time** — that is a load-bearing invariant in `AGENTS.md`. "Log in" and "store data pulls" both require a server. The good news: at four travelers the shift is small and cheap, and it grafts onto the existing engine without disturbing the static planners.
 
 ## The recommendation in one paragraph
 
