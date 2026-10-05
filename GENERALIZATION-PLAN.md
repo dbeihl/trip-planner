@@ -127,7 +127,7 @@ Derived directly from the constants that exist in `japan-trip-planner.html` toda
 }
 ```
 
-**Invariants the schema must not break** (these are load-bearing in the current engine — see `CLAUDE.md`):
+**Invariants the schema must not break** (these are load-bearing in the current engine — see `AGENTS.md`):
 
 - Every cost is a **2-adult total**; the engine scales by `personFactor = N/2` and private transfers by `vehicleFactor = ceil(N/4)`. Generated data must honor this or the scaling silently corrupts.
 - `itinPool` holds **experience only** — no hotel names, transport modes, or costs. Those are injected at render time from `window.__state`, which is what keeps the Itinerary tab a *view* of the budget choices instead of a second source of truth. Generation must respect that seam.
