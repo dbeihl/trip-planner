@@ -70,7 +70,9 @@ for (const slug of ["japan", "yellowstone"]) {
       await expect(rail).toContainText("Nozomi 80");
       await expect(rail).toContainText("Katsuo-ji");
       await expect(rail).toContainText("Grand Front");
+      await expect(rail).toContainText("Harry Potter Mahou Dokoro");
       await expect(rail).toContainText("Meiji Jingu");
+      await expect(rail).not.toContainText("Cat Street");
       await expect(rail).toContainText("Ginza");
       await expect(rail).toContainText("Private tour, booked (Klook)");
       await expect(rail).not.toContainText("Shitenno-ji");

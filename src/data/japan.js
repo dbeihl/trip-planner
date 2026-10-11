@@ -472,9 +472,11 @@ export default {
         "Leave around 7:45 AM. Walk to Namba Station; check the walk the night before.",
         "Osaka Metro Midosuji Line north toward Shin-Osaka (Senri-Chuo direction). No transfer, about 15 minutes.",
         "JR Shinkansen gates at Shin-Osaka. Nozomi 80 departs 8:45 AM and arrives Tokyo at 11:15 AM. Green Car, booked.",
-        "JR Yamanote Line to Shibuya, about 25 minutes, then a walk to Tokyu Stay Shibuya.",
+        "Harry Potter Mahou Dokoro is on Tokyo Character Street, First Avenue Tokyo Station B1, 1-9-1 Marunouchi, connected directly to JR Tokyo Station. Open 10 AM to 8:30 PM, no ticket. The easy time is right after the 11:15 AM arrival, since the bags are shipped ahead.",
+        "JR Yamanote Line to Shibuya, about 25 minutes, then a walk to Tokyu Stay Shibuya. Check-in is about 3 PM.",
+        "The other window for the shop is after that check-in. JR Yamanote from Shibuya back to Tokyo takes about 25 to 30 minutes: leave about 3:30 and arrive about 4 PM.",
       ],
-      total: "Leave around 7:45 AM for the 8:45 AM train; into the hotel early afternoon",
+      total: "Leave around 7:45 AM for the 8:45 AM train; shop at Tokyo Station, then the hotel early afternoon",
       note: "The $190 ledger fare is the researched ordinary reserved seat (¥14,720 per person), not the booked Green Car price, which was not in the trip notes. The local bookend fares were researched for a Shimbashi hotel and have not been re-quoted for Shibuya.",
     },
     nara: {
@@ -659,8 +661,15 @@ export default {
         sun: "16:40",
         move: "o-t",
         lodging: "tokyo",
-        title: "Into Tokyo, and a first evening in Shibuya",
+        title: "Tokyo Station on the way in, then Shibuya",
         rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Harry Potter Mahou Dokoro.",
+            detail:
+              "The shop is on Tokyo Character Street, First Avenue, Tokyo Station B1, 1-9-1 Marunouchi, inside the station. Open 10 AM to 8:30 PM, and no ticket is needed. The easy time is right after the 11:15 AM arrival, since the cases are already sent ahead. The other window is after the roughly 3 PM check-in: the Yamanote back from Shibuya to Tokyo Station takes about 25 to 30 minutes, so leave about 3:30 and arrive about 4 PM.",
+          },
           {
             tag: "Anchor",
             kind: "anchor",
@@ -781,7 +790,8 @@ export default {
     "o-city": "Osaka Castle; Kuromon Ichiba Market; Namba and Dotonbori.",
     "o-tour": "Private day tour of Nara and Kyoto.",
     "o-minoh": "Katsuo-ji temple (Minoh); Grand Front Osaka and Umeda.",
-    "t-arrive": "Travel to Tokyo by Shinkansen; Shibuya district.",
+    "t-arrive":
+      "Travel to Tokyo by Shinkansen; Harry Potter Mahou Dokoro (Tokyo Station); Shibuya district.",
     "t-shibuya":
       "Meiji Jingu; Yoyogi Park; Harajuku and Omotesando; Shibuya.",
     "t-ginza": "Shinjuku Gyoen; Ginza; Hie Shrine.",
