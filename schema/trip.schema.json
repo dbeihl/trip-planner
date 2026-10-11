@@ -218,7 +218,11 @@
               },
               "rating": { "type": "string" },
               "note": { "type": "string" },
-              "current": { "type": "boolean" }
+              "current": { "type": "boolean" },
+              "unpriced": {
+                "description": "True when rate is 0 because no figure has been sourced. The ledger adds $0. The UI must not present that as a free stay. A real free stay (staying with family) leaves this unset.",
+                "type": "boolean"
+              }
             }
           }
         }
@@ -333,7 +337,11 @@
                 "$ref": "#/$defs/money"
               },
               "note": { "type": "string" },
-              "current": { "type": "boolean" }
+              "current": { "type": "boolean" },
+              "booked": {
+                "description": "True when this option is already booked. A cost of 0 means the price is not in the ledger, not that the activity is free.",
+                "type": "boolean"
+              }
             }
           }
         }
