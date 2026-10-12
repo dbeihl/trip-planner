@@ -44,7 +44,14 @@ for (const slug of ["japan", "yellowstone"]) {
     // Pin Japan's default total. A leg cost or hotel rate edited without
     // updating the figures quoted in the PR/README goes unnoticed otherwise —
     // this fails loudly instead. Update deliberately when the trip changes.
-    if (slug === "japan") await expect(total).toHaveText("$6,058");
+    if (slug === "japan") {
+      await expect(total).toHaveText("$5,239");
+      await expect(page.locator("#tokyoTiers")).toContainText("Tokyu Stay Shibuya");
+      await expect(page.locator("#tokyoTiers")).toContainText("Not priced");
+      await expect(page.locator("body")).toContainText("Nozomi 80");
+      await expect(page.locator("#osakaActivities")).toContainText("Private tour, booked (Klook)");
+      await expect(page.locator("#osakaActivities")).toContainText("Booked");
+    }
 
     // party size drives recalc(): 2 → 4 travelers must change the total
     // (lodging doubles at minimum) and keep it a number
@@ -57,6 +64,20 @@ for (const slug of ["japan", "yellowstone"]) {
     // itinerary tab renders day rows from the same state
     await page.click('[data-tab="itin"]');
     await expect(page.locator("#itinRail .drow").first()).toBeVisible();
+    if (slug === "japan") {
+      const rail = page.locator("#itinRail");
+      await expect(rail).toContainText("Tokyu Stay Shibuya");
+      await expect(rail).toContainText("Nozomi 80");
+      await expect(rail).toContainText("Katsuo-ji");
+      await expect(rail).toContainText("Grand Front");
+      await expect(rail).toContainText("Harry Potter Mahou Dokoro");
+      await expect(rail).toContainText("Meiji Jingu");
+      await expect(rail).not.toContainText("Cat Street");
+      await expect(rail).toContainText("Ginza");
+      await expect(rail).toContainText("Private tour, booked (Klook)");
+      await expect(rail).not.toContainText("Shitenno-ji");
+      await expect(rail).not.toContainText("Shinsekai");
+    }
 
     expect(pageErrors).toEqual([]);
   });

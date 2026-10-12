@@ -50,16 +50,29 @@ const TRIP = window.TRIP;
       <div class="tier-list">
         ${act.options
           .map(
-            (opt, oi) => `
+            (opt, oi) => {
+              const priceLabel =
+                opt.booked && !(opt.cost > 0)
+                  ? "Booked"
+                  : opt.cost === 0
+                    ? "Free"
+                    : "$" + opt.cost;
+              const badge = opt.booked
+                ? '<span class="badge">booked</span>'
+                : opt.current
+                  ? '<span class="badge">default</span>'
+                  : "";
+              return `
           <label class="tier">
             <input type="radio" name="${cityKey}Act${ai}" value="${oi}" ${oi === 0 ? "checked" : ""}>
             <div>
-              <div class="tier-name">${opt.name}${opt.current ? '<span class="badge">default</span>' : ""}</div>
+              <div class="tier-name">${opt.name}${badge}</div>
               <div class="tier-meta">${opt.note}</div>
             </div>
-            <div class="tier-price">${opt.cost === 0 ? "Free" : "$" + opt.cost}</div>
+            <div class="tier-price">${priceLabel}</div>
           </label>
-        `,
+        `;
+            },
           )
           .join("")}
       </div>
@@ -274,7 +287,7 @@ const TRIP = window.TRIP;
         <div class="tier-name">${opt.name}${opt.current ? '<span class="badge">current</span>' : ""}</div>
         <div class="tier-meta"><span class="tier-rating">★ ${opt.rating}</span> · ${opt.note}</div>
       </div>
-      <div class="tier-price">$${opt.rate}<small>/night/room</small></div>
+      <div class="tier-price">${opt.unpriced ? "Not priced<small>no sourced rate</small>" : "$" + opt.rate + "<small>/night/room</small>"}</div>
       <div class="book-row">
         <span class="book-lbl">Book ↗</span>
         <a href="https://www.google.com/travel/search?q=${q}" target="_blank" rel="noopener">Google Hotels</a>
@@ -384,7 +397,10 @@ const TRIP = window.TRIP;
       city +
       'Tiers"></div>' +
       (withActivities
-        ? '<div class="activities-label">Activities (optional paid upgrades)</div><div id="' +
+        ? ((ACTIVITIES[city] || []).length
+            ? '<div class="activities-label">Activities (optional paid upgrades)</div>'
+            : "") +
+          '<div id="' +
           city +
           'Activities"></div>'
         : "") +
@@ -1207,12 +1223,16 @@ const TRIP = window.TRIP;
         flightsCost,
       ]);
     }
+    const lodgingLabel = (c) => {
+      const tier = HOTELS[c].options[selectedIndex(c + "Tier")];
+      const unpriced = tier && tier.unpriced ? " (rate not entered)" : "";
+      return HOTELS[c].label + " lodging" + roomsSuffix + unpriced;
+    };
     TRIP.meta.route.forEach((c) => {
-      rows.push([HOTELS[c].label + " lodging" + roomsSuffix, hotelCost[c]]);
+      rows.push([lodgingLabel(c), hotelCost[c]]);
     });
     TRIP.meta.optionalCities.forEach((c) => {
-      if ((nights[c] || 0) > 0)
-        rows.push([HOTELS[c].label + " lodging" + roomsSuffix, hotelCost[c]]);
+      if ((nights[c] || 0) > 0) rows.push([lodgingLabel(c), hotelCost[c]]);
     });
     rows.push([
       `Lodging taxes/fees buffer (+${Math.round((LODGING_TAX_BUFFER - 1) * 100)}%)`,
@@ -1966,11 +1986,29 @@ const TRIP = window.TRIP;
     Object.keys(res).forEach((city) => {
       (ACTIVITIES[city] || []).forEach((act, ai) => {
         const opt = act.options[selectedIndex(city + "Act" + ai)];
-        if (opt.cost > 0)
+        // Booked items render on their own calendar day (bookedActsOnDay),
+        // even when the price is still $0. Paid-but-not-booked stays here.
+        if (opt.cost > 0 && !opt.booked)
           res[city].push({ title: act.title, name: opt.name, cost: opt.cost });
       });
     });
     return res;
+  }
+
+  // Booked activities land on the calendar day stored in act.day (1 = trip
+  // start), not on the city's first day. A $0 booked line is a missing
+  // price, so it still shows; it just adds nothing to the total.
+  function bookedActsOnDay(dayNum) {
+    const out = [];
+    Object.keys(ACTIVITIES).forEach((city) => {
+      (ACTIVITIES[city] || []).forEach((act, ai) => {
+        if (act.day !== dayNum) return;
+        const opt = act.options[selectedIndex(city + "Act" + ai)];
+        if (opt && opt.booked)
+          out.push({ title: act.title, name: opt.name, cost: opt.cost });
+      });
+    });
+    return out;
   }
 
   function assembleItinDays(s) {
@@ -2091,24 +2129,22 @@ const TRIP = window.TRIP;
         if (d.firstOfCity && d.lodging) {
           const h = s[d.lodging];
           const nights = s.nights[d.lodging] || 1;
-          const meta = SHOW_PRICES
-            ? " · $" +
-              h.rate +
-              "/night × " +
-              s.rooms +
-              " room" +
-              (s.rooms > 1 ? "s" : "") +
-              " × " +
-              nights +
-              ' = <span class="cost">$' +
-              fmt2(h.rate * s.rooms * nights) +
-              "</span>"
-            : " · ★" +
-              h.rating +
-              " · " +
-              nights +
-              " night" +
-              (nights > 1 ? "s" : "");
+          const nightWord = nights + " night" + (nights > 1 ? "s" : "");
+          const meta = h.unpriced
+            ? " · rate not entered · " + nightWord
+            : SHOW_PRICES
+              ? " · $" +
+                h.rate +
+                "/night × " +
+                s.rooms +
+                " room" +
+                (s.rooms > 1 ? "s" : "") +
+                " × " +
+                nights +
+                ' = <span class="cost">$' +
+                fmt2(h.rate * s.rooms * nights) +
+                "</span>"
+              : " · ★" + h.rating + " · " + nightWord;
           rows +=
             '<div class="drow soft"><span class="tag">Stay</span><span class="body"><span class="lead">' +
             h.name +
@@ -2119,6 +2155,21 @@ const TRIP = window.TRIP;
 
         if (d.firstOfCity && acts[d.cityKey] && acts[d.cityKey].length) {
           rows += acts[d.cityKey]
+            .map(
+              (a) =>
+                '<div class="drow soft"><span class="tag">Booked</span><span class="body"><span class="lead">' +
+                a.title +
+                ':</span> <span class="detail">' +
+                a.name +
+                priceSpan((a.cost * s.N) / 2) +
+                "</span></span></div>",
+            )
+            .join("");
+        }
+
+        const bookedToday = bookedActsOnDay(i - roadOut + 1);
+        if (bookedToday.length) {
+          rows += bookedToday
             .map(
               (a) =>
                 '<div class="drow soft"><span class="tag">Booked</span><span class="body"><span class="lead">' +
@@ -2286,7 +2337,11 @@ const TRIP = window.TRIP;
         out.push(
           "   - Stay: " +
             h.name +
-            (SHOW_PRICES ? " ($" + h.rate + "/night)" : " (★" + h.rating + ")"),
+            (h.unpriced
+              ? " (rate not entered)"
+              : SHOW_PRICES
+                ? " ($" + h.rate + "/night)"
+                : " (★" + h.rating + ")"),
         );
       }
       if (d.firstOfCity && acts[d.cityKey])
@@ -2299,6 +2354,15 @@ const TRIP = window.TRIP;
               money((a.cost * s.N) / 2),
           ),
         );
+      bookedActsOnDay(i - roadOut + 1).forEach((a) =>
+        out.push(
+          "   - Booked: " +
+            a.title +
+            " — " +
+            a.name +
+            money((a.cost * s.N) / 2),
+        ),
+      );
       if (d.lastNight)
         out.push("   - Last night: worth reserving a special dinner.");
       if (d.fuller && itinFullerOn(d.id))

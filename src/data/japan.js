@@ -9,7 +9,7 @@ export default {
       meta: "Davao · Osaka · Tokyo · Kyoto & Nara day trips",
       go: "Japan",
       blurb:
-        "A week with family in Malita first, then the trip proper: in through Kansai to a five-night Osaka base — neon and street food, with day trips out to Kyoto's lanes and Nara's deer — and a Shinkansen up to Tokyo for the last two nights.",
+        "A week with family in Malita first, then the trip proper: in through Kansai to a four-night Osaka base — neon and street food, with day trips out to Kyoto, Nara, and Minoh — and a Shinkansen up to Tokyo for the last three nights in Shibuya.",
     },
     route: ["davao", "osaka", "tokyo"], // ordered city keys
     optionalCities: [],
@@ -37,16 +37,16 @@ export default {
         'Oct 24 → Nov 8, 2026 · <span class="traveler-count-lbl">2</span> travelers · self-booked (DIY)',
       planTitle: "Davao &amp; Japan Trip Cost Ledger",
       planSub:
-        "Pick a hotel tier per stop and a transport mode per leg. Transport fares are live-researched, every airfare is a real quote or a booked ticket, and both current hotel picks were re-quoted for the actual dates on 2026-08-09. One thing to act on rather than re-check: the original Tokyo pick is sold out for Nov 6–8, so the Tokyo line reflects the cheapest bookable alternative instead. The total updates as you go.",
+        "Pick a hotel tier per stop and a transport mode per leg. Transport fares are live-researched, every airfare is a real quote or a booked ticket, and the Osaka hotel was re-quoted for the actual dates on 2026-08-09. The Tokyo stay is the booked Tokyu Stay Shibuya (Nov 5–8); its nightly rate is not in the ledger yet. The total updates as you go.",
       flightsTitle: "Getting there — International flights",
       flightsIntro:
         "David flies IND → Davao (out Oct 22, in Oct 24); his partner is already home in Davao. The two of you then fly DVO → KIX together on Nov 1 — that leg is booked and priced as a transport leg below, not here — and fly home separately out of Haneda on Nov 8. Pick a routing for each; fares fold into the grand total.",
       itinTitle: "Osaka &amp; Tokyo — seven nights in Japan",
       itinDek:
-        "The Philippine week is family time in Malita and is not planned here — it appears only so the dates and the costs line up. Japan is the trip: five nights based in Namba, with Osaka's kitchen at the door and day trips out to Kyoto and Nara, then the Nozomi up to Tokyo for a last two nights. One base, one move, no packing and repacking.",
+        "The Philippine week is family time in Malita and is not planned here — it appears only so the dates and the costs line up. Japan is the trip: four nights based in Namba, with Osaka's kitchen at the door and day trips out to Kyoto, Nara, and Minoh, then the Nozomi up to Tokyo for three nights in Shibuya. One base, one move, no packing and repacking.",
       finePrint: [
-        "Both current picks were re-quoted on 2026-08-09 for the real dates (Booking.com, 2 adults, 1 room, USD): Citadines Namba for Nov 1–6 and the Tokyo stay for Nov 6–8. Alternatives marked \"NOT re-quoted\" still carry their old Nov 14–22 figures and will move.",
-        "OMO5 Tokyo Gotanda — the original Tokyo pick — showed NO availability for Nov 6–8, and so did Mitsui Garden Gotanda. Nov 6–8 is a Friday-to-Sunday and Tokyo is tight. Book the Tokyo nights early, and check Hoshino Resorts direct before giving up on OMO5.",
+        "Citadines Namba was re-quoted on 2026-08-09 (Booking.com, 2 adults, 1 room, USD) at $197/night for Nov 1–6 ($984 for those 5 nights). The stay is now Nov 1–5, four nights, still using that nightly figure, and has not been re-quoted for four nights. Tokyu Stay Shibuya (Nov 5–8) has no sourced rate, so the Tokyo lodging line is $0 until one is entered. That $0 is a placeholder, not a free room. Alternatives marked \"NOT re-quoted\" still carry their old figures and will move.",
+        "Nozomi 80 (Shin-Osaka 8:45 AM to Tokyo 11:15 AM, Green Car) is booked. The $190 line is the previously researched ordinary reserved-seat fare (¥14,720 per person), not the Green Car price. The Nara and Kyoto private tour is booked on Klook; its price is not in the ledger either, so that line is also $0 until a figure is entered.",
         "The Philippine week is not costed beyond the airport transfer and the flights — it is family time in Malita, staying with family at no lodging cost. The Davao hotel tiers are rough estimates kept only as a fallback.",
         "Every alternative hotel holds a private double/twin room with its own bathroom and a ≥7.0 guest rating. The floor was 8.0 until 2026-08-09; the sub-8.0 tiers were added deliberately to show what the trip costs at the bottom of the range.",
         "The cheapest Osaka tiers (OKINI, MAIDO) are in Nishinari Ward — Osaka's cheapest district and the reason the rate is $28 rather than $200. It is a working-class area around Shin-Imamiya with a rough reputation and genuinely good transport, 1.3–1.4 miles from Namba. Worth looking at a map and recent reviews rather than taking the number at face value.",
@@ -70,7 +70,7 @@ export default {
           stops: 2,
           cabin: "Economy out · Premium Select home",
           fare: 3000,
-          note: "Out Oct 22 on AS500 (IND 18:12) then PR125 SEA→MNL, landing DVO Oct 24 — 27h 58m, ~$1,200. Home Nov 8 on DL120/DL1456 HND 17:15 → MSP → IND 17:55, ¥287,660 ≈ $1,800",
+          note: "Out Oct 22 on AS500 (IND 18:12) then PR125 SEA→MNL, landing DVO Oct 24 — 27h 58m, ~$1,200. Home Nov 8 on DL120/DL1456 HND 17:20 → MSP → IND 17:55, ¥287,660 ≈ $1,800",
           current: true,
         },
         {
@@ -193,7 +193,7 @@ export default {
       ],
     },
     osaka: {
-      baseNights: 5,
+      baseNights: 4,
       label: "Osaka",
       header: "Osaka — Namba",
       options: [
@@ -201,14 +201,14 @@ export default {
           name: "Citadines Namba Osaka",
           rate: 197,
           rating: "9.1",
-          note: "Deluxe Twin (entire studio), no breakfast, Namba · re-quoted 2026-08-09 for Nov 1–6: $197/night, $984 for the 5 nights with 10% off, free cancellation to Oct 29 · current pick",
+          note: "Deluxe Twin (entire studio), no breakfast, Namba · Nov 1–5 · re-quoted 2026-08-09 at $197/night for Nov 1–6 ($984 for those 5 nights, 10% off). Four-night stay still uses that nightly figure and has not been re-quoted · current pick",
           current: true,
         },
         {
           name: "Citadines Namba Osaka — breakfast included",
           rate: 223,
           rating: "9.1",
-          note: "Same Deluxe Twin with the buffet · re-quoted 2026-08-09 for Nov 1–6: $1,117 for the 5 nights",
+          note: "Same Deluxe Twin with the buffet · re-quoted 2026-08-09 for Nov 1–6: $1,117 for those 5 nights ($223/night). The stay is now 4 nights, not re-quoted",
         },
         {
           name: "Fairfield by Marriott Osaka Namba",
@@ -243,16 +243,24 @@ export default {
       ],
     },
     tokyo: {
-      baseNights: 2,
+      baseNights: 3,
       label: "Tokyo",
-      header: "Tokyo — Shimbashi / Gotanda / Shinagawa",
+      header: "Tokyo — Shibuya",
       options: [
+        {
+          name: "Tokyu Stay Shibuya",
+          rate: 0,
+          rating: "—",
+          // rate 0 + unpriced: no sourced quote. Not a free stay.
+          unpriced: true,
+          note: "Nov 5–8, Shibuya · booked stay. No nightly rate in the trip notes, so this line is $0 and is not in the total. That $0 is a placeholder, not a free room",
+          current: true,
+        },
         {
           name: "HOTEL 1899 TOKYO",
           rate: 229,
           rating: "9.3",
-          note: "Shimbashi, tea-themed · the only Shinagawa-area option confirmed BOOKABLE for Nov 6–8 (checked 2026-08-09, $458 for the two nights) · current pick by availability, not preference",
-          current: true,
+          note: "Shimbashi, tea-themed · bookable for Nov 6–8 as of 2026-08-09 ($458 for those two nights). Not the booked stay, and not re-checked for a Nov 5 arrival",
         },
         {
           name: "OMO5 Tokyo Gotanda",
@@ -325,8 +333,9 @@ export default {
         id: "o-t",
         from: "osaka",
         to: "tokyo",
-        routeName: "Osaka → <strong>Tokyo</strong>",
-        note: "(Nozomi, both adults, reserved seat: <b>$190</b> fixed — ¥14,720/person Shin-Osaka → Tokyo)",
+        routeName:
+          "Osaka → <strong>Tokyo</strong>, Nozomi 80, 8:45 AM to 11:15 AM, Green Car, booked",
+        note: "(booked Green Car. The <b>$190</b> line is the researched ordinary reserved seat, ¥14,720/person, not the Green Car price, which is not in the trip notes. Bookend fares were quoted for a Shimbashi hotel and are not re-quoted for Shibuya.)",
         toggles: ["mode"],
         routeDetail: true,
         ctrlPrefix: "ot",
@@ -336,9 +345,10 @@ export default {
           private: { label: "Taxi both ends", scale: "vehicle" },
         },
         // bookends only: Namba↔Shin-Osaka + Tokyo Station↔the Tokyo hotel.
-        // Public is the published IC fare; the taxi figure is an estimate.
+        // Public is the published IC fare researched for a Shimbashi hotel;
+        // not re-quoted for the Shibuya stay.
         cost: { public: 8, private: 45 },
-        fixed: { cost: 190, scale: "person" }, // Nozomi Shin-Osaka→Tokyo, always added
+        fixed: { cost: 190, scale: "person" }, // ordinary reserved-seat Nozomi, not the booked Green Car fare
       },
       {
         id: "nara",
@@ -367,86 +377,49 @@ export default {
         flat: { cost: 17, scale: "person" },
       },
       {
+        id: "minoh",
+        // Side trip out of Namba on Nov 4. Fare was not in the trip notes.
+        routeName: "Namba ⇄ <strong>Katsuo-ji</strong> (Minoh)",
+        note: "(about an hour each way. Fare not sourced, so this line is <b>$0</b> until a real train-plus-bus figure is entered)",
+        toggles: [],
+        routeDetail: true,
+        flat: { cost: 0, scale: "person" },
+      },
+      {
         id: "depart",
         role: "departure", // renders after the last stop
         routeName: "<strong>Tokyo</strong> → Haneda Airport",
+        note: "(public <b>$7</b> and private <b>$56</b> are the old Shimbashi → Haneda figures, not re-quoted from Shibuya)",
         toggles: ["mode"],
         routeDetail: true,
         ctrlPrefix: "dep",
         modeControl: "depmode",
         modes: {
-          public: { label: "Toei Asakusa + Keikyu", scale: "person" },
+          public: { label: "Train", scale: "person" },
           private: { label: "Private car", scale: "vehicle" },
         },
-        cost: { public: 7, private: 56 }, // Shimbashi↔Haneda (Asakusa/Keikyu ~¥510 pp)
+        cost: { public: 7, private: 56 }, // old Shimbashi↔Haneda fare (~¥510 pp); not a Shibuya quote
       },
     ],
   },
   activities: {
     osaka: [
       {
-        day: 11,
-        title: "Kyoto day trip: Higashiyama District",
+        day: 11, // Nov 3
+        title: "Nara and Kyoto private tour",
         options: [
           {
-            name: "Self-guided (free)",
+            name: "Private tour, booked (Klook)",
             cost: 0,
-            note: "Free public streets — steps from the Keihan Gion-Shijo stop",
+            // cost 0 + booked: no sourced price. Not a free tour.
+            booked: true,
             current: true,
-          },
-          {
-            name: "History-teacher walk",
-            cost: 60,
-            note: "2 hrs, small group ≤4 · 4.8★ (9)",
-          },
-          {
-            name: "Private Higashiyama walk",
-            cost: 84,
-            note: "3 hrs · 5.0★ (5)",
+            note: "Booked on Klook. No price in the trip notes, so this line is $0 and is not in the total. That $0 is a placeholder, not a free tour",
           },
         ],
       },
       {
-        day: 11,
-        title: "Kyoto day trip: Fushimi Inari Shrine",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Free, 24/7, well-marked trail — 2 stops past Gion-Shijo on the Keihan line",
-            current: true,
-          },
-          {
-            name: "DMO Kyoto guided tour",
-            cost: 68,
-            note: "60 min, includes a Kagura dance viewing you can't get solo · 5.0★",
-          },
-        ],
-      },
-      {
-        day: 11,
-        title: "Kyoto day trip: Pontocho evening",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Real tourist-trap risk in this alley; last Keihan back to Namba runs past 23:00",
-            current: true,
-          },
-          {
-            name: "13-dish food tour",
-            cost: 178,
-            note: "3 hrs · 4.9★ (447) — best-reviewed + cheapest paid pick",
-          },
-          {
-            name: "Kyoto Night Foodie Tour",
-            cost: 326,
-            note: "3 hrs, sake-focused · 5.0★ (1,762)",
-          },
-        ],
-      },
-      {
-        day: 13,
+        day: 13, // Nov 5
         title: "Send the suitcases ahead to Tokyo (takkyūbin)",
         options: [
           {
@@ -458,111 +431,17 @@ export default {
           {
             name: "Yamato TA-Q-BIN, hotel desk to hotel desk",
             cost: 32,
-            note: "¥2,300–2,630 per large case (140–160 size band) at ¥155 = $1, so ~$32 for two. Hand them to the Citadines desk on the morning of the 5th; they reach the Tokyo hotel on the 6th",
+            note: "¥2,300–2,630 per large case (140–160 size band) at ¥155 = $1, so ~$32 for two. Hand them to the Osaka hotel desk on the morning of the 5th. Next-day service, so they reach the Tokyo hotel on the 6th, the day after check-in",
           },
           {
             name: "Yamato, three cases",
             cost: 48,
-            note: "Same service, third bag — worth it if you shopped Shinsaibashi hard",
-          },
-        ],
-      },
-      {
-        day: 12,
-        title: "Nara day trip: Todai-ji and the deer park",
-        options: [
-          {
-            name: "Self-guided (free park, paid halls)",
-            cost: 0,
-            note: "The park and the deer are free; Todai-ji's Great Buddha Hall is ~¥800/person at the door, not counted here",
-            current: true,
-          },
-          {
-            name: "Half-day guided walk",
-            cost: 90,
-            note: "Todai-ji, Kasuga Taisha, and the park with a licensed guide — ESTIMATE, not a booked listing",
+            note: "Same service, third bag — worth it if you shopped hard in Osaka",
           },
         ],
       },
     ],
-    tokyo: [
-      {
-        day: 15,
-        title: "Tsukiji Market / Tokyo Highlights",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Use the itinerary's own notes",
-            current: true,
-          },
-          {
-            name: "Klook small-group tour",
-            cost: 120,
-            note: "5 hrs, swaps lunch for Shibuya Crossing · 5.0★ (69)",
-          },
-          {
-            name: "GetYourGuide small-group",
-            cost: 138,
-            note: "4 hrs · 5.0★ (1, new listing)",
-          },
-          {
-            name: "Viator private guide",
-            cost: 278,
-            note: "6 hrs, customizable stops · 4.9★ (4,546) — closest match to original",
-          },
-        ],
-      },
-      {
-        day: 15,
-        title: "Ramen exploration",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Wander in — tours are an upsell here, not a fix",
-            current: true,
-          },
-          {
-            name: "Viator ramen tasting",
-            cost: 227,
-            note: "3 hrs, 6 mini bowls, 3 shops · 5.0★ (145)",
-          },
-          {
-            name: "GetYourGuide ramen tasting",
-            cost: 234,
-            note: "3 hrs · 4.9★ (462)",
-          },
-        ],
-      },
-      {
-        day: 15,
-        title: "Shinjuku / Yokocho bar hopping",
-        options: [
-          {
-            name: "Self-guided (free)",
-            cost: 0,
-            note: "Many Golden Gai bars are locals-only/no walk-ins",
-            current: true,
-          },
-          {
-            name: "GetYourGuide bar hop",
-            cost: 74,
-            note: "3 hrs · 4.7★ (139)",
-          },
-          {
-            name: "Viator evening tour",
-            cost: 189,
-            note: "2 hrs, dinner + drinks · 5.0★ (160)",
-          },
-          {
-            name: "Viator bar hopping",
-            cost: 213,
-            note: "3 hrs, all-you-can-drink · 5.0★ (3,914) — solves a real access problem",
-          },
-        ],
-      },
-    ],
+    tokyo: [],
   },
   routeDetail: {
     "airport-arrive": {
@@ -587,16 +466,18 @@ export default {
       note: "The 07:05 push means leaving the house around 05:00. Both legs are Cebu Pacific, so bags check through — but the Manila layover is in Terminal 3 for both. Have Visit Japan Web done before you land. KIX has a Yamato counter on T1's 4th floor if you'd rather send the cases to the hotel than wrestle them onto the Nankai, but same-day delivery cuts off at 12:30 and you land at 18:20 — yours would arrive the next day, and the Nankai is direct anyway.",
     },
     "o-t": {
-      label: "Namba → Shin-Osaka → Tokyo → Shimbashi (Nozomi)",
+      label: "Namba → Shin-Osaka → Tokyo → Shibuya (Nozomi 80, booked)",
       steps: [
-        "~15 min: Midosuji subway Namba → Shin-Osaka",
-        "150 min: Nozomi Shin-Osaka → Tokyo Station — the fast one, and it runs every few minutes all day",
-        "~5 min transfer within Tokyo Station to the Yamanote platform",
-        "~5 min: Tokyo → Shimbashi (Yamanote, 2 stops)",
-        "5 min walk: Shimbashi Station → hotel",
+        "Send the cases from the hotel desk before leaving. Next-day delivery, so they arrive the day after you do.",
+        "Leave around 7:45 AM. Walk to Namba Station; check the walk the night before.",
+        "Osaka Metro Midosuji Line north toward Shin-Osaka (Senri-Chuo direction). No transfer, about 15 minutes.",
+        "JR Shinkansen gates at Shin-Osaka. Nozomi 80 departs 8:45 AM and arrives Tokyo at 11:15 AM. Green Car, booked.",
+        "Harry Potter Mahou Dokoro is on Tokyo Character Street, First Avenue Tokyo Station B1, 1-9-1 Marunouchi, connected directly to JR Tokyo Station. Open 10 AM to 8:30 PM, no ticket. The easy time is right after the 11:15 AM arrival, since the bags are shipped ahead.",
+        "JR Yamanote Line to Shibuya, about 25 minutes, then a walk to Tokyu Stay Shibuya. Check-in is about 3 PM.",
+        "The other window for the shop is after that check-in. JR Yamanote from Shibuya back to Tokyo takes about 25 to 30 minutes: leave about 3:30 and arrive about 4 PM.",
       ],
-      total: "~3h door to door",
-      note: "The last two steps assume the current Tokyo pick (HOTEL 1899 TOKYO, Shimbashi). Pick a Gotanda or Shinagawa tier instead and it's Tokyo → Shinagawa → Gotanda on the Yamanote, ~22 min rather than ~5. No schedule anxiety either way — Nozomi departures run every 5–10 minutes, so a missed train costs minutes, not hours. Reserve seats anyway if you're carrying the big cases; the oversized-baggage racks need a reservation.",
+      total: "Leave around 7:45 AM for the 8:45 AM train; shop at Tokyo Station, then the hotel early afternoon",
+      note: "The $190 ledger fare is the researched ordinary reserved seat (¥14,720 per person), not the booked Green Car price, which was not in the trip notes. The local bookend fares were researched for a Shimbashi hotel and have not been re-quoted for Shibuya.",
     },
     nara: {
       label: "Namba ⇄ Nara (day trip)",
@@ -606,7 +487,7 @@ export default {
         "Kintetsu-Nara Station is a 5-minute walk from the deer park",
       ],
       total: "~80 min round-trip transit",
-      note: "The Kintetsu station drops you far closer to Todai-ji than JR Nara does. Deer are wild animals with no fear of people — they will headbutt for crackers.",
+      note: "Nov 3 is the booked private tour, not this self-guided ride. The fare stays in the ledger because it is a sourced train price and the tour price was not available to replace it. The Kintetsu station drops you far closer to Todai-ji than JR Nara does.",
     },
     daytrip: {
       label: "Namba ⇄ Kyoto (day trip)",
@@ -615,16 +496,25 @@ export default {
         "40–55 min each way depending on route",
       ],
       total: "~80–110 min round-trip transit (40–55 min each way)",
-      note: "Go early — Fushimi Inari before 9am beats the crowds; last trains back to Namba run past 23:00.",
+      note: "Nov 3 is the booked private tour, not this self-guided ride. The fare stays in the ledger because it is a sourced train price and the tour price was not available to replace it.",
+    },
+    minoh: {
+      label: "Namba ⇄ Katsuo-ji (Minoh), then Umeda",
+      steps: [
+        "Namba to Umeda on the Midosuji Line, then the Hankyu line toward the Minoh area, or the Midosuji / Kita-Osaka Kyuko line to Senri-Chuo, then a bus or taxi up to Katsuo-ji. About an hour each way. Confirm the route and the bus times that morning.",
+        "Coming back, get off at Umeda for Grand Front, then the Midosuji Line back to Namba.",
+      ],
+      total: "about an hour each way, plus the Umeda stop",
+      note: "Check Katsuo-ji's hours before leaving. The fare is not in the ledger.",
     },
     depart: {
-      label: "Shimbashi → Haneda (Toei Asakusa / Keikyu, direct)",
+      label: "Shibuya → Haneda",
       steps: [
-        "5 min walk: hotel → Shimbashi Station (Toei Asakusa line)",
-        "~30 min: Shimbashi → Haneda T3 on a Keikyu through-service — no transfer, the Asakusa line runs straight onto the Keikyu Airport line",
+        "Walk to Shibuya Station.",
+        "JR Yamanote to Hamamatsucho, then the Tokyo Monorail to Haneda. Or Yamanote to Shinagawa, then Keikyu to Haneda.",
       ],
-      total: "~35 min",
-      note: "Shimbashi sits on the Asakusa line, so the airport run is a single seat — better than the Gotanda tiers, which need a Yamanote hop to Shinagawa first (~45 min all in). Check the destination on the platform board: only some Asakusa-line trains carry through to Haneda. Narita instead would run ~108 min.",
+      total: "Re-check the connection the day before. The old ~35 min figure was from Shimbashi.",
+      note: "David's Haneda flight (DL120) leaves at 5:20 PM. The partner's Haneda departure time is still to confirm. The $7 public fare is the researched Shimbashi → Haneda price (~¥510 per person), not a Shibuya quote. The $56 private-car figure is the old Shimbashi estimate.",
     },
   },
   itinPool: {
@@ -681,139 +571,86 @@ export default {
         ask: "5J 828 lands KIX at 18:20, so the hotel happens around 19:40 — that's a Dotonbori night, but not a sit-down-dinner-reservation night.",
       },
       {
-        id: "o-food",
+        id: "o-city",
         cityTag: "Osaka",
         sun: "17:00",
-        title: "Kuromon market, Shinsaibashi, and Japan's kitchen",
+        title: "Castle, market, and the neon streets",
         rows: [
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Kuromon Ichiba in the morning.",
+            lead: "Osaka Castle.",
             detail:
-              "Osaka's covered market — grilled scallops, tuna cuts, fruit you eat standing up. Breakfast is the market itself.",
+              "The park and the keep in the morning. The keep is a reconstruction; the moats and the grounds are the walk.",
           },
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Shinsaibashi &amp; Amerikamura shopping.",
+            lead: "Kuromon Market.",
             detail:
-              "The covered Shinsaibashi-suji arcade runs the gamut from department stores to streetwear; Amerikamura next door is the vintage and sneaker quarter.",
+              "Osaka's covered market. Grilled scallops, tuna, fruit you eat standing up.",
           },
           {
-            tag: "Table",
-            kind: "table",
-            lead: "Okonomiyaki, done properly.",
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Namba and Dotonbori.",
             detail:
-              "Sit at a teppan counter and let them build it in front of you — the Osaka style (mixed, not layered) is the one to order here.",
+              "The canal, the Glico sign, and a graze through the street food rather than one sit-down meal.",
           },
         ],
-        fuller:
-          "<b>Umeda Sky Building</b> at dusk — the open-air escalator ride and the city grid lighting up below.",
       },
       {
-        id: "o-daytrip",
+        id: "o-tour",
         travel: true,
-        cityTag: "Day trip — Kyoto",
+        cityTag: "Day trip — Nara and Kyoto",
         sun: "16:59",
-        move: "daytrip",
-        title: "Kyoto in a day — shrines, lanes, and a market lunch",
+        title: "A private day through Nara and Kyoto",
         rows: [
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Fushimi Inari first.",
+            lead: "Nara and Kyoto with a guide.",
             detail:
-              "The vermilion torii tunnels are the trip's iconic walk — arrive before 9am and the crowds thin out within the first ten minutes of climbing.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "The eastern hills after lunch.",
-            detail:
-              "Kiyomizu-dera's veranda, then downhill through Sannenzaka and Ninenzaka's preserved lanes to Gion — early November catches the first of the foliage turning.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Nishiki Market for lunch.",
-            detail:
-              "Kyoto's 400-year-old food arcade — tamagoyaki, yuba, matcha everything. Graze the stalls rather than committing to one seat.",
-          },
-        ],
-        fuller:
-          "If the foliage forecast is early, <b>Eikandō's evening illumination</b> is the best autumn ticket in Kyoto — it means a later train back to Namba, which runs past 23:00.",
-      },
-      {
-        id: "o-nara",
-        travel: true,
-        cityTag: "Day trip — Nara",
-        sun: "16:58",
-        move: "nara",
-        title: "Nara — the Great Buddha, and a park full of deer",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Todai-ji first.",
-            detail:
-              "The Great Buddha Hall is one of the largest wooden buildings anywhere, and the 15-metre bronze Buddha inside has been sat there since 752. Go early; the coach tours land mid-morning.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Kasuga Taisha and the lantern path.",
-            detail:
-              "Three thousand stone lanterns along a cedar approach, and the deer wander the whole park unbothered. Buy the crackers if you want to be mobbed; don't if you don't.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Kakinoha-zushi in Naramachi.",
-            detail:
-              "Sushi wrapped in persimmon leaf — a mountain-town preservation trick from before refrigeration, and still the thing to eat here.",
-          },
-        ],
-        fuller:
-          "Nara is 40 minutes from Namba on the Kintetsu line, so this is the easiest day of the trip to cut short if the legs give out.",
-      },
-      {
-        id: "o-shrines",
-        cityTag: "Osaka",
-        sun: "16:57",
-        title: "Sumiyoshi Taisha, Shitennoji, and old Osaka",
-        rows: [
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Sumiyoshi Taisha in the morning.",
-            detail:
-              "One of Japan's oldest shrines, pre-dating Buddhist influence — the arched Sorihashi bridge and pure sumiyoshi-zukuri halls are unlike anything in Kyoto. Ten minutes from Namba on the Nankai line.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Shitennoji after.",
-            detail:
-              "Japan's oldest officially-administered temple (593 AD), with a five-story pagoda and a quiet turtle pond.",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Kushikatsu in Shinsekai.",
-            detail:
-              "The retro tower district next to Shitennoji is the home of deep-fried skewers — one rule: no double-dipping the sauce.",
+              "One private day for both cities. Culture Day, so expect crowds. Start early.",
           },
           {
             tag: "Luggage",
             kind: "soft",
             flag: "luggage",
             detail:
-              "Decide this morning, not tomorrow: takkyūbin is <b>next-day</b>, so cases handed to the Citadines front desk today reach the Tokyo hotel when you do. Hand them over after tomorrow's checkout and they turn up on the 7th — a day late. Pack an overnight bag either way. The desk fills out the form and Yamato collects from the lobby; a 7-Eleven, FamilyMart or Lawson counter will also take them if you miss the hotel's pickup. <em>Confirm the Tokyo hotel accepts a delivery for an arriving guest.</em>",
+              "Ask the front desk how sending the cases ahead works, including the cutoff and the paperwork, so the next two mornings are settled.",
           },
         ],
-        fuller:
-          "<b>Osaka Castle</b> park on the way back — the keep is a reconstruction, but the moats and gold-leaf details photograph best in late-afternoon light.",
+      },
+      {
+        id: "o-minoh",
+        travel: true,
+        cityTag: "Osaka",
+        sun: "16:57",
+        move: "minoh",
+        title: "Katsuo-ji in the morning, Umeda on the way back",
+        rows: [
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Katsuo-ji in Minoh.",
+            detail:
+              "A mountain-temple morning. Check the hours before you leave, and allow about an hour each way.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Grand Front and Umeda after.",
+            detail: "Shopping on the way back down, then the evening back in Namba.",
+          },
+          {
+            tag: "Luggage",
+            kind: "soft",
+            flag: "luggage",
+            detail:
+              "Ask the front desk this evening about sending the cases ahead, and what time they need them in the morning.",
+          },
+        ],
       },
     ],
     tokyo: [
@@ -824,120 +661,99 @@ export default {
         sun: "16:40",
         move: "o-t",
         lodging: "tokyo",
-        title: "Two and a half hours of countryside, then Tokyo",
+        title: "Tokyo Station on the way in, then Shibuya",
         rows: [
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Shibuya Crossing after dark.",
+            lead: "Harry Potter Mahou Dokoro.",
             detail:
-              "Off the Shinkansen and straight into the loudest intersection in the world. Two nights here, so the first one is for gawking, not planning.",
+              "The shop is on Tokyo Character Street, First Avenue, Tokyo Station B1, 1-9-1 Marunouchi, inside the station. Open 10 AM to 8:30 PM, and no ticket is needed. The easy time is right after the 11:15 AM arrival, since the cases are already sent ahead. The other window is after the roughly 3 PM check-in: the Yamanote back from Shibuya to Tokyo Station takes about 25 to 30 minutes, so leave about 3:30 and arrive about 4 PM.",
           },
           {
-            tag: "Table",
-            kind: "table",
-            lead: "Whatever's open and close.",
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Shibuya once the bags are down.",
             detail:
-              "Shimbashi is the salaryman izakaya district — the ones under the JR viaduct, grill smoke in the street, no English menu and no need for one. Walk in, point, sit down.",
+              "The crossing after dark is enough for a first evening. Three nights here, so nothing else needs planning tonight.",
+          },
+          {
+            tag: "Luggage",
+            kind: "soft",
+            flag: "luggage",
+            detail:
+              "Send the cases from the front desk before you leave in the morning. Delivery is next-day, so they arrive the day after you do. Keep an overnight bag.",
           },
           {
             tag: "Window",
             kind: "soft",
             detail:
-              "Sit on the right side heading east (seat E) — Fuji shows up about 40 minutes out of Shin-Osaka, weather permitting.",
+              "Fuji shows on the right, about forty minutes along, when the weather is clear.",
           },
         ],
       },
       {
-        id: "t-tsukiji",
+        id: "t-shibuya",
         cityTag: "Tokyo",
         sun: "16:39",
-        title: "Breakfast at the fish market, then old Tokyo",
+        title: "Meiji, Harajuku, and Shibuya at sunset",
         rows: [
           {
-            tag: "Table",
-            kind: "table",
-            lead: "Tsukiji Outer Market, early (~8 am).",
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Meiji Jingu and Yoyogi.",
             detail:
-              "Tamagoyaki on a stick, uni, fatty tuna, grilled scallops — grazing breakfast is the point. Beats the crowds.",
+              "The shrine forest first, then the park next door, while the morning is still quiet.",
           },
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Asakusa — Sensō-ji &amp; Nakamise.",
+            lead: "Takeshita Street and Omotesando.",
+            detail: "The crowded lane, then the tree-lined avenue. Walk between them.",
+          },
+          {
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Miyashita Park, the scramble, and Pokemon Center.",
             detail:
-              "Tokyo's oldest temple and the approach street of little shops. Late morning, unhurried.",
+              "The park and the crossing, then Pokemon Center on the 6th floor of Shibuya PARCO.",
           },
           {
             tag: "Evening",
             kind: "soft",
             detail:
-              "Free. A depachika food-hall dinner and an early night, or push on to Shinjuku if there's energy left.",
+              "Shibuya Sky at sunset is still to book. Dinner in Dogenzaka or Maruyama-cho.",
           },
         ],
-        fuller:
-          'Add <b>Meiji Shrine + Omotesandō/Harajuku</b> in the afternoon — that\'s the full Kensington "Tokyo Highlights" loop in one day.',
-        ask: "rain plan is <b>teamLab Planets</b> (needs advance tickets) — want me to hold a slot?",
       },
       {
-        id: "t-gyoen",
+        id: "t-ginza",
         cityTag: "Tokyo",
         sun: "16:40",
-        title: "A garden by day, the alleyways by night",
-        rows: [
-          {
-            tag: "Morning",
-            kind: "soft",
-            detail: "Slow start. Coffee somewhere good.",
-          },
-          {
-            tag: "Anchor",
-            kind: "anchor",
-            lead: "Shinjuku Gyoen.",
-            detail:
-              "A huge, calm garden just starting to turn for autumn in early November — the antidote to Tokyo's density. (Free observation deck at the Metro Gov't Building nearby for the skyline.)",
-          },
-          {
-            tag: "Table",
-            kind: "table",
-            lead: "Yokochō night in Shinjuku.",
-            detail:
-              "Yakitori under the tracks at Omoide Yokochō, or a ramen crawl (Nakiryu, Afuri, Fūunji). The food night in Tokyo.",
-          },
-        ],
-        fuller:
-          "Golden Gai's tiny bars are famously locals-only. A <b>guided bar-hop</b> gets us in the doors — solves a real access problem, not just another stop.",
-      },
-      {
-        id: "t-shopping",
-        cityTag: "Tokyo — last day",
-        sun: "16:39",
-        title: "Shibuya, Harajuku, and a proper shopping day",
+        title: "Shinjuku Gyoen, then Ginza",
         rows: [
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Shibuya first.",
+            lead: "Shinjuku Gyoen, and lunch.",
             detail:
-              "The vertical retail — Shibuya Parco for streetwear and game-culture floors, Loft and Hands for the gifts you actually take home.",
+              "A long, calm garden, just starting to turn in early November. Eat nearby before heading on.",
           },
           {
             tag: "Anchor",
             kind: "anchor",
-            lead: "Harajuku &amp; Omotesando after.",
-            detail:
-              "Takeshita-dori for the chaos, then Omotesando's tree-lined flagships and the Cat Street vintage stretch between them — the full Tokyo retail spectrum in one walkable line.",
+            lead: "Ginza in the afternoon.",
+            detail: "Uniqlo's Ginza flagship, Muji, and a walk down Chuo-dori.",
           },
           {
-            tag: "Table",
-            kind: "table",
-            lead: "Depachika dinner.",
-            detail:
-              "A department-store basement food hall (Shibuya's Tokyu or Shinjuku's Isetan) — assemble a spread from the counters and eat well without a reservation.",
+            tag: "Anchor",
+            kind: "anchor",
+            lead: "Hie Shrine on the way back.",
+            detail: "A short stop, then dinner in Ginza or back in Shibuya.",
           },
         ],
         fuller:
-          "<b>Shinjuku at night</b> to close it out — Kabukicho neon, Golden Gai's tiny bars, or the free Metro Government observation deck for the skyline.",
+          "<b>Gotokuji</b> if the day still has room. The temple is optional, not on the main loop.",
       },
     ],
   },
@@ -953,10 +769,9 @@ export default {
         tag: "Note",
         kind: "soft",
         detail:
-          "~35 min to the gate from Shimbashi on the direct Asakusa-line run (~45 if you switched to a Gotanda tier) — build in buffer and have the paperwork ready. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy. David routes home to Indianapolis; his partner flies back to Davao.",
+          "The run to Haneda starts at Shibuya Station. Re-check the connection the day before and leave a buffer. Tax-free refunds are processed at the airport under the Nov 2026 rules; keep receipts and passports handy. David's flight leaves Haneda at 5:20 PM. His partner flies back to Davao; that departure time is still to confirm.",
       },
     ],
-    ask: "when do the two flights home actually leave? Different departure times mean two different airport runs.",
   },
   visaPlan: {
     // The Philippine days are family time, not an itinerary. They appear here
@@ -972,18 +787,14 @@ export default {
     "davao-leisure-7": "In the Philippines — Davao; depart for Japan.",
     "o-arrive":
       "Enter Japan at Kansai International Airport (KIX); travel to Osaka (Namba); Dotonbori & Namba.",
-    "o-daytrip":
-      "Day trip to Kyoto by train; Fushimi Inari Shrine; Kiyomizu-dera Temple; Nishiki Market.",
-    "o-food":
-      "Kuromon Ichiba Market; Shinsaibashi & Amerikamura shopping districts.",
-    "o-nara":
-      "Day trip to Nara by train; Todai-ji Temple; Kasuga Taisha Shrine; Nara Park.",
-    "o-shrines": "Sumiyoshi Taisha Shrine; Shitennoji Temple; Osaka Castle.",
-    "t-arrive": "Travel to Tokyo by Shinkansen; Shibuya district.",
-    "t-tsukiji": "Tsukiji Outer Market; Asakusa Senso-ji Temple & Nakamise St.",
-    "t-gyoen": "Shinjuku Gyoen National Garden; Shinjuku district.",
-    "t-shopping":
-      "Shibuya, Harajuku & Omotesando shopping districts; Shinjuku in the evening.",
+    "o-city": "Osaka Castle; Kuromon Ichiba Market; Namba and Dotonbori.",
+    "o-tour": "Private day tour of Nara and Kyoto.",
+    "o-minoh": "Katsuo-ji temple (Minoh); Grand Front Osaka and Umeda.",
+    "t-arrive":
+      "Travel to Tokyo by Shinkansen; Harry Potter Mahou Dokoro (Tokyo Station); Shibuya district.",
+    "t-shibuya":
+      "Meiji Jingu; Yoyogi Park; Harajuku and Omotesando; Shibuya.",
+    "t-ginza": "Shinjuku Gyoen; Ginza; Hie Shrine.",
     depart: "Depart Japan from Haneda International Airport (HND).",
   },
 };
