@@ -2,7 +2,7 @@
 // On the Philippines trip he and Suzanne have separate routings; his is the
 // US long-haul, and the last leg home is his alone.
 import { test, expect } from "@playwright/test";
-import { openPlanner, openItinerary, routingFor } from "./helpers.mjs";
+import { openPlanner, openItinerary, routingFor, checkedFares } from "./helpers.mjs";
 
 test.describe("David — Philippines trip", () => {
   test("Plan tab shows David's own IND routing, separate from Suzanne's", async ({ page }) => {
@@ -22,10 +22,14 @@ test.describe("David — Philippines trip", () => {
     await openPlanner(page, "philippines");
     const total = page.locator("#grandTotal");
     const before = await total.textContent();
+    const suzanne = routingFor(page, "Suzanne");
+    const suzanneFares = await checkedFares(suzanne);
+    expect(suzanneFares).toHaveLength(1);
     await routingFor(page, "David")
       .locator("label", { hasText: "Philippine Airlines via San Francisco (Business)" })
       .click();
     await expect(total).not.toHaveText(before);
+    expect(await checkedFares(suzanne)).toEqual(suzanneFares);
   });
 
   test("itinerary walks day by day and ends on David's flight home", async ({ page }) => {

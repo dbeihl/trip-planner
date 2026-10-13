@@ -2,7 +2,7 @@
 // Philippines trip she flies up from DVO to meet David in Coron, and the
 // Malita week is at her family's place.
 import { test, expect } from "@playwright/test";
-import { openPlanner, openItinerary, routingFor } from "./helpers.mjs";
+import { openPlanner, openItinerary, routingFor, checkedFares } from "./helpers.mjs";
 
 test.describe("Suzanne — Philippines trip", () => {
   test("Plan tab shows Suzanne's own DVO routing, separate from David's", async ({ page }) => {
@@ -21,14 +21,14 @@ test.describe("Suzanne — Philippines trip", () => {
     await openPlanner(page, "philippines");
     const total = page.locator("#grandTotal");
     const before = await total.textContent();
+    const david = routingFor(page, "David");
+    const davidFares = await checkedFares(david);
+    expect(davidFares).toHaveLength(1);
     await routingFor(page, "Suzanne")
       .locator("label", { hasText: "AirSWIFT via Manila" })
       .click();
     await expect(total).not.toHaveText(before);
-    // David's selection is untouched
-    await expect(
-      routingFor(page, "David").locator("input[type=radio]:checked"),
-    ).toHaveCount(1);
+    expect(await checkedFares(david)).toEqual(davidFares);
   });
 
   test("itinerary reaches the Malita week at her family's place", async ({ page }) => {

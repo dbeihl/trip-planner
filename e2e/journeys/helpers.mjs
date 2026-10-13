@@ -26,3 +26,7 @@ export async function openItinerary(page) {
 // Flight routing block for one traveler on the Plan tab.
 export const routingFor = (page, traveler) =>
   page.locator(`[data-testid="origin-block"][data-traveler="${traveler}"]`);
+
+// Checked fare radios in a routing block, as name=value pairs.
+export const checkedFares = (block) =>
+  block.locator("input[type=radio]:checked").evaluateAll((els) => els.map((e) => `${e.name}=${e.value}`));
