@@ -43,5 +43,5 @@ jobs:
         run: npm ci
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-      - name: Smoke-test built planner pages
+      - name: Smoke + persona journeys (Playwright)
         run: npm run test:e2e

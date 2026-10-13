@@ -483,7 +483,7 @@ function fmtRange(arrive, depart) {
           <ul class="legend-list">
             {cal.trips.map((t) => (
               <li>
-                <a class="legend-item" href={t.href}>
+                <a class="legend-item" href={t.href} data-testid="calendar-legend-item" data-group={t.group}>
                   <span class="swatch" style={`background:${t.color}`}></span>
                   <span class="legend-name"><span class="legend-emoji">{t.emoji}</span>{t.label}</span>
                   <span class="legend-who">{t.groupLabel}</span>
