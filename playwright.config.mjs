@@ -1,6 +1,6 @@
-// E2E smoke config. The webServer builds the site and serves dist/ with the
-// /trip-planner base path via astro preview, so the tests hit the same URLs
-// production does. Run with `npm run test:e2e`.
+// E2E config (smoke + persona journeys). The webServer builds the site and
+// serves dist/ with the /trip-planner base path via astro preview, so the
+// tests hit the same URLs production does. Run with `npm run test:e2e`.
 import { existsSync } from "node:fs";
 import { defineConfig } from "@playwright/test";
 
