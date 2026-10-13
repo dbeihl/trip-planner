@@ -175,7 +175,11 @@ const TRIP = window.TRIP;
     const paxCtl = showPax
       ? `<label class="origin-pax">Travelers <input type="number" class="origin-pax-input" data-slot="${slot}" min="0" max="8" value="${pax}" inputmode="numeric" /></label>`
       : "";
-    return `<div class="origin-block" data-slot="${slot}">
+    const who =
+      key !== "__other" && FLIGHTS[key] && FLIGHTS[key].traveler
+        ? ` data-traveler="${FLIGHTS[key].traveler}"`
+        : "";
+    return `<div class="origin-block" data-testid="origin-block" data-slot="${slot}"${who}>
         <div class="journey-head">
           ${originSelectHtml(slot, key)}
           ${pref}
@@ -2206,7 +2210,7 @@ const TRIP = window.TRIP;
         return (
           '<div class="day ' +
           (d.travel ? "travel" : "") +
-          '"><div class="day-marker"></div>' +
+          '" data-testid="itin-day"><div class="day-marker"></div>' +
           '<div class="day-eyebrow"><span>Day ' +
           (i + 1) +
           '</span><span class="mono">' +
