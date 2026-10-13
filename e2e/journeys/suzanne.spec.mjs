@@ -20,8 +20,11 @@ test.describe("Suzanne — Philippines trip", () => {
   test("her fare choice moves the total independently of David's", async ({ page }) => {
     await openPlanner(page, "philippines");
     const total = page.locator("#grandTotal");
-    const before = await total.textContent();
+    const initial = await total.textContent();
     const david = routingFor(page, "David");
+    await david.locator("label", { hasText: "Philippine Airlines via San Francisco (Business)" }).click();
+    await expect(total).not.toHaveText(initial);
+    const before = await total.textContent();
     const davidFares = await checkedFares(david);
     expect(davidFares).toHaveLength(1);
     await routingFor(page, "Suzanne")
