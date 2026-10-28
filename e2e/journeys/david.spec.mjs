@@ -2,7 +2,7 @@
 // On the Philippines trip he and Suzanne have separate routings; his is the
 // US long-haul, and the last leg home is his alone.
 import { test, expect } from "@playwright/test";
-import { openPlanner, openItinerary, routingFor, checkedFares } from "./helpers.mjs";
+import { openPlanner, openItinerary, routingFor, checkedFares, dayOn } from "./helpers.mjs";
 
 test.describe("David — Philippines trip", () => {
   test("Plan tab shows David's own IND routing, separate from Suzanne's", async ({ page }) => {
@@ -53,8 +53,50 @@ test.describe("David — Philippines trip", () => {
 test.describe("David — Japan trip", () => {
   test("his IND → Davao routing is the one on the plan", async ({ page }) => {
     await openPlanner(page, "japan");
-    await expect(
-      routingFor(page, "David").locator(".origin-select option:checked"),
-    ).toHaveText("From the USA — David (IND → Davao, home from Haneda)");
+    const mine = routingFor(page, "David");
+    await expect(mine.locator(".origin-select option:checked")).toHaveText(
+      "From the USA — David (IND → Davao, home from Haneda)",
+    );
+    await expect(mine).toContainText("ZCZ3LH");
+    await expect(mine).toContainText("JLKKOB");
+    await expect(mine).toContainText("DL120");
+    await expect(mine).toContainText("5:20 PM");
+    await expect(mine).toContainText("DL1456");
+    await expect(mine).toContainText("5:55 PM");
+    await expect(page.locator("#osakaTiers")).toContainText("10472SG207787");
+    await expect(page.locator("#tokyoTiers")).toContainText("72079274902358");
+    await expect(page.locator("#tokyoTiers")).toContainText("Tokyu Stay Shibuya Shin-Minamiguchi");
+  });
+
+  test("Nov 5 is Tokyo PC, Nov 6 is booked 10 AM Shibuya Sky, Nov 8 trains via Shinagawa", async ({
+    page,
+  }) => {
+    await openPlanner(page, "japan");
+    await openItinerary(page);
+
+    const nov5 = dayOn(page, "Nov 5");
+    await expect(nov5).toContainText("Tokyo PC");
+    await expect(nov5).toContainText("Tokyo Radio Department Store");
+    await expect(nov5).toContainText("1-10-11 Sotokanda");
+    await expect(nov5).toContainText("Tokyu Stay Shibuya");
+    await expect(nov5).not.toContainText("Harry Potter");
+
+    const nov6 = dayOn(page, "Nov 6");
+    await expect(nov6).toContainText("Shibuya Sky");
+    await expect(nov6).toContainText("YNP871804");
+    await expect(nov6).toContainText("10:00 AM");
+    await expect(nov6).toContainText("Meiji Jingu");
+    await expect(nov6).toContainText("Pokemon Center");
+    await expect(nov6).not.toContainText("still to book");
+    await expect(nov6).not.toContainText("sunset");
+
+    const nov8 = dayOn(page, "Nov 8");
+    await expect(nov8).toContainText("12:30");
+    await expect(nov8).toContainText("Keikyu");
+    await expect(nov8).toContainText("Limousine");
+    const nov8Text = await nov8.innerText();
+    expect(nov8Text.indexOf("Shinagawa")).toBeGreaterThanOrEqual(0);
+    expect(nov8Text.indexOf("Shinagawa")).toBeLessThan(nov8Text.indexOf("Limousine"));
+    expect(nov8Text.indexOf("Keikyu")).toBeLessThan(nov8Text.indexOf("Limousine"));
   });
 });

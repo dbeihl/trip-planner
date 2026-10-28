@@ -45,7 +45,7 @@ for (const slug of ["japan", "yellowstone"]) {
     // updating the figures quoted in the PR/README goes unnoticed otherwise —
     // this fails loudly instead. Update deliberately when the trip changes.
     if (slug === "japan") {
-      await expect(total).toHaveText("$5,239");
+      await expect(total).toHaveText("$5,275");
       await expect(page.locator("#tokyoTiers")).toContainText("Tokyu Stay Shibuya");
       await expect(page.locator("#tokyoTiers")).toContainText("Not priced");
       await expect(page.locator("body")).toContainText("Nozomi 80");
@@ -70,7 +70,14 @@ for (const slug of ["japan", "yellowstone"]) {
       await expect(rail).toContainText("Nozomi 80");
       await expect(rail).toContainText("Katsuo-ji");
       await expect(rail).toContainText("Grand Front");
-      await expect(rail).toContainText("Harry Potter Mahou Dokoro");
+      await expect(rail).toContainText("Tokyo PC");
+      await expect(rail).toContainText("Tokyo Radio Department Store");
+      await expect(rail).not.toContainText("Harry Potter");
+      await expect(rail).toContainText("YNP871804");
+      await expect(rail).toContainText("10:00 AM");
+      await expect(rail).not.toContainText("still to book");
+      await expect(rail).toContainText("Keikyu");
+      await expect(rail).toContainText("Shinagawa");
       await expect(rail).toContainText("Meiji Jingu");
       await expect(rail).not.toContainText("Cat Street");
       await expect(rail).toContainText("Ginza");
