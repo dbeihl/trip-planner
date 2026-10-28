@@ -27,6 +27,12 @@ export async function openItinerary(page) {
 export const routingFor = (page, traveler) =>
   page.locator(`[data-testid="origin-block"][data-traveler="${traveler}"]`);
 
+// Itinerary day card whose date line contains dateLabel, for example "Nov 5".
+export const dayOn = (page, dateLabel) =>
+  page.getByTestId("itin-day").filter({
+    has: page.locator(".day-eyebrow .mono", { hasText: dateLabel }),
+  });
+
 // Checked fare radios in a routing block, as name=value pairs.
 export const checkedFares = (block) =>
   block.locator("input[type=radio]:checked").evaluateAll((els) => els.map((e) => `${e.name}=${e.value}`));
